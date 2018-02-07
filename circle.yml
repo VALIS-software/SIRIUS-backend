@@ -17,12 +17,12 @@ dependencies:
     - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME
     - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
     - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-    - docker build -t us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 .
-    - docker tag us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_ID}/sirius:latest
+    - sudo docker build -t us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 .
+    - sudo docker tag us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_ID}/sirius:latest
 
 test:
   post:
-    - docker run -d -p 5000:5000 us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1
+    - sudo docker run -d -p 5000:5000 us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1
     - curl -v http://localhost:5000/tracks/MCF7-DNase/150994944/167772160?sampling_rate=16384&track_height_px=16&aggregations=max,mean,median,min
 
 deployment:
