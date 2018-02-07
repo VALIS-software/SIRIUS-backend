@@ -363,4 +363,4 @@ def get_track_data(track_id, start_bp, end_bp):
 		abort(404, "Track not found")
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=True, host='0.0.0.0', port=5000)
