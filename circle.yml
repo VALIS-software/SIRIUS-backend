@@ -1,0 +1,25 @@
+machine:
+  environment:
+    PROJECT_NAME: VALIS
+    PROJECT_ID: valis-194104
+    CLUSTER_NAME: docker-sirius
+    CLOUDSDK_COMPUTE_ZONE: us-west1-b
+
+dependencies:
+  pre:
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0 kubectl
+    - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}//gcloud-service-key.json
+    - sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+    - sudo /opt/google-cloud-sdk/bin/gcloud config set project $PROJECT_ID
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME
+    - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+    - docker build -t us.gcr.io/${PROJECT_NAME}/sirius:$CIRCLE_SHA1 .
+    - docker tag us.gcr.io/${PROJECT_NAME}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_NAME}/sirius:latest
+
+deployment:
+  prod:
+    branch: master
+    commands:
+      - ./deploy.sh

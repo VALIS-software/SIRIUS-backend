@@ -1,0 +1,17 @@
+{
+	"GRCh38_genes": {
+		"annotationId": "GRCh38_genes",
+		"startBp": 0,
+		"endBp": 3000000000
+	},
+	"cross-track-test-1": {
+		"annotationId": "cross-track-test-1",
+		"startBp": 0,
+		"endBp": 3000000000
+	},
+	"cross-track-test-2": {
+		"annotationId": "cross-track-test-2",
+		"startBp": 0,
+		"endBp": 3000000000
+	}
+}

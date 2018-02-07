@@ -1,0 +1,27 @@
+{
+	"GM12878-DNase": {
+		"trackId": "GM12878-DNase",
+		"startBp": 0,
+		"endBp": 3000000000,
+		"dataType": "signal"
+	},
+	"K562-DNase": {
+		"trackId": "K562-DNase",
+		"startBp": 0,
+		"endBp": 3000000000,
+		"dataType": "signal"
+
+	},
+	"MCF7-DNase": {
+		"trackId": "MCF7-DNase",
+		"startBp": 0,
+		"endBp": 3000000000,
+		"dataType": "signal"
+	},
+	"sequence": {
+		"trackId": "sequence",
+		"startBp": 0,
+		"endBp": 3000000000,
+		"dataType": "sequence"
+	}
+}
