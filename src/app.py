@@ -370,7 +370,7 @@ db = client.test_database
 @app.route("/healthcheck")
 def test_mongo_get():
     data = db.posts.find_one()
-    return json.dumps(data) 
+    return str(data) 
 
 @app.route("/insertdata")
 def test_mongo_insert():
@@ -379,6 +379,7 @@ def test_mongo_insert():
             "SNPs": ["rs6311", "rs3091244", "rs138055828", "rs148649884"],
             "date": datetime.datetime.utcnow()}
     db.posts.insert_one(post) 
+    return str(post)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
