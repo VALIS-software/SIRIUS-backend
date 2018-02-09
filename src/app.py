@@ -363,14 +363,16 @@ def get_track_data(track_id, start_bp, end_bp):
 		})
 	else:
 		abort(404, "Track not found")
-
-client = pymongo.MongoClient('mongodb://mongo:27017')
-db = client.test_database
+try:
+    client = pymongo.MongoClient('mongodb://mongo:27017')
+    db = client.test_database
+except:
+    print("Connecting to MongoDB database failed!")
 
 @app.route("/healthcheck")
 def test_mongo_get():
-    data = db.posts.find_one()
-    return str(data) 
+    all_data_str = '<br/>'.join(map(str, db.posts.find()))
+    return "<p>"+all_data_str+"</p>"
 
 @app.route("/insertdata")
 def test_mongo_insert():
