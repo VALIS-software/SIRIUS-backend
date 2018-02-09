@@ -7,6 +7,7 @@ import random
 import json
 import numpy as np
 import math
+import pymongo
 
 CHROMOSOME_SIZES = [
 	248956422,
@@ -361,6 +362,14 @@ def get_track_data(track_id, start_bp, end_bp):
 		})
 	else:
 		abort(404, "Track not found")
+
+@app.route("/healthcheck")
+def test_mongo():
+    client = pymongo.MongoClient('localhost', 27017)
+    db = client.test_database
+    posts = db.posts
+    data = posts.find_one()
+    return json.dumps(data) 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

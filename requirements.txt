@@ -2,3 +2,4 @@ Flask
 pyensembl
 flask_cors
 numpy
+pymongo
