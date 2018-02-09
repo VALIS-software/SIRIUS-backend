@@ -8,6 +8,7 @@ import json
 import numpy as np
 import math
 import pymongo
+import datetime
 
 CHROMOSOME_SIZES = [
 	248956422,
@@ -363,13 +364,21 @@ def get_track_data(track_id, start_bp, end_bp):
 	else:
 		abort(404, "Track not found")
 
+client = pymongo.MongoClient('mongodb://mongo:27017')
+db = client.test_database
+
 @app.route("/healthcheck")
-def test_mongo():
-    client = pymongo.MongoClient('localhost', 27017)
-    db = client.test_database
-    posts = db.posts
-    data = posts.find_one()
+def test_mongo_get():
+    data = db.posts.find_one()
     return json.dumps(data) 
+
+@app.route("/insertdata")
+def test_mongo_insert():
+    post = {"author": "QYD",
+            "text": "Hello!",
+            "SNPs": ["rs6311", "rs3091244", "rs138055828", "rs148649884"],
+            "date": datetime.datetime.utcnow()}
+    db.posts.insert_one(post) 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
