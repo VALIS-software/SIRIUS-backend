@@ -18,7 +18,7 @@ dependencies:
     - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
     - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
     - docker build --rm=false -t us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 .
-    - docker tag us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_ID}/sirius:latest
+    - docker tag us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_ID}/sirius:dev
 
 test:
   post:
