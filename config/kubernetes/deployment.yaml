@@ -19,12 +19,12 @@ spec:
         image: us.gcr.io/valis-194104/sirius:dev
         ports:
         - containerPort: 5000
-        # volumeMounts:
-        # - mountPath: /pd
-        #  name: sirius-cache
-      # volumes:
-      # - name: sirius-cache
-      #   gcePersistentDisk:
-      #     pdName: sirius-cache
-      #     fsType: ext4
-      #     readOnly: true
+        volumeMounts:
+        - mountPath: /pd
+          name: sirius-cache
+      volumes:
+      - name: sirius-cache
+        gcePersistentDisk:
+          pdName: sirius-cache
+          fsType: ext4
+          readOnly: true

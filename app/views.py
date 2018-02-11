@@ -11,7 +11,7 @@ import math
 import pymongo
 import datetime
 import os
-import subprocess
+import shutil
 
 CORS(app)
 
@@ -87,6 +87,18 @@ def find_chromosome(bp):
             break
     if idx != None:
         return idx_to_chromosome(idx)
+
+try:
+    # on Google Cloud, we have a copy of the cache files in /pd/pyensembl
+    # try to copy it to the $PYENSEMBL_CACHE_DIR
+    exist_cache = "/pd/pyensembl"
+    target_path = os.path.join(os.environ['PYENSEMBL_CACHE_DIR'], 'pyensembl')
+    if os.path.exists(target_path):
+         shutil.rmtree(target_path)
+    shutil.copytree(exist_cache, target_path)   
+except:
+    pass
+
 # release 76 uses human reference genome GRCh38
 ENSEMBL_DATA = EnsemblRelease(76)
 # Download and index data in cache so we don't have to include it in Docker image
@@ -103,7 +115,6 @@ ENSEMBL_DATA = EnsemblRelease(76)
 #except:
 #    print("pyensembl cache not found. Downloading...")
 #    subprocess.call("pyensembl install --release 76 --species homo_sapiens", shell=True)
-
 
 
 def getMockAnnotations():
