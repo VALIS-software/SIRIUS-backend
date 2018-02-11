@@ -3,3 +3,4 @@ pyensembl
 flask_cors
 numpy
 pymongo
+google-cloud-storage
