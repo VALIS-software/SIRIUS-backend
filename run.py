@@ -4,8 +4,11 @@ from app import app
 from app.prepare import update_valis_webfront, copy_pyensembl_cache
 
 def init():
-    update_valis_webfront.update_valis_webfront()
-    copy_pyensembl_cache.copy_pyensembl_cache()
+    try:
+        update_valis_webfront.update_valis_webfront()
+        copy_pyensembl_cache.copy_pyensembl_cache()
+    except Exception as e:
+        print(str(e))
 
 if __name__ == "__main__":
     init()

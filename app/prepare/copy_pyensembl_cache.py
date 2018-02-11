@@ -15,12 +15,8 @@ def copy_pyensembl_cache(source='\pd\pyensembl'):
     else:
         cachedir = os.path.join(os.environ['HOME'], '.cache')
     dest = os.path.join(cachedir, 'pyensembl')
-    try:
-        shutil.copytree(source, dest)
-        print("Copy from %s to %s finished." % (source, dest))
-    except Exception as e:
-        print("Error occured during copy:")
-        print(str(e))
+    shutil.copytree(source, dest)
+    print("Copy from %s to %s finished." % (source, dest))
 
 if __name__ == "__main__":
      copy_pyensembl_cache()
