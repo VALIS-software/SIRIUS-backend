@@ -1,0 +1,30 @@
+apiVersion: apps/v1beta1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: sirius-dev
+spec:
+  selector:
+    matchLabels:
+      app: sirius-dev
+  replicas: 1 # tells deployment to run 1 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: sirius-dev
+    spec:
+      containers:
+      - name: sirius-dev
+        image: us.gcr.io/valis-194104/sirius:dev
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /pd
+          name: sirius-cache
+      volumes:
+      - name: sirius-cache
+        gcePersistentDisk:
+          pdName: sirius-cache
+          fsType: ext4
+          readOnly: true

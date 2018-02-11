@@ -24,7 +24,7 @@
 
 ## Configurations
 ### Kubenetes Configurations (Ran once):
-#### Initialize deployment
+#### Start a deployment
     `kubectl run sirius --image=us.gcr.io/valis-194104/sirius:latest --port 5000` 
 #### Expose port
     `kubectl expose deployment sirius --type=LoadBalancer --port 80 --target-port 5000` 

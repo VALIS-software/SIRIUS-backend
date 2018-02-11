@@ -26,7 +26,7 @@ test:
     - curl -v http://localhost:5000/tracks/MCF7-DNase/150994944/167772160?sampling_rate=16384&track_height_px=16&aggregations=max,mean,median,min
 
 deployment:
-  prod:
+  dev:
     branch: master
     commands:
-      - ./deploy.sh
+      - ./deploy-dev.sh
