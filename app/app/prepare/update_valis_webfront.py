@@ -35,7 +35,7 @@ def update_valis_webfront():
     if os.path.isdir(target_path):
         shutil.rmtree(target_path)
     shutil.move(tmp_path, target_path)
-    print("static/dist folder was replaced. All step finished!")
+    print("valis-dist folder was replaced. All step finished!")
 
 if __name__ == "__main__":
      update_valis_webfront()

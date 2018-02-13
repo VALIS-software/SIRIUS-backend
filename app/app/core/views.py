@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from ..main import app
-from flask import render_template, abort, request, jsonify
+from flask import render_template, abort, request, jsonify, send_from_directory
 from pyensembl import EnsemblRelease
 import random
 import json
@@ -11,10 +11,12 @@ import os
 import shutil
 from ..mockData.mock_util import getMockAnnotations, getMockData
 
+# These could be served by the Nginx
+# Provided here for debugging
 @app.route('/')
 @app.route('/index')
 def index():
-    return app.send_static_file("index.html")
+    return send_from_directory("valis-dist", "index.html")
 
 @app.route('/<path:path>')
 def send_file(path):

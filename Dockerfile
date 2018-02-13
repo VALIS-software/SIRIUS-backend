@@ -26,4 +26,4 @@ ENV LISTEN_PORT 5000
 
 # Run app.py when the container launches
 WORKDIR /app/app
-CMD ["/usr/bin/supervisord"]
+CMD ["/start.sh"]
