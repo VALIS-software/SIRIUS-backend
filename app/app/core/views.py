@@ -1,29 +1,24 @@
 #!/usr/bin/env python
 
-from flask import render_template, abort, request, jsonify, send_from_directory
-from app import app
-from flask_cors import CORS
+from ..main import app
+from flask import render_template, abort, request, jsonify
 from pyensembl import EnsemblRelease
 import random
 import json
 import numpy as np
 import math
-import pymongo
-import datetime
 import os
 import shutil
-
-CORS(app)
+from ..mockData.mock_util import getMockAnnotations, getMockData
 
 @app.route('/')
 @app.route('/index')
 def index():
-    #return render_template('index.html')
-    return app.send_static_file('dist/index.html')
+    return app.send_static_file("index.html")
 
 @app.route('/<path:path>')
 def send_file(path):
-    return send_from_directory('static/dist',path)
+    return app.send_static_file(path)
 
 CHROMOSOME_SIZES = [
     248956422,
@@ -106,12 +101,6 @@ ENSEMBL_DATA = EnsemblRelease(76)
 #    print("pyensembl cache not found. Downloading...")
 #    subprocess.call("pyensembl install --release 76 --species homo_sapiens", shell=True)
 
-
-def getMockAnnotations():
-    return json.load(open("app/mockData/mockAnnotations.json"))
-
-def getMockData():
-    return json.load(open("app/mockData/mockData.json"))
 
 
 @app.route("/graphs")
@@ -392,22 +381,4 @@ def get_track_data(track_id, start_bp, end_bp):
         })
     else:
         abort(404, "Track not found")
-try:
-    client = pymongo.MongoClient('mongodb://mongo:27017')
-    db = client.test_database
-except:
-    print("Connecting to MongoDB database failed!")
 
-@app.route("/healthcheck")
-def test_mongo_get():
-    all_data_str = '<br/>'.join(map(str, db.posts.find()))
-    return "<p>"+all_data_str+"</p>"
-
-@app.route("/insertdata")
-def test_mongo_insert():
-    post = {"author": "QYD",
-            "text": "Hello!",
-            "SNPs": ["rs6311", "rs3091244", "rs138055828", "rs148649884"],
-            "date": datetime.datetime.utcnow()}
-    db.posts.insert_one(post)
-    return str(post)

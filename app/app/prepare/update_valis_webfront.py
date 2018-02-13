@@ -19,18 +19,18 @@ def update_valis_webfront():
     dest_fname = os.path.join(tmp_path, 'dist.zip')
     blob.download_to_filename(dest_fname)
     print("File download finished.")
-    
+
     # unzip
     with ZipFile(dest_fname) as zf:
         zf.extractall(tmp_path)
     # We will leave the zip file for debugging
     # os.remove(dest_fname)
     print("Unzip finished.")
-    
+
     # target folder to put our front-end js code
     # We use the relative path to the location of this file, to allow running this script from anywhere
     this_file_folder = os.path.dirname(os.path.realpath(__file__))
-    target_path = os.path.join(this_file_folder, "../static/dist")
+    target_path = os.path.join(this_file_folder, "../valis-dist")
     # check if the target folder already exists, if so, remove it
     if os.path.isdir(target_path):
         shutil.rmtree(target_path)
