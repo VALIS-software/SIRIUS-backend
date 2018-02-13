@@ -103,5 +103,7 @@ ENV/
 # zip
 .zip
 
-# .swp created by vi
-.swp
+# vim temporary files
+*~
+*.swp
+*.swo
