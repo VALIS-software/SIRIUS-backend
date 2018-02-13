@@ -102,3 +102,6 @@ ENV/
 
 # zip
 .zip
+
+# .swp created by vi
+.swp
