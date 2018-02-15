@@ -6,9 +6,8 @@ from flask_cors import CORS
 app = Flask(__name__, static_folder='valis-dist/static')
 CORS(app)
 
-from .core import views
-from .mongo import mongo_util
+from sirius.core import views
 
 if __name__ == "__main__":
     # Only for debugging while developing
-    app.run(debug=True, use_reloader=False, host="0.0.0.0", port=5000)
+    app.run(debug=True, use_reloader=False)

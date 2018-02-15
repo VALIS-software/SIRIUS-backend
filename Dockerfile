@@ -19,11 +19,11 @@ ENV FLASK_APP main.py
 ENV PYENSEMBL_CACHE_DIR /cache
 
 # Nginx
-ENV INDEX_PATH /app/app/valis-dist
-ENV STATIC_PATH /app/app/valis-dist/static
+ENV INDEX_PATH /app/sirius/valis-dist
+ENV STATIC_PATH /app/sirius/valis-dist/static
 ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
 
 # Run app.py when the container launches
-WORKDIR /app/app
+WORKDIR /app/sirius
 CMD ["/start.sh"]

@@ -1,0 +1,1491 @@
+[
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "RefSeq",
+      "type": "region",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id0",
+        "Dbxref": "taxon:9606",
+        "Name": "1",
+        "chromosome": "1",
+        "gbkey": "Src",
+        "genome": "chromosome",
+        "mol_type": "genomic DNA"
+      }
+    },
+    "start": 1,
+    "end": 248956422,
+    "length": 248956421
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene0",
+        "Dbxref": "GeneID:100287102,HGNC:HGNC:37102",
+        "Name": "DDX11L1",
+        "description": "DEAD/H-box helicase 11 like 1",
+        "gbkey": "Gene",
+        "gene": "DDX11L1",
+        "gene_biotype": "misc_RNA",
+        "pseudo": "true"
+      }
+    },
+    "start": 11874,
+    "end": 14409,
+    "length": 2535
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "transcript",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna0",
+        "Parent": "gene0",
+        "Dbxref": "GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102",
+        "Name": "NR_046018.2",
+        "gbkey": "misc_RNA",
+        "gene": "DDX11L1",
+        "product": "DEAD/H-box helicase 11 like 1",
+        "transcript_id": "NR_046018.2"
+      }
+    },
+    "start": 11874,
+    "end": 14409,
+    "length": 2535
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id1",
+        "Parent": "rna0",
+        "Dbxref": "GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102",
+        "gbkey": "misc_RNA",
+        "gene": "DDX11L1",
+        "product": "DEAD/H-box helicase 11 like 1",
+        "transcript_id": "NR_046018.2"
+      }
+    },
+    "start": 11874,
+    "end": 12227,
+    "length": 353
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id2",
+        "Parent": "rna0",
+        "Dbxref": "GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102",
+        "gbkey": "misc_RNA",
+        "gene": "DDX11L1",
+        "product": "DEAD/H-box helicase 11 like 1",
+        "transcript_id": "NR_046018.2"
+      }
+    },
+    "start": 12613,
+    "end": 12721,
+    "length": 108
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id3",
+        "Parent": "rna0",
+        "Dbxref": "GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102",
+        "gbkey": "misc_RNA",
+        "gene": "DDX11L1",
+        "product": "DEAD/H-box helicase 11 like 1",
+        "transcript_id": "NR_046018.2"
+      }
+    },
+    "start": 13221,
+    "end": 14409,
+    "length": 1188
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene1",
+        "Dbxref": "GeneID:653635,HGNC:HGNC:38034",
+        "Name": "WASH7P",
+        "description": "WAS protein family homolog 7 pseudogene",
+        "gbkey": "Gene",
+        "gene": "WASH7P",
+        "gene_biotype": "misc_RNA",
+        "gene_synonym": "FAM39F,WASH5P",
+        "pseudo": "true"
+      }
+    },
+    "start": 14362,
+    "end": 29370,
+    "length": 15008
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "transcript",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna1",
+        "Parent": "gene1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "Name": "NR_024540.1",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 14362,
+    "end": 29370,
+    "length": 15008
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id4",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 29321,
+    "end": 29370,
+    "length": 49
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id5",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 24738,
+    "end": 24891,
+    "length": 153
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id6",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 18268,
+    "end": 18366,
+    "length": 98
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id7",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 17915,
+    "end": 18061,
+    "length": 146
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id8",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 17606,
+    "end": 17742,
+    "length": 136
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id9",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 17233,
+    "end": 17368,
+    "length": 135
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id10",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 16858,
+    "end": 17055,
+    "length": 197
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id11",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 16607,
+    "end": 16765,
+    "length": 158
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id12",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 15796,
+    "end": 15947,
+    "length": 151
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id13",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 14970,
+    "end": 15038,
+    "length": 68
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id14",
+        "Parent": "rna1",
+        "Dbxref": "GeneID:653635,Genbank:NR_024540.1,HGNC:HGNC:38034",
+        "gbkey": "misc_RNA",
+        "gene": "WASH7P",
+        "product": "WAS protein family homolog 7 pseudogene",
+        "transcript_id": "NR_024540.1"
+      }
+    },
+    "start": 14362,
+    "end": 14829,
+    "length": 467
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene2",
+        "Dbxref": "GeneID:102466751,HGNC:HGNC:50039,miRBase:MI0022705",
+        "Name": "MIR6859-1",
+        "description": "microRNA 6859-1",
+        "gbkey": "Gene",
+        "gene": "MIR6859-1",
+        "gene_biotype": "miRNA",
+        "gene_synonym": "hsa-mir-6859-1"
+      }
+    },
+    "start": 17369,
+    "end": 17436,
+    "length": 67
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "primary_transcript",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna2",
+        "Parent": "gene2",
+        "Dbxref": "GeneID:102466751,Genbank:NR_106918.1,HGNC:HGNC:50039,miRBase:MI0022705",
+        "Name": "NR_106918.1",
+        "gbkey": "precursor_RNA",
+        "gene": "MIR6859-1",
+        "product": "microRNA 6859-1",
+        "transcript_id": "NR_106918.1"
+      }
+    },
+    "start": 17369,
+    "end": 17436,
+    "length": 67
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id15",
+        "Parent": "rna2",
+        "Dbxref": "GeneID:102466751,Genbank:NR_106918.1,HGNC:HGNC:50039,miRBase:MI0022705",
+        "gbkey": "precursor_RNA",
+        "gene": "MIR6859-1",
+        "product": "microRNA 6859-1",
+        "transcript_id": "NR_106918.1"
+      }
+    },
+    "start": 17369,
+    "end": 17436,
+    "length": 67
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "miRNA",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna3",
+        "Parent": "gene2",
+        "Dbxref": "miRBase:MIMAT0027619,GeneID:102466751,HGNC:HGNC:50039,miRBase:MI0022705",
+        "gbkey": "ncRNA",
+        "gene": "MIR6859-1",
+        "product": "hsa-miR-6859-3p"
+      }
+    },
+    "start": 17369,
+    "end": 17391,
+    "length": 22
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id16",
+        "Parent": "rna3",
+        "Dbxref": "miRBase:MIMAT0027619,GeneID:102466751,HGNC:HGNC:50039,miRBase:MI0022705",
+        "gbkey": "ncRNA",
+        "gene": "MIR6859-1",
+        "product": "hsa-miR-6859-3p"
+      }
+    },
+    "start": 17369,
+    "end": 17391,
+    "length": 22
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "miRNA",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna4",
+        "Parent": "gene2",
+        "Dbxref": "miRBase:MIMAT0027618,GeneID:102466751,HGNC:HGNC:50039,miRBase:MI0022705",
+        "gbkey": "ncRNA",
+        "gene": "MIR6859-1",
+        "product": "hsa-miR-6859-5p"
+      }
+    },
+    "start": 17409,
+    "end": 17431,
+    "length": 22
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id17",
+        "Parent": "rna4",
+        "Dbxref": "miRBase:MIMAT0027618,GeneID:102466751,HGNC:HGNC:50039,miRBase:MI0022705",
+        "gbkey": "ncRNA",
+        "gene": "MIR6859-1",
+        "product": "hsa-miR-6859-5p"
+      }
+    },
+    "start": 17409,
+    "end": 17431,
+    "length": 22
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene3",
+        "Dbxref": "GeneID:107985730",
+        "Name": "LOC107985730",
+        "gbkey": "Gene",
+        "gene": "LOC107985730",
+        "gene_biotype": "lncRNA"
+      }
+    },
+    "start": 29926,
+    "end": 31295,
+    "length": 1369
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "lnc_RNA",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna5",
+        "Parent": "gene3",
+        "Dbxref": "GeneID:107985730,Genbank:XR_001737835.1",
+        "Name": "XR_001737835.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC107985730",
+        "model_evidence": "Supporting evidence includes similarity to: 100%25 coverage of the annotated genomic feature by RNAseq alignments%2C including 8 samples with support for all annotated introns",
+        "product": "uncharacterized LOC107985730",
+        "transcript_id": "XR_001737835.1"
+      }
+    },
+    "start": 29926,
+    "end": 31295,
+    "length": 1369
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id18",
+        "Parent": "rna5",
+        "Dbxref": "GeneID:107985730,Genbank:XR_001737835.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC107985730",
+        "product": "uncharacterized LOC107985730",
+        "transcript_id": "XR_001737835.1"
+      }
+    },
+    "start": 29926,
+    "end": 30039,
+    "length": 113
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id19",
+        "Parent": "rna5",
+        "Dbxref": "GeneID:107985730,Genbank:XR_001737835.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC107985730",
+        "product": "uncharacterized LOC107985730",
+        "transcript_id": "XR_001737835.1"
+      }
+    },
+    "start": 30564,
+    "end": 30667,
+    "length": 103
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id20",
+        "Parent": "rna5",
+        "Dbxref": "GeneID:107985730,Genbank:XR_001737835.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC107985730",
+        "product": "uncharacterized LOC107985730",
+        "transcript_id": "XR_001737835.1"
+      }
+    },
+    "start": 30976,
+    "end": 31295,
+    "length": 319
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene4",
+        "Dbxref": "GeneID:100302278,HGNC:HGNC:35294,miRBase:MI0006363",
+        "Name": "MIR1302-2",
+        "description": "microRNA 1302-2",
+        "gbkey": "Gene",
+        "gene": "MIR1302-2",
+        "gene_biotype": "miRNA",
+        "gene_synonym": "hsa-mir-1302-2,MIRN1302-2"
+      }
+    },
+    "start": 30366,
+    "end": 30503,
+    "length": 137
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "primary_transcript",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna6",
+        "Parent": "gene4",
+        "Dbxref": "GeneID:100302278,Genbank:NR_036051.1,HGNC:HGNC:35294,miRBase:MI0006363",
+        "Name": "NR_036051.1",
+        "gbkey": "precursor_RNA",
+        "gene": "MIR1302-2",
+        "product": "microRNA 1302-2",
+        "transcript_id": "NR_036051.1"
+      }
+    },
+    "start": 30366,
+    "end": 30503,
+    "length": 137
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id21",
+        "Parent": "rna6",
+        "Dbxref": "GeneID:100302278,Genbank:NR_036051.1,HGNC:HGNC:35294,miRBase:MI0006363",
+        "gbkey": "precursor_RNA",
+        "gene": "MIR1302-2",
+        "product": "microRNA 1302-2",
+        "transcript_id": "NR_036051.1"
+      }
+    },
+    "start": 30366,
+    "end": 30503,
+    "length": 137
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "miRNA",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna7",
+        "Parent": "gene4",
+        "Dbxref": "miRBase:MIMAT0005890,GeneID:100302278,HGNC:HGNC:35294,miRBase:MI0006363",
+        "gbkey": "ncRNA",
+        "gene": "MIR1302-2",
+        "product": "hsa-miR-1302"
+      }
+    },
+    "start": 30438,
+    "end": 30458,
+    "length": 20
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id22",
+        "Parent": "rna7",
+        "Dbxref": "miRBase:MIMAT0005890,GeneID:100302278,HGNC:HGNC:35294,miRBase:MI0006363",
+        "gbkey": "ncRNA",
+        "gene": "MIR1302-2",
+        "product": "hsa-miR-1302"
+      }
+    },
+    "start": 30438,
+    "end": 30458,
+    "length": 20
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene5",
+        "Dbxref": "GeneID:645520,HGNC:HGNC:32334",
+        "Name": "FAM138A",
+        "description": "family with sequence similarity 138 member A",
+        "gbkey": "Gene",
+        "gene": "FAM138A",
+        "gene_biotype": "lncRNA",
+        "gene_synonym": "F379,FAM138F"
+      }
+    },
+    "start": 34611,
+    "end": 36081,
+    "length": 1470
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "lnc_RNA",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna8",
+        "Parent": "gene5",
+        "Dbxref": "GeneID:645520,Genbank:NR_026818.1,HGNC:HGNC:32334",
+        "Name": "NR_026818.1",
+        "gbkey": "ncRNA",
+        "gene": "FAM138A",
+        "product": "family with sequence similarity 138 member A",
+        "transcript_id": "NR_026818.1"
+      }
+    },
+    "start": 34611,
+    "end": 36081,
+    "length": 1470
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id23",
+        "Parent": "rna8",
+        "Dbxref": "GeneID:645520,Genbank:NR_026818.1,HGNC:HGNC:32334",
+        "gbkey": "ncRNA",
+        "gene": "FAM138A",
+        "product": "family with sequence similarity 138 member A",
+        "transcript_id": "NR_026818.1"
+      }
+    },
+    "start": 35721,
+    "end": 36081,
+    "length": 360
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id24",
+        "Parent": "rna8",
+        "Dbxref": "GeneID:645520,Genbank:NR_026818.1,HGNC:HGNC:32334",
+        "gbkey": "ncRNA",
+        "gene": "FAM138A",
+        "product": "family with sequence similarity 138 member A",
+        "transcript_id": "NR_026818.1"
+      }
+    },
+    "start": 35277,
+    "end": 35481,
+    "length": 204
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id25",
+        "Parent": "rna8",
+        "Dbxref": "GeneID:645520,Genbank:NR_026818.1,HGNC:HGNC:32334",
+        "gbkey": "ncRNA",
+        "gene": "FAM138A",
+        "product": "family with sequence similarity 138 member A",
+        "transcript_id": "NR_026818.1"
+      }
+    },
+    "start": 34611,
+    "end": 35174,
+    "length": 563
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene6",
+        "Dbxref": "GeneID:105379212",
+        "Name": "LOC105379212",
+        "gbkey": "Gene",
+        "gene": "LOC105379212",
+        "gene_biotype": "lncRNA"
+      }
+    },
+    "start": 51943,
+    "end": 53959,
+    "length": 2016
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "lnc_RNA",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna9",
+        "Parent": "gene6",
+        "Dbxref": "GeneID:105379212,Genbank:XR_948874.1",
+        "Name": "XR_948874.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC105379212",
+        "model_evidence": "Supporting evidence includes similarity to: 4 ESTs%2C and 67%25 coverage of the annotated genomic feature by RNAseq alignments%2C including 3 samples with support for all annotated introns",
+        "product": "uncharacterized LOC105379212",
+        "transcript_id": "XR_948874.1"
+      }
+    },
+    "start": 51943,
+    "end": 53959,
+    "length": 2016
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id26",
+        "Parent": "rna9",
+        "Dbxref": "GeneID:105379212,Genbank:XR_948874.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC105379212",
+        "product": "uncharacterized LOC105379212",
+        "transcript_id": "XR_948874.1"
+      }
+    },
+    "start": 51943,
+    "end": 51994,
+    "length": 51
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id27",
+        "Parent": "rna9",
+        "Dbxref": "GeneID:105379212,Genbank:XR_948874.1",
+        "gbkey": "ncRNA",
+        "gene": "LOC105379212",
+        "product": "uncharacterized LOC105379212",
+        "transcript_id": "XR_948874.1"
+      }
+    },
+    "start": 53282,
+    "end": 53959,
+    "length": 677
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Curated Genomic",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene7",
+        "Dbxref": "GeneID:79504,HGNC:HGNC:14822",
+        "Name": "OR4G4P",
+        "description": "olfactory receptor family 4 subfamily G member 4 pseudogene",
+        "gbkey": "Gene",
+        "gene": "OR4G4P",
+        "gene_biotype": "pseudogene",
+        "pseudo": "true"
+      }
+    },
+    "start": 52453,
+    "end": 53396,
+    "length": 943
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Curated Genomic",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene8",
+        "Dbxref": "GeneID:403263,HGNC:HGNC:31276",
+        "Name": "OR4G11P",
+        "description": "olfactory receptor family 4 subfamily G member 11 pseudogene",
+        "gbkey": "Gene",
+        "gene": "OR4G11P",
+        "gene_biotype": "pseudogene",
+        "pseudo": "true"
+      }
+    },
+    "start": 63016,
+    "end": 63885,
+    "length": 869
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "gene",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene9",
+        "Dbxref": "GeneID:79501,HGNC:HGNC:14825,HPRD:14974",
+        "Name": "OR4F5",
+        "description": "olfactory receptor family 4 subfamily F member 5",
+        "gbkey": "Gene",
+        "gene": "OR4F5",
+        "gene_biotype": "protein_coding"
+      }
+    },
+    "start": 69091,
+    "end": 70008,
+    "length": 917
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "mRNA",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna10",
+        "Parent": "gene9",
+        "Dbxref": "GeneID:79501,Genbank:NM_001005484.1,HGNC:HGNC:14825,HPRD:14974",
+        "Name": "NM_001005484.1",
+        "gbkey": "mRNA",
+        "gene": "OR4F5",
+        "product": "olfactory receptor family 4 subfamily F member 5",
+        "transcript_id": "NM_001005484.1"
+      }
+    },
+    "start": 69091,
+    "end": 70008,
+    "length": 917
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "exon",
+      "score": ".",
+      "strand": "+",
+      "phase": ".",
+      "attributes": {
+        "ID": "id28",
+        "Parent": "rna10",
+        "Dbxref": "GeneID:79501,Genbank:NM_001005484.1,HGNC:HGNC:14825,HPRD:14974",
+        "gbkey": "mRNA",
+        "gene": "OR4F5",
+        "product": "olfactory receptor family 4 subfamily F member 5",
+        "transcript_id": "NM_001005484.1"
+      }
+    },
+    "start": 69091,
+    "end": 70008,
+    "length": 917
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "BestRefSeq",
+      "type": "CDS",
+      "score": ".",
+      "strand": "+",
+      "phase": "0",
+      "attributes": {
+        "ID": "cds0",
+        "Parent": "rna10",
+        "Dbxref": "CCDS:CCDS30547.1,GeneID:79501,Genbank:NP_001005484.1,HGNC:HGNC:14825,HPRD:14974",
+        "Name": "NP_001005484.1",
+        "gbkey": "CDS",
+        "gene": "OR4F5",
+        "product": "olfactory receptor 4F5",
+        "protein_id": "NP_001005484.1"
+      }
+    },
+    "start": 69091,
+    "end": 70008,
+    "length": 917
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "gene",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "gene10",
+        "Dbxref": "GeneID:100996442",
+        "Name": "LOC100996442",
+        "gbkey": "Gene",
+        "gene": "LOC100996442",
+        "gene_biotype": "misc_RNA"
+      }
+    },
+    "start": 91169,
+    "end": 267354,
+    "length": 176185
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "transcript",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna11",
+        "Parent": "gene10",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737583.1",
+        "Name": "XR_001737583.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "model_evidence": "Supporting evidence includes similarity to: 100%25 coverage of the annotated genomic feature by RNAseq alignments%2C including 77 samples with support for all annotated introns",
+        "product": "uncharacterized LOC100996442%2C transcript variant X24",
+        "transcript_id": "XR_001737583.1"
+      }
+    },
+    "start": 91169,
+    "end": 168093,
+    "length": 76924
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id29",
+        "Parent": "rna11",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737583.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "product": "uncharacterized LOC100996442%2C transcript variant X24",
+        "transcript_id": "XR_001737583.1"
+      }
+    },
+    "start": 167964,
+    "end": 168093,
+    "length": 129
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id30",
+        "Parent": "rna11",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737583.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "product": "uncharacterized LOC100996442%2C transcript variant X24",
+        "transcript_id": "XR_001737583.1"
+      }
+    },
+    "start": 165884,
+    "end": 165942,
+    "length": 58
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id31",
+        "Parent": "rna11",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737583.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "product": "uncharacterized LOC100996442%2C transcript variant X24",
+        "transcript_id": "XR_001737583.1"
+      }
+    },
+    "start": 92091,
+    "end": 92240,
+    "length": 149
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id32",
+        "Parent": "rna11",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737583.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "product": "uncharacterized LOC100996442%2C transcript variant X24",
+        "transcript_id": "XR_001737583.1"
+      }
+    },
+    "start": 91169,
+    "end": 91629,
+    "length": 460
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "transcript",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "rna12",
+        "Parent": "gene10",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737584.1",
+        "Name": "XR_001737584.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "model_evidence": "Supporting evidence includes similarity to: 100%25 coverage of the annotated genomic feature by RNAseq alignments%2C including 12 samples with support for all annotated introns",
+        "product": "uncharacterized LOC100996442%2C transcript variant X25",
+        "transcript_id": "XR_001737584.1"
+      }
+    },
+    "start": 91169,
+    "end": 120798,
+    "length": 29629
+  },
+  {
+    "assembly": "GRCh38",
+    "sourceurl": "test.gff",
+    "location": "Chr1",
+    "info": {
+      "seqid": "NC_000001.11",
+      "source": "Gnomon",
+      "type": "exon",
+      "score": ".",
+      "strand": "-",
+      "phase": ".",
+      "attributes": {
+        "ID": "id33",
+        "Parent": "rna12",
+        "Dbxref": "GeneID:100996442,Genbank:XR_001737584.1",
+        "gbkey": "misc_RNA",
+        "gene": "LOC100996442",
+        "product": "uncharacterized LOC100996442%2C transcript variant X25",
+        "transcript_id": "XR_001737584.1"
+      }
+    },
+    "start": 120775,
+    "end": 120798,
+    "length": 23
+  }
+]

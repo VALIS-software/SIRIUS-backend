@@ -2,7 +2,7 @@
 
 echo "Running inside /app/prestart.sh."
 
-python /app/app/prepare/prepare_all.py
+python /app/sirius/prepare/prepare_all.py
 
 sleep 5;
 

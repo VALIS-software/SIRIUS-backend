@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from ..main import app
 from flask import render_template, abort, request, jsonify, send_from_directory
 from pyensembl import EnsemblRelease
 import random
@@ -9,7 +8,8 @@ import numpy as np
 import math
 import os
 import shutil
-from ..mockData.mock_util import getMockAnnotations, getMockData
+from sirius.main import app
+from sirius.mockData.mock_util import getMockAnnotations, getMockData
 
 # These could be served by the Nginx
 # Provided here for debugging
@@ -383,4 +383,3 @@ def get_track_data(track_id, start_bp, end_bp):
         })
     else:
         abort(404, "Track not found")
-
