@@ -92,6 +92,6 @@ class Annotation(object):
             if end_i_ch - start_i_ch > 1:
                 mid_seqids = self.seqids[start_i_ch+1:end_i_ch]
                 mid_query = {'info.seqid': {"$in": mid_seqids}}
-                query["$or"] = [start_query, mid_query]
+                query["$or"] = [start_query, mid_query, end_query]
         if verbose: print(query)
         return GenomeNodes.find(query).sort([("seqid",1), ("start",1)])
