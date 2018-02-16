@@ -10,6 +10,8 @@ import os
 import shutil
 from sirius.main import app
 from sirius.mockData.mock_util import getMockAnnotations, getMockData
+from sirius.realdata.loaddata import loaded_annotations
+from sirius.realdata.constants import chromo_idxs, chromo_names
 
 # These could be served by the Nginx
 # Provided here for debugging
@@ -84,6 +86,7 @@ def find_chromosome(bp):
             break
     if idx != None:
         return idx_to_chromosome(idx)
+
 
 
 # release 76 uses human reference genome GRCh38
@@ -164,55 +167,108 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
 @app.route("/annotations")
 def annotations():
     MOCK_ANNOTATIONS = getMockAnnotations()
-    return json.dumps(list(MOCK_ANNOTATIONS.keys()))
+    real_anno_names = loaded_annotations.keys()
+    return json.dumps(list(MOCK_ANNOTATIONS.keys()) + list(real_anno_names))
 
 @app.route("/annotations/<string:annotation_id>")
 def annotation(annotation_id):
     MOCK_ANNOTATIONS = getMockAnnotations()
     """Return the annotation metadata"""
-    if annotation_id in MOCK_ANNOTATIONS:
+    if  annotation_id in loaded_annotations:
+        return loaded_annotations[annotation_id].json_data()
+    elif annotation_id in MOCK_ANNOTATIONS:
         return json.dumps(MOCK_ANNOTATIONS[annotation_id])
     else:
         abort(404, "Annotation not found")
 
 @app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>")
 def get_annotation_data(annotation_ids, start_bp, end_bp):
-    MOCK_DATA = getMockData()
-    MOCK_ANNOTATIONS = getMockAnnotations()
-    annotation_id = annotation_ids.split(",")[0] # mock server doesn't return multiple annotations!
+    annotation_id = annotation_ids.split(",", 1)[0] # mock server doesn't return multiple annotations!
     start_bp = int(start_bp)
     end_bp = int(end_bp)
-
     sampling_rate = 1
     if request.args.get('sampling_rate'):
         sampling_rate = int(float(request.args.get('sampling_rate')))
-
     track_height_px = 0
     if request.args.get('track_height_px'):
         track_height_px = int(float(request.args.get('track_height_px')))
+    if annotation_id in loaded_annotations:
+        return get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
+    else:
+        return get_mock_annotation_data(annotation_ids, start_bp, end_bp, sampling_rate, track_height_px)
 
+def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
+    annotation = loaded_annotations[annotation_id]
+    start_bp = max(start_bp, annotation.start_bp)
+    end_bp = min(end_bp, annotation.end_bp)
+    annotation_results = []
+    ANNOTATION_HEIGHT_PX = 25
+    gene_count = 0
+    cursor = annotation.db_find('gene',start_bp, end_bp, min_length=sampling_rate*20, verbose=True)
+    ret = []
+    padding = 20 // sampling_rate
+    last = None
+    for feature_data in cursor:
+        color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
+        try:
+            fid = feature_data['info']['attributes']["ID"]
+        except:
+            fid = 0
+        try:
+            fname = feature_data['info']['attributes']['Name']
+        except:
+            fname = 'Unknown'
+        r_data = {'id': fid,
+                  'labels': [[fname, True, 0, 0, 0]],
+                  'yOffsetPx': 0,
+                  'heightPx': ANNOTATION_HEIGHT_PX,
+                  "segments": [[0, feature_data['length'], None, color, 20]]
+                 }
+        i_ch = chromo_idxs[feature_data['location']]
+        ch_start = annotation.chromo_end_bps[i_ch-1] if i_ch > 0 else 0
+        r_data['startBp'] = ch_start + feature_data['start']
+        r_data['endBp'] = ch_start + feature_data['end']
+        if last == None or r_data["startBp"] > last['endBp'] + padding:
+            ret.append(r_data)
+            last = r_data
+        elif last["yOffsetPx"] <= track_height_px - 26:
+            r_data["yOffsetPx"] = last["yOffsetPx"] + 26
+            ret.append(r_data)
+            last = r_data
+    return json.dumps({
+        "startBp" : start_bp,
+        "endBp" : end_bp,
+        "samplingRate": sampling_rate,
+        "trackHeightPx": track_height_px,
+        "annotationIds": annotation_id,
+        "values": ret
+    })
+
+def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
+    MOCK_DATA = getMockData()
+    MOCK_ANNOTATIONS = getMockAnnotations()
     if  annotation_id in MOCK_ANNOTATIONS:
         annotation = MOCK_ANNOTATIONS[annotation_id]
         start_bp = max([start_bp, annotation["startBp"]])
         end_bp = min([end_bp, annotation["endBp"]])
         annotation_results = []
         ANNOTATION_HEIGHT_PX = 25
-        if annotation_id == "GRCh38_genes":
-            # get chromosomes in range
-            cStart = chromosome_to_idx(find_chromosome(start_bp))
-            cEnd = chromosome_to_idx(find_chromosome(end_bp))
-            last_gene_start = None
-            gene_count = 0
-            for ch_idx in range(cStart, cEnd + 1):
-                ch = idx_to_chromosome(ch_idx)
-                ch_range = chromosome_range(ch)
-                for gene in ENSEMBL_DATA.genes(ch):
-                    name = gene.gene_name
-                    start = ch_range[0] + gene.start
-                    end = ch_range[0] + gene.end
-                    sz = end - start
-                    if sz/float(sampling_rate) > 20:
-                        annotation_results.append((name, start, end))
+        # if annotation_id == "GRCh38_genes":
+        #     # get chromosomes in range
+        #     cStart = chromosome_to_idx(find_chromosome(start_bp))
+        #     cEnd = chromosome_to_idx(find_chromosome(end_bp))
+        #     last_gene_start = None
+        #     gene_count = 0
+        #     for ch_idx in range(cStart, cEnd + 1):
+        #         ch = idx_to_chromosome(ch_idx)
+        #         ch_range = chromosome_range(ch)
+        #         for gene in ENSEMBL_DATA.genes(ch):
+        #             name = gene.gene_name
+        #             start = ch_range[0] + gene.start
+        #             end = ch_range[0] + gene.end
+        #             sz = end - start
+        #             if sz/float(sampling_rate) > 20:
+        #                 annotation_results.append((name, start, end))
 
         count = 0
         if annotation_id == "cross-track-test-1":
@@ -263,7 +319,7 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
         "endBp" : end_bp,
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
-        "annotationIds": annotation_ids,
+        "annotationIds": annotation_id,
         "values": ret
     })
 

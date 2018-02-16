@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from sirius.realdata.constants import chromosome_names
+from sirius.realdata.constants import chromo_names
 
 def get_annotation_info(GenomeNodes, annotationId):
     chromo_info = dict()
