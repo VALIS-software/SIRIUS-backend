@@ -6,9 +6,9 @@ class Annotation(object):
 
     def __init__(self, name=None, datadict=None):
         self.name = name
+        self.length = 0
         if datadict != None:
             self.load_data(datadict)
-        self.length = 0
 
     def __len__(self):
         return self.length
@@ -49,7 +49,7 @@ class Annotation(object):
                     bp_ch = bp - end_bp
         return None
 
-    def db_find(self, typ, start_bp, end_bp, min_length, verbose=False):
+    def db_find(self, start_bp, end_bp, types=None, min_length=0, verbose=False):
         """
         Find a GenomeNode in database. Example:
         {'_id': ObjectId('5a83f2f63dbebd0eb31b45dc'),
@@ -76,7 +76,8 @@ class Annotation(object):
         """
         start_i_ch, start_bp_ch = self.find_bp_in_chromo(start_bp)
         end_i_ch, end_bp_ch = self.find_bp_in_chromo(end_bp)
-        query = {'assembly': self.name, 'type': typ, 'length': {"$gt": min_length}}
+        if types == None: types = ['gene', 'transcript', 'exon','lnc_RNA', 'mRNA']
+        query = {'assembly': self.name, 'type': {'$in': types}, 'length': {"$gt": min_length}}
         if start_i_ch == end_i_ch:
             # we use seqid to query the start and end positions
             seqid = self.seqids[start_i_ch]

@@ -204,7 +204,7 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
     annotation_results = []
     ANNOTATION_HEIGHT_PX = 25
     gene_count = 0
-    cursor = annotation.db_find('gene',start_bp, end_bp, min_length=sampling_rate*20, verbose=True)
+    cursor = annotation.db_find(start_bp, end_bp, types=['gene','exon'], min_length=sampling_rate*20, verbose=True)
     ret = []
     padding = 20 // sampling_rate
     last = None
