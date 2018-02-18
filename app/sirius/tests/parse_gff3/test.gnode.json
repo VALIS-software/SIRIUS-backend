@@ -2,11 +2,11 @@
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "region",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "RefSeq",
-      "type": "region",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -22,16 +22,16 @@
     },
     "start": 1,
     "end": 248956422,
-    "length": 248956421
+    "length": 248956422
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -48,16 +48,16 @@
     },
     "start": 11874,
     "end": 14409,
-    "length": 2535
+    "length": 2536
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "transcript",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -74,16 +74,16 @@
     },
     "start": 11874,
     "end": 14409,
-    "length": 2535
+    "length": 2536
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -99,16 +99,16 @@
     },
     "start": 11874,
     "end": 12227,
-    "length": 353
+    "length": 354
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -124,16 +124,16 @@
     },
     "start": 12613,
     "end": 12721,
-    "length": 108
+    "length": 109
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -149,16 +149,16 @@
     },
     "start": 13221,
     "end": 14409,
-    "length": 1188
+    "length": 1189
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -176,16 +176,16 @@
     },
     "start": 14362,
     "end": 29370,
-    "length": 15008
+    "length": 15009
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "transcript",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -202,16 +202,16 @@
     },
     "start": 14362,
     "end": 29370,
-    "length": 15008
+    "length": 15009
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -227,16 +227,16 @@
     },
     "start": 29321,
     "end": 29370,
-    "length": 49
+    "length": 50
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -252,16 +252,16 @@
     },
     "start": 24738,
     "end": 24891,
-    "length": 153
+    "length": 154
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -277,16 +277,16 @@
     },
     "start": 18268,
     "end": 18366,
-    "length": 98
+    "length": 99
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -302,16 +302,16 @@
     },
     "start": 17915,
     "end": 18061,
-    "length": 146
+    "length": 147
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -327,16 +327,16 @@
     },
     "start": 17606,
     "end": 17742,
-    "length": 136
+    "length": 137
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -352,16 +352,16 @@
     },
     "start": 17233,
     "end": 17368,
-    "length": 135
+    "length": 136
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -377,16 +377,16 @@
     },
     "start": 16858,
     "end": 17055,
-    "length": 197
+    "length": 198
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -402,16 +402,16 @@
     },
     "start": 16607,
     "end": 16765,
-    "length": 158
+    "length": 159
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -427,16 +427,16 @@
     },
     "start": 15796,
     "end": 15947,
-    "length": 151
+    "length": 152
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -452,16 +452,16 @@
     },
     "start": 14970,
     "end": 15038,
-    "length": 68
+    "length": 69
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -477,16 +477,16 @@
     },
     "start": 14362,
     "end": 14829,
-    "length": 467
+    "length": 468
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -503,16 +503,16 @@
     },
     "start": 17369,
     "end": 17436,
-    "length": 67
+    "length": 68
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "primary_transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "primary_transcript",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -529,16 +529,16 @@
     },
     "start": 17369,
     "end": 17436,
-    "length": 67
+    "length": 68
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -554,16 +554,16 @@
     },
     "start": 17369,
     "end": 17436,
-    "length": 67
+    "length": 68
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "miRNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "miRNA",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -578,16 +578,16 @@
     },
     "start": 17369,
     "end": 17391,
-    "length": 22
+    "length": 23
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -602,16 +602,16 @@
     },
     "start": 17369,
     "end": 17391,
-    "length": 22
+    "length": 23
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "miRNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "miRNA",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -626,16 +626,16 @@
     },
     "start": 17409,
     "end": 17431,
-    "length": 22
+    "length": 23
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -650,16 +650,16 @@
     },
     "start": 17409,
     "end": 17431,
-    "length": 22
+    "length": 23
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -674,16 +674,16 @@
     },
     "start": 29926,
     "end": 31295,
-    "length": 1369
+    "length": 1370
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "lnc_RNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "lnc_RNA",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -701,16 +701,16 @@
     },
     "start": 29926,
     "end": 31295,
-    "length": 1369
+    "length": 1370
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -726,16 +726,16 @@
     },
     "start": 29926,
     "end": 30039,
-    "length": 113
+    "length": 114
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -751,16 +751,16 @@
     },
     "start": 30564,
     "end": 30667,
-    "length": 103
+    "length": 104
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -776,16 +776,16 @@
     },
     "start": 30976,
     "end": 31295,
-    "length": 319
+    "length": 320
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -802,16 +802,16 @@
     },
     "start": 30366,
     "end": 30503,
-    "length": 137
+    "length": 138
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "primary_transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "primary_transcript",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -828,16 +828,16 @@
     },
     "start": 30366,
     "end": 30503,
-    "length": 137
+    "length": 138
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -853,16 +853,16 @@
     },
     "start": 30366,
     "end": 30503,
-    "length": 137
+    "length": 138
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "miRNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "miRNA",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -877,16 +877,16 @@
     },
     "start": 30438,
     "end": 30458,
-    "length": 20
+    "length": 21
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -901,16 +901,16 @@
     },
     "start": 30438,
     "end": 30458,
-    "length": 20
+    "length": 21
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -927,16 +927,16 @@
     },
     "start": 34611,
     "end": 36081,
-    "length": 1470
+    "length": 1471
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "lnc_RNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "lnc_RNA",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -953,16 +953,16 @@
     },
     "start": 34611,
     "end": 36081,
-    "length": 1470
+    "length": 1471
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -978,16 +978,16 @@
     },
     "start": 35721,
     "end": 36081,
-    "length": 360
+    "length": 361
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1003,16 +1003,16 @@
     },
     "start": 35277,
     "end": 35481,
-    "length": 204
+    "length": 205
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1028,16 +1028,16 @@
     },
     "start": 34611,
     "end": 35174,
-    "length": 563
+    "length": 564
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1052,16 +1052,16 @@
     },
     "start": 51943,
     "end": 53959,
-    "length": 2016
+    "length": 2017
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "lnc_RNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "lnc_RNA",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1079,16 +1079,16 @@
     },
     "start": 51943,
     "end": 53959,
-    "length": 2016
+    "length": 2017
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1104,16 +1104,16 @@
     },
     "start": 51943,
     "end": 51994,
-    "length": 51
+    "length": 52
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1129,16 +1129,16 @@
     },
     "start": 53282,
     "end": 53959,
-    "length": 677
+    "length": 678
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Curated Genomic",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1155,16 +1155,16 @@
     },
     "start": 52453,
     "end": 53396,
-    "length": 943
+    "length": 944
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Curated Genomic",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1181,16 +1181,16 @@
     },
     "start": 63016,
     "end": 63885,
-    "length": 869
+    "length": 870
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "gene",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1206,16 +1206,16 @@
     },
     "start": 69091,
     "end": 70008,
-    "length": 917
+    "length": 918
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "mRNA",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "mRNA",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1232,16 +1232,16 @@
     },
     "start": 69091,
     "end": 70008,
-    "length": 917
+    "length": 918
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "exon",
       "score": ".",
       "strand": "+",
       "phase": ".",
@@ -1257,16 +1257,16 @@
     },
     "start": 69091,
     "end": 70008,
-    "length": 917
+    "length": 918
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "CDS",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "BestRefSeq",
-      "type": "CDS",
       "score": ".",
       "strand": "+",
       "phase": "0",
@@ -1283,16 +1283,16 @@
     },
     "start": 69091,
     "end": 70008,
-    "length": 917
+    "length": 918
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "gene",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "gene",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1307,16 +1307,16 @@
     },
     "start": 91169,
     "end": 267354,
-    "length": 176185
+    "length": 176186
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "transcript",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1334,16 +1334,16 @@
     },
     "start": 91169,
     "end": 168093,
-    "length": 76924
+    "length": 76925
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1359,16 +1359,16 @@
     },
     "start": 167964,
     "end": 168093,
-    "length": 129
+    "length": 130
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1384,16 +1384,16 @@
     },
     "start": 165884,
     "end": 165942,
-    "length": 58
+    "length": 59
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1409,16 +1409,16 @@
     },
     "start": 92091,
     "end": 92240,
-    "length": 149
+    "length": 150
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1434,16 +1434,16 @@
     },
     "start": 91169,
     "end": 91629,
-    "length": 460
+    "length": 461
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "transcript",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "transcript",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1461,16 +1461,16 @@
     },
     "start": 91169,
     "end": 120798,
-    "length": 29629
+    "length": 29630
   },
   {
     "assembly": "GRCh38",
     "sourceurl": "test.gff",
+    "type": "exon",
     "location": "Chr1",
     "info": {
       "seqid": "NC_000001.11",
       "source": "Gnomon",
-      "type": "exon",
       "score": ".",
       "strand": "-",
       "phase": ".",
@@ -1486,6 +1486,6 @@
     },
     "start": 120775,
     "end": 120798,
-    "length": 23
+    "length": 24
   }
 ]

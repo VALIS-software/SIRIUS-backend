@@ -10,9 +10,9 @@ def get_annotation_info(GenomeNodes, annotationId):
     if not chromo_info:
         print("AnnotationID %s not found in %s" % (annotationId, GenomeNodes.name))
         return
-    chromo_lengths = [chromo_info[ch]['end'] - chromo_info[ch]['start'] + 1 for ch in chromosome_names]
-    seqids = [chromo_info[ch]['seqid'] for ch in chromosome_names]
-    start_bp = chromo_info[chromosome_names[0]]['start']
+    chromo_lengths = [chromo_info[ch]['end'] - chromo_info[ch]['start'] + 1 for ch in chromo_names]
+    seqids = [chromo_info[ch]['seqid'] for ch in chromo_names]
+    start_bp = chromo_info[chromo_names[0]]['start']
     end_bp = sum(chromo_lengths) + start_bp - 1
     info = {annotationId: {'start_bp': start_bp, 'end_bp': end_bp, 'chromo_lengths': chromo_lengths, 'seqids': seqids}}
     return info

@@ -8,3 +8,5 @@ else:
 
 db = client.database
 GenomeNodes = db.GenomeNodes
+InfoNodes = db.InfoNodes
+EdgeNodes = db.EdgeNodes

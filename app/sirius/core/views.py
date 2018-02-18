@@ -253,22 +253,22 @@ def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         end_bp = min([end_bp, annotation["endBp"]])
         annotation_results = []
         ANNOTATION_HEIGHT_PX = 25
-        # if annotation_id == "GRCh38_genes":
-        #     # get chromosomes in range
-        #     cStart = chromosome_to_idx(find_chromosome(start_bp))
-        #     cEnd = chromosome_to_idx(find_chromosome(end_bp))
-        #     last_gene_start = None
-        #     gene_count = 0
-        #     for ch_idx in range(cStart, cEnd + 1):
-        #         ch = idx_to_chromosome(ch_idx)
-        #         ch_range = chromosome_range(ch)
-        #         for gene in ENSEMBL_DATA.genes(ch):
-        #             name = gene.gene_name
-        #             start = ch_range[0] + gene.start
-        #             end = ch_range[0] + gene.end
-        #             sz = end - start
-        #             if sz/float(sampling_rate) > 20:
-        #                 annotation_results.append((name, start, end))
+        if annotation_id == "GRCh38_genes":
+            # get chromosomes in range
+            cStart = chromosome_to_idx(find_chromosome(start_bp))
+            cEnd = chromosome_to_idx(find_chromosome(end_bp))
+            last_gene_start = None
+            gene_count = 0
+            for ch_idx in range(cStart, cEnd + 1):
+                ch = idx_to_chromosome(ch_idx)
+                ch_range = chromosome_range(ch)
+                for gene in ENSEMBL_DATA.genes(ch):
+                    name = gene.gene_name
+                    start = ch_range[0] + gene.start
+                    end = ch_range[0] + gene.end
+                    sz = end - start
+                    if sz/float(sampling_rate) > 20:
+                        annotation_results.append((name, start, end))
 
         count = 0
         if annotation_id == "cross-track-test-1":
