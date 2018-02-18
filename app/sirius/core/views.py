@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from flask import render_template, abort, request, jsonify, send_from_directory
-from pyensembl import EnsemblRelease
 import random
 import json
 import numpy as np
@@ -90,7 +89,11 @@ def find_chromosome(bp):
 
 
 # release 76 uses human reference genome GRCh38
-ENSEMBL_DATA = EnsemblRelease(76)
+try:
+    from pyensembl import EnsemblRelease
+    ENSEMBL_DATA = EnsemblRelease(76)
+except:
+    print("pyensembl failed to import")
 # Download and index data in cache so we don't have to include it in Docker image
 #print("Downloading ensembl data, this may take a while..")
 #ENSEMBL_DATA.download()
