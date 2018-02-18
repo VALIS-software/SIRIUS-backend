@@ -15,9 +15,9 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Run unit tests
-          command: |
-            python app/sirius/tests/unit_test.py
+        name: Run unit tests
+        command: |
+          python app/sirius/tests/unit_test.py
 
       - restore_cache:
         key: v1-{{ .Branch }}
@@ -48,15 +48,13 @@ jobs:
           - /caches/app.tar
 
       - run:
-          name: prep-gcloud
-          command: ./.circleci/prep_gcloud.sh
+        name: prep-gcloud
+        command: ./.circleci/prep_gcloud.sh
 
       - run:
-          name: Run Docker Container Test
-          command: docker run us.gcr.io/valis-194104/sirius:dev
+        name: Run Docker Container Test
+        command: docker run us.gcr.io/valis-194104/sirius:dev
 
-      - deploy:
-          name: Push Docker image and deploy on kubernetes
-          command: ./.circleci/deploy.sh
-
-      -
+      - run:
+        name: Push Docker image and deploy on kubernetes
+        command: ./.circleci/deploy.sh
