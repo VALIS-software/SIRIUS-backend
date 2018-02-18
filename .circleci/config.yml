@@ -16,7 +16,9 @@ jobs:
 
       - run:
           name: Run unit tests
-          command: python app/sirius/tests/unit_test.py
+          command: |
+            export PYTHONPATH=~/SIRIUS-backend/app:$PYTHONPATH
+            python app/sirius/tests/unit_test.py
 
       - restore_cache:
           key: v1-{{ .Branch }}
