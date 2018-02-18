@@ -193,11 +193,11 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
     if request.args.get('track_height_px'):
         track_height_px = int(float(request.args.get('track_height_px')))
     if annotation_id in loaded_annotations:
-        return get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
+        return get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
         return get_mock_annotation_data(annotation_ids, start_bp, end_bp, sampling_rate, track_height_px)
 
-def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
+def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
     annotation = loaded_annotations[annotation_id]
     start_bp = max(start_bp, annotation.start_bp)
     end_bp = min(end_bp, annotation.end_bp)
@@ -229,6 +229,7 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
         ch_start = annotation.chromo_end_bps[i_ch-1] if i_ch > 0 else 0
         r_data['startBp'] = ch_start + feature_data['start']
         r_data['endBp'] = ch_start + feature_data['end']
+        feature_data['_id'] = str(feature_data['_id']) # convert to string for json
         if last == None or r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
