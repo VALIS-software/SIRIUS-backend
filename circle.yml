@@ -6,6 +6,8 @@ machine:
     CLOUDSDK_COMPUTE_ZONE: us-west1-b
   services:
     - docker
+  python:
+    version: 3.6.1
 
 dependencies:
   pre:
@@ -22,7 +24,7 @@ dependencies:
 
 test:
   pre:
-    - pip install pymongo flask
+    - pip install pymongo flask flask_cors
     - export PYTHONPATH=$HOME/$CIRCLE_PROJECT_REPONAME/app:$PYTHONPATH
     - python ~/$CIRCLE_PROJECT_REPONAME/app/sirius/tests/unit_test.py
   post:

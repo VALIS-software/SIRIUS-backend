@@ -3,7 +3,6 @@
 from flask import render_template, abort, request, jsonify, send_from_directory
 import random
 import json
-import numpy as np
 import math
 import os
 import shutil
