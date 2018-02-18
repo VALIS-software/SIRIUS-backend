@@ -4,12 +4,11 @@ machine:
     PROJECT_ID: valis-194104
     CLUSTER_NAME: cluster-sirius
     CLOUDSDK_COMPUTE_ZONE: us-west1-b
+    PYTHONPATH: /home/ubuntu/SIRIUS-backend/app
   services:
     - docker
   python:
     version: 3.6.1
-  environment:
-    PYTHONPATH: /home/ubuntu/SIRIUS-backend/app
 
 dependencies:
   pre:
