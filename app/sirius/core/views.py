@@ -208,6 +208,7 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
     ret = []
     padding = 20 // sampling_rate
     last = None
+    entities = []
     for feature_data in cursor:
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
         try:
@@ -231,10 +232,12 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
         if last == None or r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
+            entities.append(feature_data)
         elif last["yOffsetPx"] <= track_height_px - 26:
             r_data["yOffsetPx"] = last["yOffsetPx"] + 26
             ret.append(r_data)
             last = r_data
+            entities.append(feature_data)
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -242,7 +245,7 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
         "trackHeightPx": track_height_px,
         "annotationIds": annotation_id,
         "values": ret,
-        "entity": feature_data
+        "entities": entities
     })
 
 def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
