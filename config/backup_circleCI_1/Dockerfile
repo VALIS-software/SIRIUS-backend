@@ -1,5 +1,5 @@
 # Use my own runtime as a parent image
-FROM yudongdev/uwsgi-nginx-flask-gcloud:sirius
+FROM yudongdev/uwsgi-nginx-flask:sirius
 
 # Set the working directory (cd)
 WORKDIR /app
@@ -12,6 +12,11 @@ EXPOSE 5000
 
 # Define environment variable
 ENV FLASK_APP main.py
+
+# We configured a persistent disk and mount as read-only at /pd
+# But pyensembl want both read/write to cache
+# The source code view.py has been changed so it will try to copy /pd into /cache
+ENV PYENSEMBL_CACHE_DIR /cache
 
 # Nginx
 ENV INDEX_PATH /app/sirius/valis-dist

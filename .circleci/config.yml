@@ -1,0 +1,62 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: yudongdev/sirius
+
+    working_directory: ~/SIRIUS-backend
+
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Run unit tests
+          command: |
+            python app/sirius/tests/unit_test.py
+
+      - restore_cache:
+        key: v1-{{ .Branch }}
+        paths:
+          - /caches/app.tar
+
+      - run:
+        name: Load Docker image layer cache
+        command: |
+          set +o pipefail
+          docker load -i /caches/app.tar | true
+
+      - run:
+        name: Build application Docker image
+        command: |
+          docker build --cache-from=app -t -t us.gcr.io/valis-194104/sirius:$CIRCLE_SHA1 .
+          docker tag us.gcr.io/valis-194104/sirius:$CIRCLE_SHA1 us.gcr.io/valis-194104/sirius:dev
+
+      - run:
+        name: Save Docker image layer cache
+        command: |
+          mkdir -p /caches
+          docker save -o /caches/app.tar app
+
+      - save_cache:
+        key: v1-{{ .Branch }}-{{ epoch }}
+        paths:
+          - /caches/app.tar
+
+      - run:
+          name: prep-gcloud
+          command: ./.circleci/prep_gcloud.sh
+
+      - run:
+          name: Run Docker Container Test
+          command: docker run us.gcr.io/valis-194104/sirius:dev
+
+      - deploy:
+          name: Push Docker image and deploy on kubernetes
+          command: ./.circleci/deploy.sh
+
+      -
