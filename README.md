@@ -4,34 +4,61 @@ SIRIUS is the backend for VALIS, a next generation genome visualization and expl
 
 ## Getting Started
 
-Option 1 (Recommended):
+Option 1 (Recommended): Run Flask server locally
+
 Install all of the dependencies:
 * Flask
 * Flask-CORS
+* pymongo (for connecting to mongo server)
+* pyensembl (Will be removed when we remove the mockAnnotation Data GRCh38_genes)
+* google-cloud-storage (for calling `app/sirius/prepare/update_valis_webfront.py` to pull VALIS from Google Cloud)
 
-Go to the source directory and type `FLASK_APP=main.py flask run`
+The VALIS dist folder should be put at `app/sirius/valis-dist` for flask to find it. Calling `update_valis_webfront.py` will also do this for you.
 
+Go to the directory `app/sirius` and type `FLASK_APP=main.py flask run`
 
-Option 2 (More complex):
+Option 2 (More complex): Run inside Docker container
 
-To run SIRIUS you must install [Docker](https://www.docker.com/get-docker). Once you've setup docker go into the source code folder and run:
+Install [Docker](https://www.docker.com/get-docker). Once you've setup docker go into the source code folder and run:
 ```
-docker build .
+sudo docker build -t sirius-dev:latest .
 ```
 NOTE: This step may take a while to complete as several packages need to be downloaded.
 
 Once the build is completed you should see a success message like this:
 ```
-Successfully built 0d02bb51d255
+Successfully built 3d65f2920032
+Successfully tagged sirius-dev:latest
 ```
-Copy the hash and run the following, to start SIRIUS:
+To start SIRIUS inside container:
 ```
-docker run -p 5000:5000 0d02bb51d255
+docker run -p 5000:5000 sirius-dev:latest
 ```
 The `-p 5000:5000` maps the internal flask servers port (5000) to the 5000 port on your local machine.
+The container has been configured to use Nginx and uwsgi to launch Flask.
+
+To launch terminal inside container (for debugging):
+```
+docker run -p 5000:5000 -ti sirius-dev:latest /bin/bash
+```
 
 
+
+    
 ## Configuration Files
+Configurations are located in the config/ folder
+
+### config/build_docker:
+    Files used to build the reference Docker image yudongdev/uwsgi-nginx-flask:sirius
+    This Docker image was hand-craft by Yudong and you normally don't need to do this yourself.
+
+### config/kubernetes:
+    Configuration used to create Kubernetes deployment, and expose sirius-dev service
+
+### config/mongodb:
+    Configurations used to create MongoDB container on Kubernetes cluster.
+    
+## Other Files
 
 ### circle.yml:
     Incorporated with CircleCI
@@ -43,19 +70,12 @@ The `-p 5000:5000` maps the internal flask servers port (5000) to the 5000 port 
     Configuration for Docker.
     Python 3.6 was used.
 
-### requirements.txt:
-    Loaded by Docker to setup the runtime environment.
+### deploy-dev.sh:
+    Loaded by CircleCI. Pushes newly built Docker image to Google Cloud Container Registry.
+    You don't usually call this script by yourself.
 
-### deploy.sh:
-    Loaded by CircleCI.
-    Pushes newly built Docker image to Google Cloud Container Registry.
+### app/prestart.sh:
+    Called as ENTRYPOINT of Docker image, to pull VALIS and copy cache from persistent disk.
 
-### scr/app.py:
-    Main program to launch the SIRIUS server.
-
-## Deployment
-### Kubenetes Configurations (Only needs to run once):
-#### Start a deployment
-    `kubectl run sirius --image=us.gcr.io/valis-194104/sirius:latest --port 5000` 
-#### Expose port
-    `kubectl expose deployment sirius --type=LoadBalancer --port 80 --target-port 5000` 
+### app/uwsgi.ini:
+    Picked up by uwsgi in Docker container.
