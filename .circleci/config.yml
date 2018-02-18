@@ -36,6 +36,7 @@ jobs:
           command: |
             docker build --cache-from=app -t us.gcr.io/valis-194104/sirius:$CIRCLE_SHA1 .
             docker tag us.gcr.io/valis-194104/sirius:$CIRCLE_SHA1 us.gcr.io/valis-194104/sirius:dev
+            docker tag us.gcr.io/valis-194104/sirius:dev app
 
       - run:
           name: Save Docker image layer cache
