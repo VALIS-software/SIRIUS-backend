@@ -21,6 +21,8 @@ dependencies:
     - docker tag us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1 us.gcr.io/${PROJECT_ID}/sirius:dev
 
 test:
+  pre:
+    - python app/sirius/tests/unit_test.py
   post:
     - docker run -d -p 5000:5000 us.gcr.io/${PROJECT_ID}/sirius:$CIRCLE_SHA1
     - curl -v http://localhost:5000/tracks/MCF7-DNase/150994944/167772160?sampling_rate=16384&track_height_px=16&aggregations=max,mean,median,min
