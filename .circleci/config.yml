@@ -54,9 +54,5 @@ jobs:
           command: ./.circleci/prep_gcloud.sh
 
       - run:
-          name: Run Docker Container Test
-          command: docker run us.gcr.io/valis-194104/sirius:dev
-
-      - run:
           name: Push Docker image and deploy on kubernetes
           command: ./.circleci/deploy.sh
