@@ -6,7 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: yudongdev/sirius
+      - image: yudongdev/gcloud-sdk:sirius
 
     working_directory: ~/SIRIUS-backend
 

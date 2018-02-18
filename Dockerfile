@@ -1,5 +1,5 @@
 # Use my own runtime as a parent image
-FROM yudongdev/uwsgi-nginx-flask-gcloud:sirius
+FROM yudongdev/uwsgi-nginx-flask:sirius
 
 # Set the working directory (cd)
 WORKDIR /app
