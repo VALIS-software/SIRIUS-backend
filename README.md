@@ -4,6 +4,16 @@ SIRIUS is the backend for VALIS, a next generation genome visualization and expl
 
 ## Getting Started
 
+Option 1 (Recommended):
+Install all of the dependencies:
+* Flask
+* Flask-CORS
+
+Go to the source directory and type `FLASK_APP=main.py flask run`
+
+
+Option 2 (More complex):
+
 To run SIRIUS you must install [Docker](https://www.docker.com/get-docker). Once you've setup docker go into the source code folder and run:
 ```
 docker build .
@@ -20,7 +30,6 @@ docker run -p 5000:5000 0d02bb51d255
 ```
 The `-p 5000:5000` maps the internal flask servers port (5000) to the 5000 port on your local machine.
 
-Navigate to `http://localhost:5000` and you should see the VALIS frontend show up.
 
 ## Configuration Files
 
