@@ -241,7 +241,8 @@ def get_real_annotaion_data(annotation_id, start_bp, end_bp, sampling_rate, trac
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
         "annotationIds": annotation_id,
-        "values": ret
+        "values": ret,
+        "entity": feature_data
     })
 
 def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
