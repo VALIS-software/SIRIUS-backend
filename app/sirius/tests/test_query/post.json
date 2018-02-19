@@ -1,0 +1,41 @@
+{
+  "type": "GenomeNode",
+  "filters": {
+    "assembly": "GRCh38",
+    "type": "SNP",
+    "location": "Chr1",
+    "start": {">=": 12224},
+    "end": {"<=": 12322355}
+  },
+  "edgeRule": "or",
+  "toEdges": [
+    {
+      "type": "EdgeNode",
+      "filters": {
+        "type": "association",
+        "info.pvalue": {"<": 0.5}
+      },
+      "toNode": {
+        "type": "InfoNode",
+        "filters": {
+          "type": "trait",
+          "name": "cancer"
+        }
+      }
+    },
+    {
+      "type": "EdgeNode",
+      "filters": {
+        "type": "association"
+      },
+      "toNode": {
+        "type": "InfoNode",
+        "filters": {
+          "type": "trait",
+          "name": {"==": "breast cancer"}
+        }
+      }
+    }
+  ]
+
+}
