@@ -28,6 +28,7 @@ EdgeNodes.insert_many(edge_nodes)
 print("EdgeNodes finished")
 
 InfoNodes.create_index('type')
-for idx in ['from_id', 'to_id', 'from_type', 'to_type', 'type']:
+InfoNodes.create_index([('name', 'text')], default_language='english')
+for idx in ['from_id', 'to_id', 'from_type', 'to_type', 'type', 'info.pvalue']:
     print("Creating index %s" % idx)
     EdgeNodes.create_index(idx)
