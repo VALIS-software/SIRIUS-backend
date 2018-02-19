@@ -129,7 +129,7 @@ class GWASParser(Parser):
             trait = study["DISEASE/TRAIT"].lower()
             trait_id = 'trait_'+trait
             if trait_id not in known_traits:
-                infonode = { '_id': trait_id, 'type': 'trait', 'info': {'name': trait} }
+                infonode = { '_id': trait_id, 'type': 'trait', 'name': trait }
                 info_nodes.append(infonode)
                 known_traits.add(trait_id)
             # there might be multiple snps related, therefore we split them
@@ -168,6 +168,11 @@ class GWASParser(Parser):
                                                }
                                      }
                             genome_nodes.append(gnode)
+                    # parse pvalue
+                    try:
+                        study['pvalue'] = float(study['P-VALUE'])
+                    except:
+                        study['pvalue'] = None
                     # add study to edge_nodes
                     edgenode = {'from_id': rs_id , 'to_id': trait_id,
                                 'from_type': 'SNP', 'to_type': 'trait',

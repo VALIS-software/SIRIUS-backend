@@ -1310,240 +1310,172 @@
     {
       "_id": "trait_ykl-40 levels",
       "type": "trait",
-      "info": {
-        "name": "ykl-40 levels"
-      }
+      "name": "ykl-40 levels"
     },
     {
       "_id": "trait_psoriasis",
       "type": "trait",
-      "info": {
-        "name": "psoriasis"
-      }
+      "name": "psoriasis"
     },
     {
       "_id": "trait_lung cancer",
       "type": "trait",
-      "info": {
-        "name": "lung cancer"
-      }
+      "name": "lung cancer"
     },
     {
       "_id": "trait_nicotine dependence",
       "type": "trait",
-      "info": {
-        "name": "nicotine dependence"
-      }
+      "name": "nicotine dependence"
     },
     {
       "_id": "trait_colorectal cancer",
       "type": "trait",
-      "info": {
-        "name": "colorectal cancer"
-      }
+      "name": "colorectal cancer"
     },
     {
       "_id": "trait_type 2 diabetes",
       "type": "trait",
-      "info": {
-        "name": "type 2 diabetes"
-      }
+      "name": "type 2 diabetes"
     },
     {
       "_id": "trait_breast cancer",
       "type": "trait",
-      "info": {
-        "name": "breast cancer"
-      }
+      "name": "breast cancer"
     },
     {
       "_id": "trait_schizophrenia",
       "type": "trait",
-      "info": {
-        "name": "schizophrenia"
-      }
+      "name": "schizophrenia"
     },
     {
       "_id": "trait_urate levels",
       "type": "trait",
-      "info": {
-        "name": "urate levels"
-      }
+      "name": "urate levels"
     },
     {
       "_id": "trait_celiac disease",
       "type": "trait",
-      "info": {
-        "name": "celiac disease"
-      }
+      "name": "celiac disease"
     },
     {
       "_id": "trait_prostate cancer",
       "type": "trait",
-      "info": {
-        "name": "prostate cancer"
-      }
+      "name": "prostate cancer"
     },
     {
       "_id": "trait_ldl cholesterol",
       "type": "trait",
-      "info": {
-        "name": "ldl cholesterol"
-      }
+      "name": "ldl cholesterol"
     },
     {
       "_id": "trait_fetal hemoglobin levels",
       "type": "trait",
-      "info": {
-        "name": "fetal hemoglobin levels"
-      }
+      "name": "fetal hemoglobin levels"
     },
     {
       "_id": "trait_recombination rate (females)",
       "type": "trait",
-      "info": {
-        "name": "recombination rate (females)"
-      }
+      "name": "recombination rate (females)"
     },
     {
       "_id": "trait_recombination rate (males)",
       "type": "trait",
-      "info": {
-        "name": "recombination rate (males)"
-      }
+      "name": "recombination rate (males)"
     },
     {
       "_id": "trait_iris color",
       "type": "trait",
-      "info": {
-        "name": "iris color"
-      }
+      "name": "iris color"
     },
     {
       "_id": "trait_systemic lupus erythematosus",
       "type": "trait",
-      "info": {
-        "name": "systemic lupus erythematosus"
-      }
+      "name": "systemic lupus erythematosus"
     },
     {
       "_id": "trait_type 1 diabetes",
       "type": "trait",
-      "info": {
-        "name": "type 1 diabetes"
-      }
+      "name": "type 1 diabetes"
     },
     {
       "_id": "trait_hdl cholesterol",
       "type": "trait",
-      "info": {
-        "name": "hdl cholesterol"
-      }
+      "name": "hdl cholesterol"
     },
     {
       "_id": "trait_triglycerides",
       "type": "trait",
-      "info": {
-        "name": "triglycerides"
-      }
+      "name": "triglycerides"
     },
     {
       "_id": "trait_height",
       "type": "trait",
-      "info": {
-        "name": "height"
-      }
+      "name": "height"
     },
     {
       "_id": "trait_amyotrophic lateral sclerosis",
       "type": "trait",
-      "info": {
-        "name": "amyotrophic lateral sclerosis"
-      }
+      "name": "amyotrophic lateral sclerosis"
     },
     {
       "_id": "trait_coronary spasm",
       "type": "trait",
-      "info": {
-        "name": "coronary spasm"
-      }
+      "name": "coronary spasm"
     },
     {
       "_id": "trait_rheumatoid arthritis",
       "type": "trait",
-      "info": {
-        "name": "rheumatoid arthritis"
-      }
+      "name": "rheumatoid arthritis"
     },
     {
       "_id": "trait_blond vs. brown hair color",
       "type": "trait",
-      "info": {
-        "name": "blond vs. brown hair color"
-      }
+      "name": "blond vs. brown hair color"
     },
     {
       "_id": "trait_blue vs. green eyes",
       "type": "trait",
-      "info": {
-        "name": "blue vs. green eyes"
-      }
+      "name": "blue vs. green eyes"
     },
     {
       "_id": "trait_freckles",
       "type": "trait",
-      "info": {
-        "name": "freckles"
-      }
+      "name": "freckles"
     },
     {
       "_id": "trait_skin pigmentation",
       "type": "trait",
-      "info": {
-        "name": "skin pigmentation"
-      }
+      "name": "skin pigmentation"
     },
     {
       "_id": "trait_select biomarker traits",
       "type": "trait",
-      "info": {
-        "name": "select biomarker traits"
-      }
+      "name": "select biomarker traits"
     },
     {
       "_id": "trait_body mass index",
       "type": "trait",
-      "info": {
-        "name": "body mass index"
-      }
+      "name": "body mass index"
     },
     {
       "_id": "trait_waist circumference",
       "type": "trait",
-      "info": {
-        "name": "waist circumference"
-      }
+      "name": "waist circumference"
     },
     {
       "_id": "trait_sleep-related phenotypes",
       "type": "trait",
-      "info": {
-        "name": "sleep-related phenotypes"
-      }
+      "name": "sleep-related phenotypes"
     },
     {
       "_id": "trait_cystatin c",
       "type": "trait",
-      "info": {
-        "name": "cystatin c"
-      }
+      "name": "cystatin c"
     },
     {
       "_id": "trait_thyroid stimulating hormone",
       "type": "trait",
-      "info": {
-        "name": "thyroid stimulating hormone"
-      }
+      "name": "thyroid stimulating hormone"
     }
   ],
   "edge_nodes": [
@@ -1588,7 +1520,8 @@
         "OR or BETA": "0.3",
         "95% CI (TEXT)": "[NR] ng/ml decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [290325]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-13
       }
     },
     {
@@ -1632,7 +1565,8 @@
         "OR or BETA": "1.41",
         "95% CI (TEXT)": "[1.22-1.61]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [305983]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-06
       }
     },
     {
@@ -1676,7 +1610,8 @@
         "OR or BETA": "1.3",
         "95% CI (TEXT)": "[1.15-1.47]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317498]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-18
       }
     },
     {
@@ -1720,7 +1655,8 @@
         "OR or BETA": "1.22",
         "95% CI (TEXT)": "[1.10-1.35]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317498]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-06
       }
     },
     {
@@ -1764,7 +1700,8 @@
         "OR or BETA": "1.16",
         "95% CI (TEXT)": "[1.05-1.28]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317498]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-06
       }
     },
     {
@@ -1808,7 +1745,8 @@
         "OR or BETA": "1.3",
         "95% CI (TEXT)": "[1.23-1.37]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310023]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-20
       }
     },
     {
@@ -1852,7 +1790,8 @@
         "OR or BETA": "0.1",
         "95% CI (TEXT)": "[0.08-0.12] cigarettes per day increase",
         "PLATFORM [SNPS PASSING QC]": "Illumina [306207]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 6e-20
       }
     },
     {
@@ -1896,7 +1835,8 @@
         "OR or BETA": "1.19",
         "95% CI (TEXT)": "[1.15-1.23]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541628]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 9e-26
       }
     },
     {
@@ -1940,7 +1880,8 @@
         "OR or BETA": "1.11",
         "95% CI (TEXT)": "[1.08-1.15]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541628]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 6e-10
       }
     },
     {
@@ -1984,7 +1925,8 @@
         "OR or BETA": "1.2",
         "95% CI (TEXT)": "[1.16-1.24]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541628]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-28
       }
     },
     {
@@ -2028,7 +1970,8 @@
         "OR or BETA": "1.12",
         "95% CI (TEXT)": "[1.10-1.16]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [547647]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-13
       }
     },
     {
@@ -2072,7 +2015,8 @@
         "OR or BETA": "1.27",
         "95% CI (TEXT)": "[1.20-1.34]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [547647]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-18
       }
     },
     {
@@ -2116,7 +2060,8 @@
         "OR or BETA": "1.1",
         "95% CI (TEXT)": "[1.07-1.13]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [2202892] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-14
       }
     },
     {
@@ -2160,7 +2105,8 @@
         "OR or BETA": "1.11",
         "95% CI (TEXT)": "[1.07-1.14]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [2202892] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-10
       }
     },
     {
@@ -2204,7 +2150,8 @@
         "OR or BETA": "1.09",
         "95% CI (TEXT)": "[1.06-1.12]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [2202892] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-09
       }
     },
     {
@@ -2248,7 +2195,8 @@
         "OR or BETA": "1.15",
         "95% CI (TEXT)": "[1.10-1.20]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [2202892] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-09
       }
     },
     {
@@ -2292,7 +2240,8 @@
         "OR or BETA": "1.09",
         "95% CI (TEXT)": "[1.06-1.12]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [2202892] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-08
       }
     },
     {
@@ -2336,7 +2285,8 @@
         "OR or BETA": "1.41",
         "95% CI (TEXT)": "[1.25-1.59]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [150080]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-08
       }
     },
     {
@@ -2380,7 +2330,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Illumina [~ 550000]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-06
       }
     },
     {
@@ -2424,7 +2375,8 @@
         "OR or BETA": "0.35",
         "95% CI (TEXT)": "[NR] mg/dl decrease in uric acid",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [335152]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-70
       }
     },
     {
@@ -2468,7 +2420,8 @@
         "OR or BETA": "0.88",
         "95% CI (TEXT)": "[NR] uM decrease in uric acid [females only]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [308140]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-09
       }
     },
     {
@@ -2512,7 +2465,8 @@
         "OR or BETA": "1.39",
         "95% CI (TEXT)": "[1.26-1.53]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310605]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-11
       }
     },
     {
@@ -2556,7 +2510,8 @@
         "OR or BETA": "1.28",
         "95% CI (TEXT)": "[1.18-1.39]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310605]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-09
       }
     },
     {
@@ -2600,7 +2555,8 @@
         "OR or BETA": "1.35",
         "95% CI (TEXT)": "[1.23-1.49]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310605]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-09
       }
     },
     {
@@ -2644,7 +2600,8 @@
         "OR or BETA": "1.23",
         "95% CI (TEXT)": "[1.15-1.32]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310605]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-09
       }
     },
     {
@@ -2688,7 +2645,8 @@
         "OR or BETA": "1.21",
         "95% CI (TEXT)": "[1.13-1.30]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310605]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-08
       }
     },
     {
@@ -2732,7 +2690,8 @@
         "OR or BETA": "1.25",
         "95% CI (TEXT)": "[1.17-1.34]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 9e-29
       }
     },
     {
@@ -2776,7 +2735,8 @@
         "OR or BETA": "1.2",
         "95% CI (TEXT)": "[1.10-1.33]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-18
       }
     },
     {
@@ -2820,7 +2780,8 @@
         "OR or BETA": "1.19",
         "95% CI (TEXT)": "[1.11-1.27]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-12
       }
     },
     {
@@ -2864,7 +2825,8 @@
         "OR or BETA": "1.17",
         "95% CI (TEXT)": "[1.08-1.26]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 6e-10
       }
     },
     {
@@ -2908,7 +2870,8 @@
         "OR or BETA": "1.12",
         "95% CI (TEXT)": "[1.05-1.20]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [541129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-09
       }
     },
     {
@@ -2952,7 +2915,8 @@
         "OR or BETA": "1.23",
         "95% CI (TEXT)": "[1.16-1.30]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310520]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-13
       }
     },
     {
@@ -2996,7 +2960,8 @@
         "OR or BETA": "1.15",
         "95% CI (TEXT)": "[1.10-1.21]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [310520]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-09
       }
     },
     {
@@ -3040,7 +3005,8 @@
         "OR or BETA": "1.16",
         "95% CI (TEXT)": "[1.04-1.29]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [527869]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-13
       }
     },
     {
@@ -3084,7 +3050,8 @@
         "OR or BETA": "1.17",
         "95% CI (TEXT)": "[1.05-1.30]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [527869]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-07
       }
     },
     {
@@ -3128,7 +3095,8 @@
         "OR or BETA": "1.1",
         "95% CI (TEXT)": "[0.98-1.23]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [527869]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-09
       }
     },
     {
@@ -3172,7 +3140,8 @@
         "OR or BETA": "1.12",
         "95% CI (TEXT)": "[1.02-1.25]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [527869]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-06
       }
     },
     {
@@ -3216,7 +3185,8 @@
         "OR or BETA": "0.16",
         "95% CI (TEXT)": "[0.14-0.18] mmol/L decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [up to 461986]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-33
       }
     },
     {
@@ -3260,7 +3230,8 @@
         "OR or BETA": "0.58",
         "95% CI (TEXT)": "[NR] unit decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [362129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-21
       }
     },
     {
@@ -3304,7 +3275,8 @@
         "OR or BETA": "0.48",
         "95% CI (TEXT)": "[NR] unit decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [362129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-35
       }
     },
     {
@@ -3348,7 +3320,8 @@
         "OR or BETA": "88.2",
         "95% CI (TEXT)": "[63.7-112.7] cM increase",
         "PLATFORM [SNPS PASSING QC]": "Illumina [309241]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-12
       }
     },
     {
@@ -3392,7 +3365,8 @@
         "OR or BETA": "70.7",
         "95% CI (TEXT)": "[57.1-84.3] cM decrease",
         "PLATFORM [SNPS PASSING QC]": "Illumina [309241]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-24
       }
     },
     {
@@ -3436,7 +3410,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [up to 500000]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-43
       }
     },
     {
@@ -3480,7 +3455,8 @@
         "OR or BETA": "1.62",
         "95% CI (TEXT)": "[1.47-1.78]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317501]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-23
       }
     },
     {
@@ -3524,7 +3500,8 @@
         "OR or BETA": "1.28",
         "95% CI (TEXT)": "[1.18-1.37]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317501]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-10
       }
     },
     {
@@ -3568,7 +3545,8 @@
         "OR or BETA": "1.25",
         "95% CI (TEXT)": "[1.16-1.35]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317501]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-09
       }
     },
     {
@@ -3612,7 +3590,8 @@
         "OR or BETA": "1.22",
         "95% CI (TEXT)": "[1.14-1.32]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317501]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-07
       }
     },
     {
@@ -3656,7 +3635,8 @@
         "OR or BETA": "1.39",
         "95% CI (TEXT)": "[1.28-1.51]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [502033]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-10
       }
     },
     {
@@ -3700,7 +3680,8 @@
         "OR or BETA": "1.33",
         "95% CI (TEXT)": "[1.22-1.46]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [502033]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-11
       }
     },
     {
@@ -3744,7 +3725,8 @@
         "OR or BETA": "1.38",
         "95% CI (TEXT)": "[1.25-1.53]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [85042]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-10
       }
     },
     {
@@ -3788,7 +3770,8 @@
         "OR or BETA": "1.25",
         "95% CI (TEXT)": "[1.12-1.40]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [543071]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 9e-10
       }
     },
     {
@@ -3832,7 +3815,8 @@
         "OR or BETA": "0.07",
         "95% CI (TEXT)": "[0.05-0.09] percentage SD decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-13
       }
     },
     {
@@ -3876,7 +3860,8 @@
         "OR or BETA": "0.14",
         "95% CI (TEXT)": "[0.25-0.53] percentage SD decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-22
       }
     },
     {
@@ -3920,7 +3905,8 @@
         "OR or BETA": "0.08",
         "95% CI (TEXT)": "[0.06-0.10] percentage SD decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-17
       }
     },
     {
@@ -3964,7 +3950,8 @@
         "OR or BETA": "0.08",
         "95% CI (TEXT)": "[0.06-0.10] percentage SD increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-15
       }
     },
     {
@@ -4008,7 +3995,8 @@
         "OR or BETA": "0.1",
         "95% CI (TEXT)": "[0.06-0.14] percentage SD decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-09
       }
     },
     {
@@ -4052,7 +4040,8 @@
         "OR or BETA": "0.11",
         "95% CI (TEXT)": "[0.07-0.15] percentage SD decrease",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [389878]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-08
       }
     },
     {
@@ -4096,7 +4085,8 @@
         "OR or BETA": "10.5",
         "95% CI (TEXT)": "[5.3-17.7] % increase",
         "PLATFORM [SNPS PASSING QC]": "Perlegen [up to 216774]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-10
       }
     },
     {
@@ -4140,7 +4130,8 @@
         "OR or BETA": "0.44",
         "95% CI (TEXT)": "[NR] cm increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-16
       }
     },
     {
@@ -4184,7 +4175,8 @@
         "OR or BETA": "0.86",
         "95% CI (TEXT)": "[NR] cm increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-07
       }
     },
     {
@@ -4228,7 +4220,8 @@
         "OR or BETA": "0.66",
         "95% CI (TEXT)": "[NR] cm increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-07
       }
     },
     {
@@ -4272,7 +4265,8 @@
         "OR or BETA": "0.61",
         "95% CI (TEXT)": "[NR] cm increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-06
       }
     },
     {
@@ -4316,7 +4310,8 @@
         "OR or BETA": "0.9",
         "95% CI (TEXT)": "[NR] cm increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-06
       }
     },
     {
@@ -4360,7 +4355,8 @@
         "OR or BETA": "5.48",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 6e-33
       }
     },
     {
@@ -4404,7 +4400,8 @@
         "OR or BETA": "1.91",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-08
       }
     },
     {
@@ -4448,7 +4445,8 @@
         "OR or BETA": "8.59",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 6e-32
       }
     },
     {
@@ -4492,7 +4490,8 @@
         "OR or BETA": "6.42",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 7e-13
       }
     },
     {
@@ -4536,7 +4535,8 @@
         "OR or BETA": "8.21",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-12
       }
     },
     {
@@ -4580,7 +4580,8 @@
         "OR or BETA": "7.12",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-10
       }
     },
     {
@@ -4624,7 +4625,8 @@
         "OR or BETA": "6.1",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix, Illumina [~ 2261000] (imputed)",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-09
       }
     },
     {
@@ -4668,7 +4670,8 @@
         "OR or BETA": "0.95",
         "95% CI (TEXT)": "[0.93-0.97] mMol/l increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [400496]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-07
       }
     },
     {
@@ -4712,7 +4715,8 @@
         "OR or BETA": "0.02",
         "95% CI (TEXT)": "[0.02-0.03] mMol/L increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [400496]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-15
       }
     },
     {
@@ -4756,7 +4760,8 @@
         "OR or BETA": "1.3",
         "95% CI (TEXT)": "[1.18-1.43]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [311946]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-08
       }
     },
     {
@@ -4800,7 +4805,8 @@
         "OR or BETA": "2.33",
         "95% CI (TEXT)": "[1.64-3.23]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [97552]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 9e-07
       }
     },
     {
@@ -4844,7 +4850,8 @@
         "OR or BETA": "0.32",
         "95% CI (TEXT)": "[NR] mg/dl increase",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [362129]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-16
       }
     },
     {
@@ -4888,7 +4895,8 @@
         "OR or BETA": "1.33",
         "95% CI (TEXT)": "[1.15-1.52]",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [79853]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-09
       }
     },
     {
@@ -4932,7 +4940,8 @@
         "OR or BETA": "2.32",
         "95% CI (TEXT)": "[1.86-2.92]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317511]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-30
       }
     },
     {
@@ -4976,7 +4985,8 @@
         "OR or BETA": "2.56",
         "95% CI (TEXT)": "[2.12-3.09]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317511]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-48
       }
     },
     {
@@ -5020,7 +5030,8 @@
         "OR or BETA": "2.06",
         "95% CI (TEXT)": "[1.76-2.42]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317511]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-38
       }
     },
     {
@@ -5064,7 +5075,8 @@
         "OR or BETA": "1.4",
         "95% CI (TEXT)": "[1.26-1.57]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [317511]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-18
       }
     },
     {
@@ -5108,7 +5120,8 @@
         "OR or BETA": "12.5",
         "95% CI (TEXT)": "[8.33-20.0]",
         "PLATFORM [SNPS PASSING QC]": "Perlegen [1502205]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-50
       }
     },
     {
@@ -5152,7 +5165,8 @@
         "OR or BETA": "4.36",
         "95% CI (TEXT)": "[2.64-7.20]",
         "PLATFORM [SNPS PASSING QC]": "Perlegen [1502205]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-10
       }
     },
     {
@@ -5196,7 +5210,8 @@
         "OR or BETA": "4.86",
         "95% CI (TEXT)": "[2.88-8.21]",
         "PLATFORM [SNPS PASSING QC]": "Perlegen [1502205]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-11
       }
     },
     {
@@ -5240,7 +5255,8 @@
         "OR or BETA": "1.16",
         "95% CI (TEXT)": "[1.09-1.27]",
         "PLATFORM [SNPS PASSING QC]": "Illumina [547647]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-12
       }
     },
     {
@@ -5284,7 +5300,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-14
       }
     },
     {
@@ -5328,7 +5345,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-12
       }
     },
     {
@@ -5372,7 +5390,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 3e-08
       }
     },
     {
@@ -5416,7 +5435,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 5e-07
       }
     },
     {
@@ -5460,7 +5480,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-07
       }
     },
     {
@@ -5504,7 +5525,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-07
       }
     },
     {
@@ -5548,7 +5570,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-06
       }
     },
     {
@@ -5592,7 +5615,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 8e-06
       }
     },
     {
@@ -5636,7 +5660,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-07
       }
     },
     {
@@ -5680,7 +5705,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 2e-06
       }
     },
     {
@@ -5724,7 +5750,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 1e-07
       }
     },
     {
@@ -5768,7 +5795,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-06
       }
     },
     {
@@ -5812,7 +5840,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 9e-09
       }
     },
     {
@@ -5856,7 +5885,8 @@
         "OR or BETA": "",
         "95% CI (TEXT)": "",
         "PLATFORM [SNPS PASSING QC]": "Affymetrix [70897]",
-        "CNV\n": "N\n"
+        "CNV\n": "N\n",
+        "pvalue": 4e-06
       }
     }
   ]
