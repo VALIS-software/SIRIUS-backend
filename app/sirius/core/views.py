@@ -183,7 +183,7 @@ def annotation(annotation_id):
     else:
         abort(404, "Annotation not found")
 
-@app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>")
+@app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>", methods=['POST'])
 def get_annotation_data(annotation_ids, start_bp, end_bp):
     annotation_id = annotation_ids.split(",", 1)[0] # mock server doesn't return multiple annotations!
     start_bp = int(start_bp)
@@ -278,7 +278,7 @@ def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
                         annotation_results.append((name, start, end))
 
         count = 0
-        if annotation_id == "cross-track-test-1":
+        if annotation_id == "cross-track-test-1" or annotation_id == "GWASCatalog":
             for i in range(0, 100000000, 500000):
                 if i >= start_bp and i <= end_bp:
                     annotation_results.append(("X%d" % count, i, i + 100000))

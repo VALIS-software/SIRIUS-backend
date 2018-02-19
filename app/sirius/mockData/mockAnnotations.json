@@ -13,5 +13,10 @@
 		"annotationId": "cross-track-test-2",
 		"startBp": 0,
 		"endBp": 3000000000
+	},
+	"GWASCatalog": {
+		"annotationId": "GWASCatalog",
+		"startBp": 0,
+		"endBp": 3000000000
 	}
 }
