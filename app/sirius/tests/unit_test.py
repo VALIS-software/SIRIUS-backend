@@ -15,7 +15,7 @@ class TestSirius(unittest.TestCase):
         result = get_real_annotation_data('GRCh38', 11800, 14500, 100, 96)
         d = json.loads(result)
         assert d['startBp'] == 11800 and d['endBp'] == 14500
-        assert d['entities'][0]['location'] == 'Chr1'
+        assert d["values"][0]['entity']['location'] == 'Chr1'
     
 
 
