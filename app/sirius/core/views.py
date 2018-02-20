@@ -11,6 +11,10 @@ from sirius.mockData.mock_util import getMockAnnotations, getMockData
 from sirius.realdata.loaddata import loaded_annotations
 from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
+import numpy as np
+from scipy.spatial.distance import pdist
+from scipy.cluster import hierarchy
+import collections
 
 # These could be served by the Nginx
 # Provided here for debugging
@@ -254,11 +258,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         query_result_cache[query_cach_key] = query_result = list(qt.find().sort([("location",1), ("start",1)]))
     print("Query returns %s results" % len(query_result))
     annotation = loaded_annotations['GRCh38']
-    aggregation_flag = sampling_rate > 200000000 # turn on aggregation!
-    ret = []
-    padding = 20 * sampling_rate
-    #print("padding =", padding)
-    last = None
+    aggregation_thresh = 100000
+    r_data_in_range = []
     for gnode in query_result:
         abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
         fid = gnode['_id'] = str(gnode['_id'])
@@ -270,20 +271,19 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
             color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
             r_data = {'id': fid,
                       'startBp': abs_pos,
-                      'endBp': abs_pos+padding,
+                      'endBp': abs_pos,
                       'labels': [[fname, True, 0, 0, 0]],
                       'yOffsetPx': 0,
                       'heightPx': ANNOTATION_HEIGHT_PX,
-                      "segments": [[0, padding, None, color, 20]],
+                      "segments": [[0, gnode['length'], None, color, 20]],
                       'entity': gnode
                      }
-            if last == None or r_data["startBp"] > last['endBp'] + padding:
-                ret.append(r_data)
-                last = r_data
-            elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
-                r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
-                ret.append(r_data)
-                last = r_data
+            r_data_in_range.append(r_data)
+    if sampling_rate > aggregation_thresh: # turn on aggregation!
+        print("Clustering results")
+        ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
+    else:
+        ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX)
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -292,6 +292,53 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "annotationIds": annotation_id,
         "values": ret
     })
+
+def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
+    coords = np.array([[r['startBp'], r['endBp']] for r in r_data_in_range], dtype=int).reshape(-1,2)
+    dist_max = pdist(coords, 'chebyshev')
+    linkage = hierarchy.average(dist_max)
+    cluster_results = hierarchy.fcluster(linkage, t=sampling_rate*100, criterion='distance')
+    clusters = collections.defaultdict(list)
+    for i,c in enumerate(cluster_results):
+        clusters[c].append(i)
+    ret = []
+    for cluster in sorted(clusters.values()):
+        r_cluster = [r_data_in_range[i] for i in cluster]
+        c_size = len(cluster)
+        label = str(c_size)
+        startBp = r_cluster[0]['startBp']
+        endBp = r_cluster[-1]['endBp']
+        color_level = max(min(c_size / 100, 1.0), 0.2) # between (0.2~1.0)
+        color = [0.15, 0.55, 1.0, color_level]
+        r_data = {'id': 'cluster',
+                  'startBp': startBp,
+                  'endBp': endBp,
+                  'labels': [[label, True, 4, 0, 0]],
+                  'yOffsetPx': 0,
+                  'heightPx': track_height_px,
+                  "segments": [[0, endBp-startBp+1, None, color, 20]],
+                  'entity': [r['entity'] for r in r_cluster]
+                 }
+        ret.append(r_data)
+    return ret
+
+
+def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX):
+    if len(r_data_in_range) == 0: return []
+    padding = 20 * sampling_rate
+    last = r_data_in_range[0]
+    ret = [last]
+    for r_data in r_data_in_range[1:]:
+        if r_data["startBp"] > last['endBp'] + padding:
+            ret.append(r_data)
+            last = r_data
+        elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
+            r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
+            ret.append(r_data)
+            last = r_data
+    return ret
+
+
 
 
 def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):

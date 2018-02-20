@@ -1,5 +1,6 @@
 Flask
 flask_cors
+scipy
 numpy
 pymongo
 google-cloud-storage
