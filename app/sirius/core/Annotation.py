@@ -77,18 +77,18 @@ class Annotation(object):
         start_i_ch, start_bp_ch = self.find_bp_in_chromo(start_bp)
         end_i_ch, end_bp_ch = self.find_bp_in_chromo(end_bp)
         if types == None: types = ['gene', 'transcript', 'exon','lnc_RNA', 'mRNA']
-        query = {'assembly': self.name, 'type': {'$in': types}, 'length': {"$gt": min_length}}
+        query = {'assembly': self.name, 'type': {'$in': types}, 'length': {"$gte": min_length}}
         if start_i_ch == end_i_ch:
             # we use seqid to query the start and end positions
             seqid = self.seqids[start_i_ch]
             query['info.seqid'] = seqid
-            query['start'] = {"$gt": start_bp_ch}
-            query['end'] = {'$lt': end_bp_ch}
+            query['start'] = {"$gte": start_bp_ch}
+            query['end'] = {'$lte': end_bp_ch}
         else:
             start_seqid = self.seqids[start_i_ch]
-            start_query = {'info.seqid':start_seqid, 'start': {'$gt': start_bp_ch}}
+            start_query = {'info.seqid':start_seqid, 'start': {'$gte': start_bp_ch}}
             end_seqid = self.seqids[end_i_ch]
-            end_query = {'info.seqid':end_seqid, 'end': {"$lt": end_bp_ch}}
+            end_query = {'info.seqid':end_seqid, 'end': {"$lte": end_bp_ch}}
             query["$or"] = [start_query, end_query]
             if end_i_ch - start_i_ch > 1:
                 mid_seqids = self.seqids[start_i_ch+1:end_i_ch]
@@ -96,3 +96,9 @@ class Annotation(object):
                 query["$or"] = [start_query, mid_query, end_query]
         if verbose: print(query)
         return GenomeNodes.find(query).sort([("seqid",1), ("start",1)])
+
+    def location_to_bp(self, chomo, bp_in_ch):
+        if isinstance(chomo, str):
+            chomo = chromo_idxs[chomo]
+        prev_end = self.chromo_end_bps[chomo-1] if chomo > 0 else 0
+        return prev_end + bp_in_ch
