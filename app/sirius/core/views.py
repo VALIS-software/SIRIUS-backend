@@ -10,6 +10,7 @@ from sirius.main import app
 from sirius.mockData.mock_util import getMockAnnotations, getMockData
 from sirius.realdata.loaddata import loaded_annotations
 from sirius.realdata.constants import chromo_idxs, chromo_names
+from sirius.core.QueryTree import QueryTree
 
 # These could be served by the Nginx
 # Provided here for debugging
@@ -183,6 +184,44 @@ def annotation(annotation_id):
     else:
         abort(404, "Annotation not found")
 
+test_query = {
+  "type": "GenomeNode",
+  "filters": {
+    "assembly": "GRCh38",
+    "type": "SNP"
+  },
+  "edgeRule": "or",
+  "toEdges": [
+    {
+      "type": "EdgeNode",
+      "filters": {
+        "type": "association",
+        "info.pvalue": {"<": 0.5}
+      },
+      "toNode": {
+        "type": "InfoNode",
+        "filters": {
+          "type": "trait",
+          "name": "cancer"
+        }
+      }
+    },
+    {
+      "type": "EdgeNode",
+      "filters": {
+        "type": "association"
+      },
+      "toNode": {
+        "type": "InfoNode",
+        "filters": {
+          "type": "trait",
+          "name": {"==": "breast cancer"}
+        }
+      }
+    }
+  ]
+}
+
 @app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>", methods=['POST'])
 def get_annotation_data(annotation_ids, start_bp, end_bp):
     annotation_id = annotation_ids.split(",", 1)[0] # mock server doesn't return multiple annotations!
@@ -194,10 +233,56 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
     track_height_px = 0
     if request.args.get('track_height_px'):
         track_height_px = int(float(request.args.get('track_height_px')))
-    if annotation_id in loaded_annotations:
+    if annotation_id == 'GWASCatalog':
+        #query = request.get_json()
+        query = test_query
+        return get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
+    elif annotation_id in loaded_annotations:
         return get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
         return get_mock_annotation_data(annotation_ids, start_bp, end_bp, sampling_rate, track_height_px)
+
+query_result_cache = dict()
+def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
+    query_cach_key = str(query)
+    try:
+        query_result = query_result_cache[query_cach_key]
+    except KeyError:
+        qt = QueryTree(query)
+        query_result_cache[query_cach_key] = query_result = list(qt.find().sort([("location",1), ("start",1)]))
+    print("Query returns %s results" % len(query_result))
+    annotation = loaded_annotations['GRCh38']
+    aggregation_flag = sampling_rate > 200000000 # turn on aggregation!
+    ANNOTATION_HEIGHT_PX = 25
+    ret = []
+    for gnode in query_result:
+        abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
+        fid = gnode['_id'] = str(gnode['_id'])
+        try:
+            fname = gnode['info']['Name']
+        except KeyError:
+            fname = 'Unknown'
+        if start_bp <= abs_pos <= end_bp:
+            color = [1.0, 1.0, 1.0, 1.0]
+            r_data = {'id': fid,
+                      'startBp': abs_pos,
+                      'endBp': abs_pos+100,
+                      'labels': [[fname, True, 0, 0, 0]],
+                      'yOffsetPx': 0,
+                      'heightPx': ANNOTATION_HEIGHT_PX,
+                      "segments": [[0, max(gnode['length'],100), None, color, 20]],
+                      'entity': gnode
+                     }
+            ret.append(r_data)
+    return json.dumps({
+        "startBp" : start_bp,
+        "endBp" : end_bp,
+        "samplingRate": sampling_rate,
+        "trackHeightPx": track_height_px,
+        "annotationIds": annotation_id,
+        "values": ret
+    })
+
 
 def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
     annotation = loaded_annotations[annotation_id]
@@ -213,25 +298,27 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
     entities = []
     for feature_data in cursor:
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
+        feature_data['_id'] = str(feature_data['_id']) # convert to string for json
         try:
             fid = feature_data['info']['attributes']["ID"]
         except:
-            fid = 0
+            fid = feature_data['_id']
         try:
             fname = feature_data['info']['attributes']['Name']
         except:
             fname = 'Unknown'
+
         r_data = {'id': fid,
                   'labels': [[fname, True, 0, 0, 0]],
                   'yOffsetPx': 0,
                   'heightPx': ANNOTATION_HEIGHT_PX,
-                  "segments": [[0, feature_data['length'], None, color, 20]]
+                  "segments": [[0, feature_data['length'], None, color, 20]],
+                  'entity': feature_data # all infomation here for frontend to display
                  }
         i_ch = chromo_idxs[feature_data['location']]
         ch_start = annotation.chromo_end_bps[i_ch-1] if i_ch > 0 else 0
         r_data['startBp'] = ch_start + feature_data['start']
         r_data['endBp'] = ch_start + feature_data['end']
-        feature_data['_id'] = str(feature_data['_id']) # convert to string for json
         if last == None or r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
@@ -247,8 +334,7 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
         "annotationIds": annotation_id,
-        "values": ret,
-        "entities": entities
+        "values": ret
     })
 
 def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
