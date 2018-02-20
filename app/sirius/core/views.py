@@ -222,6 +222,8 @@ test_query = {
   ]
 }
 
+ANNOTATION_HEIGHT_PX = 22
+
 @app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>", methods=['POST'])
 def get_annotation_data(annotation_ids, start_bp, end_bp):
     annotation_id = annotation_ids.split(",", 1)[0] # mock server doesn't return multiple annotations!
@@ -253,27 +255,35 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     print("Query returns %s results" % len(query_result))
     annotation = loaded_annotations['GRCh38']
     aggregation_flag = sampling_rate > 200000000 # turn on aggregation!
-    ANNOTATION_HEIGHT_PX = 25
     ret = []
+    padding = 20 * sampling_rate
+    #print("padding =", padding)
+    last = None
     for gnode in query_result:
         abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
         fid = gnode['_id'] = str(gnode['_id'])
         try:
-            fname = gnode['info']['Name']
+            fname = gnode['info']['Name'][:8] # limit name length
         except KeyError:
             fname = 'Unknown'
         if start_bp <= abs_pos <= end_bp:
-            color = [1.0, 1.0, 1.0, 1.0]
+            color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
             r_data = {'id': fid,
                       'startBp': abs_pos,
-                      'endBp': abs_pos+100,
+                      'endBp': abs_pos+padding,
                       'labels': [[fname, True, 0, 0, 0]],
                       'yOffsetPx': 0,
                       'heightPx': ANNOTATION_HEIGHT_PX,
-                      "segments": [[0, max(gnode['length'],100), None, color, 20]],
+                      "segments": [[0, padding, None, color, 20]],
                       'entity': gnode
                      }
-            ret.append(r_data)
+            if last == None or r_data["startBp"] > last['endBp'] + padding:
+                ret.append(r_data)
+                last = r_data
+            elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
+                r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
+                ret.append(r_data)
+                last = r_data
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -289,11 +299,10 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
     start_bp = max(start_bp, annotation.start_bp)
     end_bp = min(end_bp, annotation.end_bp)
     annotation_results = []
-    ANNOTATION_HEIGHT_PX = 25
     gene_count = 0
     cursor = annotation.db_find(start_bp, end_bp, types=['gene','exon'], min_length=sampling_rate*20)
     ret = []
-    padding = 20 // sampling_rate
+    padding = 20 * sampling_rate
     last = None
     for feature_data in cursor:
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
@@ -320,8 +329,8 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         if last == None or r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
-        elif last["yOffsetPx"] <= track_height_px - 26:
-            r_data["yOffsetPx"] = last["yOffsetPx"] + 26
+        elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
+            r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
             ret.append(r_data)
             last = r_data
     return json.dumps({
@@ -341,7 +350,6 @@ def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         start_bp = max([start_bp, annotation["startBp"]])
         end_bp = min([end_bp, annotation["endBp"]])
         annotation_results = []
-        ANNOTATION_HEIGHT_PX = 25
         if annotation_id == "GRCh38_genes":
             # get chromosomes in range
             cStart = chromosome_to_idx(find_chromosome(start_bp))
@@ -396,8 +404,8 @@ def get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
             if last == None or annotation["startBp"] > last["endBp"] + padding:
                 ret.append(annotation)
                 last = annotation
-            elif last["yOffsetPx"] <= track_height_px - 26:
-                annotation["yOffsetPx"] = last["yOffsetPx"] + 26
+            elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
+                annotation["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
                 ret.append(annotation)
                 last = annotation
     else:
