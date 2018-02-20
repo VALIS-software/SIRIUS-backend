@@ -70,14 +70,14 @@ class GWASParser(Parser):
                        'end': 203186754,
                        'length': 1,
                        'sourceurl': None,
-                       'assembly': None,
+                       'assembly': "GRCh38",
                        'info': {'ID': 'rs4950928',
                                 'Name': 'rs4950928',
                                 'mapped_gene': 'CHI3L1',
                                }
                      }
         InfoNode: Information about trait, unique ID is defined based on trait name
-            Example: { '_id': 'trait_psoriasis', 'type': 'trait', info: {'name': 'psoriasis'} }
+            Example: { '_id': 'trait_psoriasis', 'type': 'trait', 'name': 'psoriasis' }
         EdgeNode: Study that connects SNP and trait
             Example: { 'from_id': 'snp_rs4950928', to_id: 'trait_psoriasis',
                        'from_type': 'SNP', 'to_type': 'trait',
@@ -129,7 +129,11 @@ class GWASParser(Parser):
             trait = study["DISEASE/TRAIT"].lower()
             trait_id = 'trait_'+trait
             if trait_id not in known_traits:
-                infonode = { '_id': trait_id, 'type': 'trait', 'name': trait }
+                infonode = { '_id': trait_id,
+                             'type': 'trait',
+                             'name': trait,
+                             'sourceurl': sourceurl
+                           }
                 info_nodes.append(infonode)
                 known_traits.add(trait_id)
             # there might be multiple snps related, therefore we split them
