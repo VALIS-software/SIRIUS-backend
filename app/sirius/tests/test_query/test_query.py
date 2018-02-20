@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import sys
 import json
 from sirius.core.QueryTree import QueryTree
 
-with open('post.json') as jfile:
+with open(sys.argv[1]) as jfile:
     query = json.load(jfile)
-    print("Query Loaded from post.json")
+    print("Query Loaded from %s"%sys.argv[1])
     print(json.dumps(query, indent=2))
 
 print("Printing each query in execution order")
