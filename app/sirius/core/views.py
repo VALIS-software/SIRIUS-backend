@@ -294,6 +294,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     })
 
 def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
+    if len(r_data_in_range) == 0: return []
     coords = np.array([[r['startBp'], r['endBp']] for r in r_data_in_range], dtype=int).reshape(-1,2)
     dist_max = pdist(coords, 'chebyshev')
     linkage = hierarchy.average(dist_max)
