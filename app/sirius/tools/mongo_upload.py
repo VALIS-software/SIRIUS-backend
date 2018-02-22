@@ -20,6 +20,6 @@ if args.url:
     parser.metadata['sourceurl'] = args.url
 print("Uploading to MongoDB")
 GenomeNodes.insert_many(parser.get_genomenodes())
-for idx in ['assembly', 'type', 'location', 'start', 'end', 'length']:
+for idx in ['assembly', 'type', 'location', 'start', 'end', 'length', 'info.GeneID']:
     print("Creating index %s" % idx)
     GenomeNodes.create_index(idx)

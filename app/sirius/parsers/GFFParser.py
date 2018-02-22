@@ -44,6 +44,7 @@ class GFFParser(Parser):
 
     def get_genomenodes(self):
         genomenodes = []
+        gene_id_set = set()
         if 'assembly' in self.metadata:
             assembly = self.metadata['assembly']
         else:
@@ -70,6 +71,21 @@ class GFFParser(Parser):
                     gnode[k] = v
                 elif k != 'type':
                     gnode['info'][k] = v
+            # get geneID fron Dbxref, e.g GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102
+            try:
+                dbxref = gnode['info']['attributes'].pop('Dbxref')
+                for ref in dbxref.split(','):
+                    refname, ref_id = ref.split(':', 1)
+                    gnode['info']['attributes'][refname] = ref_id
+                    # use GeneID as the ID for this gene
+                    if refname == 'GeneID' and gnode['type'] == 'gene':
+                        if ref_id not in gene_id_set:
+                            gnode['_id'] = 'geneid_' + ref_id
+                            gene_id_set.add(ref_id) # make sure it's unique
+                        else:
+                            print("Warning, gene with GeneID %s already exists!" % ref_id)
+            except KeyError:
+                pass
             gnode['length'] = gnode['end'] - gnode['start'] + 1
             genomenodes.append(gnode)
             if self.verbose and len(genomenodes) % 100000 == 0:
