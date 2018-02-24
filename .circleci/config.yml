@@ -21,6 +21,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
+            kubectl port-forward mongo-0 27017:27017 &
             export PYTHONPATH=~/SIRIUS-backend/app:$PYTHONPATH
             python app/sirius/tests/unit_test.py
 
