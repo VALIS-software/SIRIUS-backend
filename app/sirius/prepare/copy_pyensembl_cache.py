@@ -2,7 +2,7 @@
 
 import os, shutil
 
-def copy_pyensembl_cache(source='\pd\pyensembl'):
+def copy_pyensembl_cache(source='/pd/pyensembl'):
     """
     Copy pyensembl cache from \pd\pyensembl to a writable cache folder.
     This will help avoid downloading the cache everytime in Docker build.
