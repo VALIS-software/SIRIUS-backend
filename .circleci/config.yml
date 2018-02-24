@@ -15,6 +15,10 @@ jobs:
       - setup_remote_docker
 
       - run:
+          name: prep-gcloud
+          command: ./.circleci/prep_gcloud.sh
+
+      - run:
           name: Run unit tests
           command: |
             export PYTHONPATH=~/SIRIUS-backend/app:$PYTHONPATH
@@ -48,10 +52,6 @@ jobs:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - /caches/app.tar
-
-      - run:
-          name: prep-gcloud
-          command: ./.circleci/prep_gcloud.sh
 
       - run:
           name: Push Docker image and deploy on kubernetes
