@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import abort, request, Response, send_from_directory
+from flask import abort, request, send_from_directory
 import random
 import json
 import math
@@ -109,7 +109,7 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
         result = get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
         result = get_mock_annotation_data(annotation_ids, start_bp, end_bp, sampling_rate, track_height_px)
-    print(result)
+    #print(result)
     return result
 
 

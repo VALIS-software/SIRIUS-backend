@@ -35,19 +35,20 @@ mock Annotations: GRCh38_genes, cross-track-test-1, cross-track-test-2
 
 /annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>    -->  dictionary of data to show on the annotation track
     Optional keywords: sampling_rate, track_height_px
-    Example: /annotations/GRCh38/0/3000000000?sampling_rate=2936832&track_height_px=72
-      Output: { "startBp": 109051904, "endBp": 113246208, "samplingRate": 4096, "trackHeightPx": 72, "annotationIds": "GRCh38", "values": [value1, value2..] }
-      value example: {"id": "gene2283", "labels": [["KIAA1324", true, 0, 0, 0]], "yOffsetPx": 0, "heightPx": 22, "segments": [[0, 92819, null, [0.3, 0.23, 0.4, 1.0], 20]], "entity": {..}}
+    Example: /annotations/GRCh38/88080384/100663296?sampling_rate=12288&track_height_px=72
+      Output: {"startBp": 88080384, "endBp": 100663296, "samplingRate": 12288, "trackHeightPx": 72, "annotationIds": "GRCh38", "values": [value1, value2..]}
+      value1 = {"id": "gene2044", "labels": [["EVI5", true, 0, 0, 0]], "yOffsetPx": 0, "heightPx": 22, "segments": [[0, 283709, null, [0.13, 0.19, 0.14, 1.0], 20]], "entity": entity, "startBp": 92508696, "endBp": 92792404}}
+      entity = {"_id": "geneid_7813", "assembly": "GRCh38", "sourceurl": "https://www.ncbi.nlm.nih.gov/projects/genome/guide/human/index.shtml", "type": "gene", "location": "Chr1", "info": {"seqid": "NC_000001.11", "source": "BestRefSeq%2CXM/XP/XR", "score": ".", "strand": "-", "phase": ".", "attributes": {"ID": "gene2044", "Name": "EVI5", "description": "ecotropic viral integration site 5", "gbkey": "Gene", "gene": "EVI5", "gene_biotype": "protein_coding", "gene_synonym": "EVI-5,NB4S", "GeneID": "7813", "HGNC": "HGNC:3501", "MIM": "602942"}}, "start": 92508696, "end": 92792404, "length": 283709}
 
 (temporary API for query)
 [POST] /annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>    -->  dictionary of data to show query results
     POST: query dictionary
     Optional keywords: sampling_rate, track_height_px
-    Example: [POST] /annotations/GWASCatalog/0/440401920?sampling_rate=430080&track_height_px=72
-      Output: {"startBp": 440401920, "endBp": 880803840, "samplingRate": 430080, "trackHeightPx": 72, "annotationIds": "GWASCatalog", "values": [..] }
-      value example: {"id": "cluster", "startBp": 449806019, "endBp": 475431167, "labels": [["22", true, 4, 0, 0]], "yOffsetPx": 0, "heightPx": 72, "segments": [[0, 25625149, null, [0.15, 0.55, 1.0, 0.22], 20]], "entity": [{}] }
-         Note: If aggregation is on (samplingRate > 100000), 'entity' is a list of data dicts. Otherwise 'entity' is a data dict.
-      entity example: {"_id": "snp_rs33960734", "type": "SNP", "location": "Chr1", "start": 108114736, "end": 108114736, "length": 1, "sourceurl": "www.ebi.ac.uk/gwas", "assembly": "GRCh38", "info": {"ID": "rs33960734", "Name": "rs33960734", "mapped_gene": "LOC107985124 - SLC25A24"}}}
+    (Aggregated Results)
+    Example: [POST] /annotations/GWASCatalog/704643072/939524096?sampling_rate=229376&track_height_px=72
+      Output: {"startBp": 704643072, "endBp": 939524096, "samplingRate": 229376, "trackHeightPx": 72, "annotationIds": "GWASCatalog", "values": [value1, value2,...]
+      value1 = {"id": "cluster", "startBp": 706832046, "endBp": 706832046, "labels": [["1", true, 4, 0, 0]], "yOffsetPx": 0, "heightPx": 72, "segments": [[0, 1, null, [0.15, 0.55, 1.0, 0.2], 20]], "entity": [entity1, ..]  }
+      entity = {"_id": "snp_rs77485526", "type": "SNP", "location": "Chr4", "start": 17386536, "end": 17386536, "length": 1, "sourceurl": "www.ebi.ac.uk/gwas", "assembly": "GRCh38", "info": {"ID": "rs77485526", "Name": "rs77485526", "mapped_gene": "LOC107986219 - RPS7P6"}}
 
 
 
@@ -65,7 +66,7 @@ mock Data: sequence, GM12878-DNase, K562-DNase, MCF7-DNase
 
 /tracks/<string:track_id>/<int:start_bp>/<int:end_bp>  -->  dictionary contains data in track
     Example: /tracks/sequence/0/3
-      Output: {"startBp": 0, "endBp": 3, "samplingRate": 1, "numSamples": 3, "trackHeightPx": 0, "values": [0.0, 0, 0.0, 0.5, 0, 4.0167672396898446e-09, 0.75, 0, 8.033534479379689e-09], "dimensions": ["symbol", "chromsome_index", "chromosome_location"], "dataType": "basepairs"}
+      Output: {"startBp": 0, "endBp": 3, "samplingRate": 1, "numSamples": 3, "trackHeightPx": 0, "values": [0.0, 0, 0.0, 0.5, 0, 4.0e-09, 0.75, 0, 8.0e-09], "dimensions": ["symbol", "chromsome_index", "chromosome_location"], "dataType": "basepairs"}
 
 
 
