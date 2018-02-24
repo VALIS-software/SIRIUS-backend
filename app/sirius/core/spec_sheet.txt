@@ -1,0 +1,108 @@
+SIRIUS-backend Spec Sheet
+Yudong Qiu
+Feb. 23rd 2018
+
+Notes:
+* This spec sheet may subject to major change based on the progress of development
+* All Flask API implementation can be found in views.py
+
+-----------------------------------
+| STATIC URLs: (Handled by Nginx) |
+-----------------------------------
+
+/       -->  valis-dist/index.html
+/index  -->  valis-dist/index.html
+/*      --> valis-dist/static/*   (for any URL not implemented below)
+
+
+
+-----------------------------------
+| Implemented URLs                |
+-----------------------------------
+
+I. ANNOTATION TRACK
+----------------------------------
+real Annotations: GRCh38
+mock Annotations: GRCh38_genes, cross-track-test-1, cross-track-test-2
+
+/annotations  -->  list of annotation ids, including both real and mock annotations
+    Example: /annotations
+      Output: ["GRCh38_genes", "cross-track-test-1", "cross-track-test-2", "GWASCatalog", "GRCh38"]
+
+/annotations/<string:annotation_id>  -->  dictionary contains information of the annotation
+    Example: /annotations/GRCh38
+      Output: {"annotationId": "GRCh38", "startBp": 1, "endBp": 3088269832}
+
+/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>    -->  dictionary of data to show on the annotation track
+    Optional keywords: sampling_rate, track_height_px
+    Example: /annotations/GRCh38/0/3000000000?sampling_rate=2936832&track_height_px=72
+      Output: { "startBp": 109051904, "endBp": 113246208, "samplingRate": 4096, "trackHeightPx": 72, "annotationIds": "GRCh38", "values": [value1, value2..] }
+      value example: {"id": "gene2283", "labels": [["KIAA1324", true, 0, 0, 0]], "yOffsetPx": 0, "heightPx": 22, "segments": [[0, 92819, null, [0.3, 0.23, 0.4, 1.0], 20]], "entity": {..}}
+
+(temporary API for query)
+[POST] /annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>    -->  dictionary of data to show query results
+    POST: query dictionary
+    Optional keywords: sampling_rate, track_height_px
+    Example: [POST] /annotations/GWASCatalog/0/440401920?sampling_rate=430080&track_height_px=72
+      Output: {"startBp": 440401920, "endBp": 880803840, "samplingRate": 430080, "trackHeightPx": 72, "annotationIds": "GWASCatalog", "values": [..] }
+      value example: {"id": "cluster", "startBp": 449806019, "endBp": 475431167, "labels": [["22", true, 4, 0, 0]], "yOffsetPx": 0, "heightPx": 72, "segments": [[0, 25625149, null, [0.15, 0.55, 1.0, 0.22], 20]], "entity": [{}] }
+         Note: If aggregation is on (samplingRate > 100000), 'entity' is a list of data dicts. Otherwise 'entity' is a data dict.
+      entity example: {"_id": "snp_rs33960734", "type": "SNP", "location": "Chr1", "start": 108114736, "end": 108114736, "length": 1, "sourceurl": "www.ebi.ac.uk/gwas", "assembly": "GRCh38", "info": {"ID": "rs33960734", "Name": "rs33960734", "mapped_gene": "LOC107985124 - SLC25A24"}}}
+
+
+
+II. DATA TRACK
+--------------------------------
+mock Data: sequence, GM12878-DNase, K562-DNase, MCF7-DNase
+
+/tracks   -->  list of all track_ids
+    Example: /tracks
+      Output: ["GM12878-DNase", "K562-DNase", "MCF7-DNase", "sequence"]
+
+/tracks/<string:track_id>  -->  dictionary contains information of track
+    Example: /tracks/sequence
+      Output: {"trackId": "sequence", "startBp": 0, "endBp": 3000000000, "dataType": "sequence"}
+
+/tracks/<string:track_id>/<int:start_bp>/<int:end_bp>  -->  dictionary contains data in track
+    Example: /tracks/sequence/0/3
+      Output: {"startBp": 0, "endBp": 3, "samplingRate": 1, "numSamples": 3, "trackHeightPx": 0, "values": [0.0, 0, 0.0, 0.5, 0, 4.0167672396898446e-09, 0.75, 0, 8.033534479379689e-09], "dimensions": ["symbol", "chromsome_index", "chromosome_location"], "dataType": "basepairs"}
+
+
+
+
+III. QUERY TRACK
+------------------------------
+
+[POST] /query/<string:query_id>  --> create a new query track (query will be executed if not cached)
+    Example: /query/query_12312
+      Output: "Query query_12312 created with 10000 result"
+
+[PUT] /query/<string:query_id>  --> replace a query
+    Example: /query/query_12312
+      Output: "Query query_12312 replaced with 10000 result"
+
+[DELETE] /query/<string:query_id>  --> delete a query to free memory
+    Example: /query/query_12312
+      Output: "Query query_12312 deleted"
+
+/query/<string:query_id>/<int:start_bp>/<int:end_bp>  -->  Get query data from cache
+    Optional keywords: sampling_rate, track_height_px
+    Example: /query/query_12312/0/440401920?sampling_rate=430080&track_height_px=72
+      Output: {"startBp": 440401920, "endBp": 880803840, "samplingRate": 430080, "trackHeightPx": 72, "annotationIds": "GWASCatalog", "values": [..] }
+      value example: {"id": "cluster", "startBp": 449806019, "endBp": 475431167, "labels": [["22", true, 4, 0, 0]], "yOffsetPx": 0, "heightPx": 72, "segments": [[0, 25625149, null, [0.15, 0.55, 1.0, 0.22], 20]], "entity": [{}] }
+         Note: If aggregation is on (samplingRate > 100000), 'entity' is a list of data dicts. Otherwise 'entity' is a data dict.
+      entity example: {"_id": "snp_rs33960734", "type": "SNP", "location": "Chr1", "start": 108114736, "end": 108114736, "length": 1, "sourceurl": "www.ebi.ac.uk/gwas", "assembly": "GRCh38", "info": {"ID": "rs33960734", "Name": "rs33960734", "mapped_gene": "LOC107985124 - SLC25A24"}}}
+
+
+
+
+IV. GRAPHS
+-----------------------------
+/graphs  -->  all available graph IDs
+    Example: /graphs
+      Output: ["ld_score"]
+
+/graphs/<string:graph_id>/<string:annotation_id1>/<string:annotation_id2>/<int:start_bp>/<int:end_bp>  -->  Graph data linking two annotation tracks.
+    Optional Keywords: sampling_rate, base_pair_offset
+    Example: /graphs/ld_score/cross-track-test-1/cross-track-test-2/0/10000
+      Output: {"startBp": 0, "endBp": 10000, "samplingRate": 1, "graphId": "ld_score", "annotationIds": ["cross-track-test-1", "cross-track-test-2"], "values": [[763713556, 156874026, 0.20263008681257]]}
