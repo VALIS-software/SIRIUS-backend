@@ -14,7 +14,7 @@ class TestSirius(unittest.TestCase):
         from sirius.realdata.loaddata import loaded_annotations
         anno = loaded_annotations['GRCh38']
         result = anno.find_bp_in_chromo(len(anno)/2)
-        assert result[0] == 8
+        self.assertEqual(result[0], 8)
         print("Real annotation class test passed")
 
     def test_core_views(self):
@@ -25,7 +25,13 @@ class TestSirius(unittest.TestCase):
         assert d["values"][0]['entity']['location'] == 'Chr1'
         print("Real annotation request test passed")
     
-
+    def test_query_filter(self):
+        from sirius.core.QueryTree import QueryTree
+        dfilter = {'type': 'InfoNode', 'name': {"$contain": "cancer", 'info.pvalue': {"<": 0.1}}}
+        print(dfilter)
+        qt = QueryTree(dfilter)
+        print(qt.find().count())
+        print("query build and search test passed")
 
 if __name__ == "__main__":
     unittest.main()
