@@ -15,6 +15,7 @@ import numpy as np
 from scipy.spatial.distance import pdist
 from scipy.cluster import hierarchy
 import collections
+from functools import lru_cache
 
 
 #**************************
@@ -112,17 +113,20 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
     #print(result)
     return result
 
+class HashableDict(dict):
+    def __hash__(self):
+        return hash(json.dumps(self, sort_keys=True))
+
+@lru_cache(maxsize=10000)
+def get_query_results(query):
+    qt = QueryTree(query)
+    return list(qt.find().sort([("location",1), ("start",1)]))
 
 # temporary solution for caching queries
 query_result_cache = dict()
 def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
-    query_cach_key = str(query)
-    try:
-        query_result = query_result_cache[query_cach_key]
-    except KeyError:
-        qt = QueryTree(query)
-        query_result_cache[query_cach_key] = query_result = list(qt.find().sort([("location",1), ("start",1)]))
-    print("Query returns %s results" % len(query_result))
+    query_result = get_query_results(HashableDict(query))
+    print("Query returns %s results" % len(query_result), get_query_results.cache_info())
     annotation = loaded_annotations['GRCh38']
     aggregation_thresh = 100000
     r_data_in_range = []
@@ -355,93 +359,93 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
 
 
 
-# this part hasn't been implemented in the frontend yet
+# The query function is replaced by /annotation end point for now.
 #**************************
 #*       /query           *
 #**************************
 
-query_cache = dict()
-@app.route('/query/<string:query_id>', methods=['POST', 'PUT', 'DELETE'])
-def change_query(query_id):
-    """ Create, replace or delete a query """
-    if request.method == 'POST':
-        query = request.get_json()
-        result = create_query(query_id, query)
-        return (201, "Query %s created with %d result" % (query_id, len(result)))
-    elif request.method == 'PUT':
-        query = request.get_json()
-        result = replace_query(query_id, query)
-        return (200, "Query %s replaced with %d result" % (query_id, len(result)))
-    elif request.method == 'DELETE':
-        delete_query(query_id)
-        return (200, "Query %s deleted" % query_id)
-
-
-def create_query(query_id, query):
-    """ Delete a query to free memory """
-    try:
-        result = query_cache[query_id]
-    except KeyError:
-        qt = QueryTree(query)
-        query_cache[query_id] = result = list(qt.find().sort([("location",1), ("start",1)]))
-    return result
-
-def replace_query(query_id, query):
-    qt = QueryTree(query)
-    query_cache[query_id] = result = list(qt.find().sort([("location",1), ("start",1)]))
-    return result
-
-def delete_query(query_id):
-    """ Delete a query to free memory """
-    try:
-        query_result = query_cache.pop(query_id)
-    except:
-        pass
-
-@app.route('/query/<string:query_id>/<int:start_bp>/<int:end_bp>')
-def get_query(query_id, start_bp, end_bp):
-    try:
-        query_result = query_result_cache[query_id]
-    except KeyError:
-        print("Warning! Query %s was not created! Please call /query/query_id/create first")
-        return abort(404, "Query not found")
-    print("Query returns %s results" % len(query_result))
-    start_bp, end_bp = int(start_bp), int(end_bp)
-    sampling_rate = int(request.args.get('sampling_rate', default=1))
-    track_height_px = int(request.args.get('track_height_px', default=0))
-    # assume we are working with GRCh38 for now. Frontend may need redesign later to show more assembly
-    annotation = loaded_annotations['GRCh38']
-    aggregation_thresh = 100000
-    r_data_in_range = []
-    for gnode in query_result:
-        abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
-        fid = gnode['_id'] = str(gnode['_id'])
-        try:
-            fname = gnode['info']['Name'][:8] # limit name length
-        except KeyError:
-            fname = 'Unknown'
-        if start_bp <= abs_pos <= end_bp:
-            color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
-            r_data = {'id': fid,
-                      'startBp': abs_pos,
-                      'endBp': abs_pos,
-                      'labels': [[fname, True, 0, 0, 0]],
-                      'yOffsetPx': 0,
-                      'heightPx': ANNOTATION_HEIGHT_PX,
-                      "segments": [[0, gnode['length'], None, color, 20]],
-                      'entity': gnode
-                     }
-            r_data_in_range.append(r_data)
-    if sampling_rate > aggregation_thresh: # turn on aggregation!
-        print("Clustering results")
-        ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
-    else:
-        ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX)
-    return json.dumps({
-        "startBp" : start_bp,
-        "endBp" : end_bp,
-        "samplingRate": sampling_rate,
-        "trackHeightPx": track_height_px,
-        "annotationIds": annotation_id,
-        "values": ret
-    })
+# query_cache = dict()
+# @app.route('/query/<string:query_id>', methods=['POST', 'PUT', 'DELETE'])
+# def change_query(query_id):
+#     """ Create, replace or delete a query """
+#     if request.method == 'POST':
+#         query = request.get_json()
+#         result = create_query(query_id, query)
+#         return (201, "Query %s created with %d result" % (query_id, len(result)))
+#     elif request.method == 'PUT':
+#         query = request.get_json()
+#         result = replace_query(query_id, query)
+#         return (200, "Query %s replaced with %d result" % (query_id, len(result)))
+#     elif request.method == 'DELETE':
+#         delete_query(query_id)
+#         return (200, "Query %s deleted" % query_id)
+#
+#
+# def create_query(query_id, query):
+#     """ Delete a query to free memory """
+#     try:
+#         result = query_cache[query_id]
+#     except KeyError:
+#         qt = QueryTree(query)
+#         query_cache[query_id] = result = list(qt.find().sort([("location",1), ("start",1)]))
+#     return result
+#
+# def replace_query(query_id, query):
+#     qt = QueryTree(query)
+#     query_cache[query_id] = result = list(qt.find().sort([("location",1), ("start",1)]))
+#     return result
+#
+# def delete_query(query_id):
+#     """ Delete a query to free memory """
+#     try:
+#         query_result = query_cache.pop(query_id)
+#     except:
+#         pass
+#
+# @app.route('/query/<string:query_id>/<int:start_bp>/<int:end_bp>')
+# def get_query(query_id, start_bp, end_bp):
+#     try:
+#         query_result = query_result_cache[query_id]
+#     except KeyError:
+#         print("Warning! Query %s was not created! Please call /query/query_id/create first")
+#         return abort(404, "Query not found")
+#     print("Query returns %s results" % len(query_result))
+#     start_bp, end_bp = int(start_bp), int(end_bp)
+#     sampling_rate = int(request.args.get('sampling_rate', default=1))
+#     track_height_px = int(request.args.get('track_height_px', default=0))
+#     # assume we are working with GRCh38 for now. Frontend may need redesign later to show more assembly
+#     annotation = loaded_annotations['GRCh38']
+#     aggregation_thresh = 100000
+#     r_data_in_range = []
+#     for gnode in query_result:
+#         abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
+#         fid = gnode['_id'] = str(gnode['_id'])
+#         try:
+#             fname = gnode['info']['Name'][:8] # limit name length
+#         except KeyError:
+#             fname = 'Unknown'
+#         if start_bp <= abs_pos <= end_bp:
+#             color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
+#             r_data = {'id': fid,
+#                       'startBp': abs_pos,
+#                       'endBp': abs_pos,
+#                       'labels': [[fname, True, 0, 0, 0]],
+#                       'yOffsetPx': 0,
+#                       'heightPx': ANNOTATION_HEIGHT_PX,
+#                       "segments": [[0, gnode['length'], None, color, 20]],
+#                       'entity': gnode
+#                      }
+#             r_data_in_range.append(r_data)
+#     if sampling_rate > aggregation_thresh: # turn on aggregation!
+#         print("Clustering results")
+#         ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
+#     else:
+#         ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX)
+#     return json.dumps({
+#         "startBp" : start_bp,
+#         "endBp" : end_bp,
+#         "samplingRate": sampling_rate,
+#         "trackHeightPx": track_height_px,
+#         "annotationIds": annotation_id,
+#         "values": ret
+#     })
