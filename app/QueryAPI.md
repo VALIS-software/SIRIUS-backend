@@ -77,7 +77,7 @@ Node3 = {
 1. In this (pretty complicated) query, 6 dictionaries nested under the ROOT dictionary are used.
 2. Current after query execution, the final search results for ROOT is returned. This can be updated later to return all results in each search level, if needed.
 3. ROOT can be a Node, or also a Edge.
-4. Node can connect to multiple edges, combined with <edgeRule>. Each edge can only connect to one node, because filters for multiple nodes can be easily combined.
+4. Node can connect to multiple edges, combined with `<edgeRule>`. Each Edge can only connect to one Node, because simple filters for multiple nodes can be combined. In a complicated case, one Edge connecting to multiple Nodes can still be represented by multiple Edges each connecting to one Node.
 
 
 ### Specs for query dictionary
