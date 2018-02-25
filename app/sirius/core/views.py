@@ -142,7 +142,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                       'yOffsetPx': 0,
                       'heightPx': ANNOTATION_HEIGHT_PX,
                       "segments": [[0, gnode['length'], None, color, 20]],
-                      'entity': gnode
+                      'entity': gnode,
+                      'aggregation': False
                      }
             r_data_in_range.append(r_data)
     if sampling_rate > aggregation_thresh: # turn on aggregation!
@@ -184,7 +185,8 @@ def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
                   'yOffsetPx': 0,
                   'heightPx': track_height_px,
                   "segments": [[0, endBp-startBp+1, None, color, 20]],
-                  'entity': [r['entity'] for r in r_cluster]
+                  'aggregation': True
+                  # 'entity': [r['entity'] for r in r_cluster] # QYD: we don't want all these details yet.
                  }
         ret.append(r_data)
     return ret
