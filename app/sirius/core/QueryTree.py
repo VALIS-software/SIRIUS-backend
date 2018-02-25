@@ -151,12 +151,14 @@ class QueryTree:
             if isinstance(value, dict):
                 new_value = dict()
                 for k,v in value.items():
-                    new_k = self.Query_operators[k]
-                    new_v = v#.lower() if isinstance(v, str) else v
-                    new_value[new_k] = new_v
+                    # handle "$contain" operator here
+                    if k == '$contain':
+                        result['$text'] = {'$search': '\"'+v+'\"'}
+                    else:
+                        new_k = self.Query_operators[k]
+                        new_v = v#.lower() if isinstance(v, str) else v
+                        new_value[new_k] = new_v
                 result[key] = new_value
-            #elif isinstance(value, str):
-            #    result[key] = value.lower()
             else:
                 result[key] = value
         return result
