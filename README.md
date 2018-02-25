@@ -9,6 +9,7 @@ Option 1 (Recommended): Run Flask server locally
 Install all of the dependencies:
 * Flask
 * Flask-CORS
+* Scipy
 * pymongo (for connecting to mongo server)
 * pyensembl (Will be removed when we remove the mockAnnotation Data GRCh38_genes)
 * google-cloud-storage (for calling `app/sirius/prepare/update_valis_webfront.py` to pull VALIS from Google Cloud)
@@ -60,7 +61,7 @@ Configurations are located in the config/ folder
     
 ## Other Files
 
-### circle.yml:
+### .circleci/:
     Incorporated with CircleCI
     This configuration will allow CircleCI container to build, test and deploy the server app to our Google Cloud project.
     ssh key was provided to circleci.com, so git commit will trigger auto build.
@@ -69,10 +70,6 @@ Configurations are located in the config/ folder
 ### Dockerfile:
     Configuration for Docker.
     Python 3.6 was used.
-
-### deploy-dev.sh:
-    Loaded by CircleCI. Pushes newly built Docker image to Google Cloud Container Registry.
-    You don't usually call this script by yourself.
 
 ### app/prestart.sh:
     Called as ENTRYPOINT of Docker image, to pull VALIS and copy cache from persistent disk.
