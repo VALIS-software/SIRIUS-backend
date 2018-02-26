@@ -13,6 +13,8 @@ def str_to_type(s):
         return float
     elif s == 'integer' or s == 'int':
         return int
+    elif s == 'flag':
+        return bool
 
 class VCFParser(Parser):
 
@@ -82,38 +84,56 @@ class VCFParser(Parser):
         d = dict(zip(self.labels, ls))
         dinfo = dict()
         for keyandvalue in d['INFO'].split(';'):
-            k, v = keyandvalue.split('=', 1)
-            vtype = self.metadata['INFO'][k]['Type']
-            v = str_to_type(vtype)(v)
+            if '=' in keyandvalue:
+                k, v = keyandvalue.split('=', 1)
+                vtype = self.metadata['INFO'][k]['Type']
+                v = str_to_type(vtype)(v)
+            else:
+                k = keyandvalue
+                vtype = self.metadata['INFO'][k]['Type']
+                if vtype.lower() != 'flag':
+                    print('line\nWarning! No "=" found in the key %s, but its Type is not Flag' % k)
+                v = True # set flag to true
             dinfo[k] = v
         d['INFO'] = dinfo
         return d
 
+    def get_mongo_nodes(self):
+        raise NotImplementedError
 
-class ClinVarVCFParser(VCFParser):
+    def save_mongo_nodes(self, filename=None):
+        if filename == None: filename = self.filename + '.mongonodes'
+        genome_nodes, info_nodes, edge_nodes = self.get_mongo_nodes()
+        d = {'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edge_nodes': edge_nodes}
+        json.dump(d, open(filename, 'w'), indent=2)
+
+class VCFParser_ClinVar(VCFParser):
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes:
         GenomeNode: Information about SNP, unique ID is defined based on rs number
-            Example:     {
-                           "_id": "snp_rs143888043",
-                           "assembly": "GRCh38",
-                           "location": "Chr1",
-                           "sourceurl": "test.vcf",
-                           "type": "SNP",
-                           "start": 1014042,
-                           "end": 1014042,
-                           "length": 1,
-                           "info": {
-                             "variant_ref": "G",
-                             "variant_alt": "A",
-                             "ALLELEID": 446939,
-                             "CLNVCSO": "SO:0001483",
-                             "GENEINFO": "ISG15:9636",
-                             "MC": "SO:0001583|missense_variant",
-                             "ORIGIN": "1",
-                             "CLNHGVS": "NC_000001.11:g.1014042G>A"
-                           }
-                         },
+            Example:
+                      {
+                        "_id": "snp_rs143888043",
+                        "assembly": "GRCh38",
+                        "location": "Chr1",
+                        "sourceurl": "test.vcf",
+                        "type": "SNP",
+                        "start": 1014042,
+                        "end": 1014042,
+                        "length": 1,
+                        "info": {
+                          "variant_ref": "G",
+                          "variant_alt": "A",
+                          "filter": ".",
+                          "qual": ".",
+                          "ALLELEID": 446939,
+                          "CLNVCSO": "SO:0001483",
+                          "GENEINFO": "ISG15:9636",
+                          "MC": "SO:0001583|missense_variant",
+                          "ORIGIN": "1",
+                          "CLNHGVS": "NC_000001.11:g.1014042G>A"
+                        }
+                      },
 
         InfoNode: Information about trait, unique ID is defined based on trait name
             Example:   {
@@ -172,7 +192,7 @@ class ClinVarVCFParser(VCFParser):
                 gnode['type'] = varient_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
-                gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT']}
+                gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}
                 for key in ('ALLELEID', 'CLNVCSO', 'GENEINFO', 'MC', 'ORIGIN', 'CLNHGVS'):
                     try:
                         gnode['info'][key] = d["INFO"][key]
@@ -212,9 +232,7 @@ class ClinVarVCFParser(VCFParser):
                             'type': 'association',
                             'sourceurl': sourceurl,
                             'info': {
-                                "CLNREVSTAT": d['INFO']["CLNREVSTAT"],
-                                "QUAL": d['QUAL'],
-                                "FILTER": d['FILTER']
+                                "CLNREVSTAT": d['INFO']["CLNREVSTAT"]
                             }
                            }
                 edge_nodes.append(edgenode)
@@ -223,8 +241,75 @@ class ClinVarVCFParser(VCFParser):
         return genome_nodes, info_nodes, edge_nodes
 
 
-    def save_mongo_nodes(self, filename=None):
-        if filename == None: filename = self.filename + '.mongonodes'
-        genome_nodes, info_nodes, edge_nodes = self.get_mongo_nodes()
-        d = {'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edge_nodes': edge_nodes}
-        json.dump(d, open(filename, 'w'), indent=2)
+
+
+
+class VCFParser_dbSNP(VCFParser):
+    def get_mongo_nodes(self):
+        """ Parse study data into three types of nodes:
+        GenomeNode: Information about SNP, unique ID is defined based on rs number
+            Example:{
+                      "_id": "snp_rs367896724",
+                      "assembly": "GRCh38",
+                      "location": "Chr1",
+                      "sourceurl": "test_dbSNP.vcf",
+                      "type": "SNP",
+                      "start": 10177,
+                      "end": 10177,
+                      "length": 1,
+                      "info": {
+                        "variant_ref": "A",
+                        "variant_alt": "AC",
+                        "filter": ".",
+                        "qual": ".",
+                        "RS": 367896724,
+                        "RSPOS": 10177,
+                        "dbSNPBuildID": 138,
+                        "SSR": 0,
+                        "SAO": 0,
+                        "VP": "0x050000020005170026000200",
+                        "GENEINFO": "DDX11L1:100287102",
+                        "WGT": 1,
+                        "VC": "DIV",
+                        "R5": true,
+                        "ASP": true,
+                        "VLD": true,
+                        "G5A": true,
+                        "G5": true,
+                        "KGPhase3": true,
+                        "CAF": "0.5747,0.4253",
+                        "COMMON": 1
+                      }
+                    }
+        """
+        genome_nodes, info_nodes, edge_nodes = [], [], []
+        known_vid, known_traits = set(), set()
+        if 'reference' in self.metadata:
+            assembly = self.metadata['reference'].split('.',1)[0]
+        else:
+            assembly = 'GRCh38'
+        if 'sourceurl' in self.metadata:
+            sourceurl = self.metadata['source']
+        else:
+            sourceurl = self.filename
+        seqid_loc = dict()
+        for d in self.varients:
+            # create GenomeNode for Varient
+            if 'RS' in d['INFO']:
+                varient_id = "snp_rs" + str(d["INFO"]["RS"])
+                varient_type = "SNP"
+            else:
+                print(d)
+                print("Warning, RS number not found, skipping")
+                continue
+            if varient_id not in known_vid:
+                known_vid.add(varient_id)
+                location = 'Chr' + d['CHROM']
+                gnode = {'_id': varient_id, 'assembly': assembly, 'location':location, 'sourceurl': sourceurl}
+                gnode['type'] = varient_type
+                gnode['start'] = gnode['end'] = int(d['POS'])
+                gnode['length'] = 1
+                gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}
+                gnode['info'].update(d["INFO"])
+                genome_nodes.append(gnode)
+        return genome_nodes, info_nodes, edge_nodes
