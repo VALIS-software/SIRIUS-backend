@@ -14,7 +14,7 @@ class TestSirius(unittest.TestCase):
         from sirius.realdata.loaddata import loaded_annotations
         anno = loaded_annotations['GRCh38']
         result = anno.find_bp_in_chromo(len(anno)/2)
-        self.assertEqual(result[0], 8)
+        self.assertEqual(result[0], 9)
         print("Real annotation class test passed")
 
     def test_core_views(self):
@@ -22,7 +22,7 @@ class TestSirius(unittest.TestCase):
         result = get_real_annotation_data('GRCh38', 11800, 14500, 100, 96)
         d = json.loads(result)
         assert d['startBp'] == 11800 and d['endBp'] == 14500
-        assert d["values"][0]['entity']['location'] == 'Chr1'
+        assert d["values"][0]['entity']['chromid'] == 1
         print("Real annotation request test passed")
     
     def test_query_filter(self):
