@@ -177,7 +177,7 @@ class QueryTree:
             result.pop(text_key)
         return result
 
-    def find(self, sort):
+    def find(self, sort=None):
         return self.head.find(sort)
 
 
