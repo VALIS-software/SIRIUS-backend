@@ -3,20 +3,13 @@
 from flask import abort, request, send_from_directory
 import random
 import json
-import math
-import os
-import shutil
+from functools import lru_cache
+import time
 from sirius.main import app
-
 from sirius.realdata.loaddata import loaded_annotations
 from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
-import numpy as np
-from scipy.spatial.distance import pdist
-from scipy.cluster import hierarchy
-import collections
-from functools import lru_cache
-
+from sirius.core.aggregations import cluster_r_data
 
 #**************************
 #*     static urls        *
@@ -61,32 +54,31 @@ test_query = {
     "assembly": "GRCh38",
     "type": "SNP"
   },
-  "edgeRule": "or",
+  "edgeRule": "and",
   "toEdges": [
     {
       "type": "EdgeNode",
       "filters": {
         "type": "association",
-        "info.pvalue": {"<": 0.5}
+        "info.p-value": {"<": 0.5}
       },
       "toNode": {
         "type": "InfoNode",
         "filters": {
           "type": "trait",
-          "name": "cancer"
+          "name": {"$contain": "cancer"}
         }
       }
     },
     {
       "type": "EdgeNode",
       "filters": {
-        "type": "association"
+        "type": "association",
       },
       "toNode": {
-        "type": "InfoNode",
+        "type": "GenomeNode",
         "filters": {
-          "type": "trait",
-          "name": {"==": "breast cancer"}
+           "type": "gene",
         }
       }
     }
@@ -106,6 +98,9 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
         #query = request.get_json()
         query = test_query
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
+    elif annotation_id == "GRCh38":
+        query = {'type': 'GenomeNode', "filters":{"type":'gene'}}
+        result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id in loaded_annotations:
         result = get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
@@ -119,29 +114,29 @@ class HashableDict(dict):
 
 @lru_cache(maxsize=10000)
 def get_query_results(query):
-    qt = QueryTree(query)
-    return list(qt.find().sort([("location",1), ("start",1)]))
+    qt = QueryTree(query)#, verbose=True)
+    return list( qt.find(sort=[('chromid',1), ('start',1)]) )
 
-# temporary solution for caching queries
-query_result_cache = dict()
 def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
     query_result = get_query_results(HashableDict(query))
     print("Query returns %s results" % len(query_result), get_query_results.cache_info())
     annotation = loaded_annotations['GRCh38']
-    aggregation_thresh = 100000
+    aggregation_thresh = 5000
     r_data_in_range = []
+    #t0 = time.time()
     for gnode in query_result:
-        abs_pos = annotation.location_to_bp(gnode['location'], gnode['start'])
+        abs_start = annotation.location_to_bp(gnode['chromid'], gnode['start'])
+        abs_end = abs_start + gnode['length'] - 1
         fid = gnode['_id'] = str(gnode['_id'])
         try:
-            fname = gnode['info']['Name'][:8] # limit name length
+            fname = gnode['info']['name']
         except KeyError:
             fname = 'Unknown'
-        if start_bp <= abs_pos <= end_bp:
+        if start_bp <= abs_start and abs_end <= end_bp:
             color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
             r_data = {'id': fid,
-                      'startBp': abs_pos,
-                      'endBp': abs_pos,
+                      'startBp': abs_start,
+                      'endBp': abs_end,
                       'labels': [[fname, True, 0, 0, 0]],
                       'yOffsetPx': 0,
                       'heightPx': ANNOTATION_HEIGHT_PX,
@@ -150,9 +145,12 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                       'aggregation': False
                      }
             r_data_in_range.append(r_data)
+    #print("r_data_in_range take %s second" % (time.time() - t0))
+    print(sampling_rate)
     if sampling_rate > aggregation_thresh: # turn on aggregation!
-        print("Clustering results")
+        t0 = time.time()
         ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
+        print("Clustering results take %s second" % (time.time() - t0))
     else:
         ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX)
     return json.dumps({
@@ -163,38 +161,6 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "annotationIds": annotation_id,
         "values": ret
     })
-
-def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
-    if len(r_data_in_range) == 0: return []
-    coords = np.array([[r['startBp'], r['endBp']] for r in r_data_in_range], dtype=int).reshape(-1,2)
-    dist_max = pdist(coords, 'chebyshev')
-    linkage = hierarchy.average(dist_max)
-    cluster_results = hierarchy.fcluster(linkage, t=sampling_rate*100, criterion='distance')
-    clusters = collections.defaultdict(list)
-    for i,c in enumerate(cluster_results):
-        clusters[c].append(i)
-    ret = []
-    for cluster in sorted(clusters.values()):
-        r_cluster = [r_data_in_range[i] for i in cluster]
-        c_size = len(cluster)
-        label = str(c_size)
-        startBp = r_cluster[0]['startBp']
-        endBp = r_cluster[-1]['endBp']
-        color_level = max(min(c_size / 100, 1.0), 0.2) # between (0.2~1.0)
-        color = [0.15, 0.55, 1.0, color_level]
-        r_data = {'id': 'cluster',
-                  'startBp': startBp,
-                  'endBp': endBp,
-                  'labels': [[label, True, 4, 0, 0]],
-                  'yOffsetPx': 0,
-                  'heightPx': track_height_px,
-                  "segments": [[0, endBp-startBp+1, None, color, 20]],
-                  'aggregation': True
-                  # 'entity': [r['entity'] for r in r_cluster] # QYD: we don't want all these details yet.
-                 }
-        ret.append(r_data)
-    return ret
-
 
 def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX):
     if len(r_data_in_range) == 0: return []
@@ -226,24 +192,19 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
         feature_data['_id'] = str(feature_data['_id']) # convert to string for json
         try:
-            fid = feature_data['info']['attributes']["ID"]
-        except:
-            fid = feature_data['_id']
-        try:
-            fname = feature_data['info']['attributes']['Name']
+            fname = feature_data['info']['name']
         except:
             fname = 'Unknown'
-        r_data = {'id': fid,
+        r_data = {'id': feature_data['_id'],
                   'labels': [[fname, True, 0, 0, 0]],
                   'yOffsetPx': 0,
                   'heightPx': ANNOTATION_HEIGHT_PX,
                   "segments": [[0, feature_data['length'], None, color, 20]],
                   'entity': feature_data # all infomation here for frontend to display
                  }
-        i_ch = chromo_idxs[feature_data['location']]
-        ch_start = annotation.chromo_end_bps[i_ch-1] if i_ch > 0 else 0
-        r_data['startBp'] = ch_start + feature_data['start']
-        r_data['endBp'] = ch_start + feature_data['end']
+        i_ch = feature_data['chromid']
+        r_data['startBp'] = annotation.location_to_bp(i_ch, feature_data['start'])
+        r_data['endBp'] = annotation.location_to_bp(i_ch, feature_data['end'])
         if last == None or r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
