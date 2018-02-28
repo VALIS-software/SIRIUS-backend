@@ -85,8 +85,6 @@ test_query = {
   ]
 }
 
-ANNOTATION_HEIGHT_PX = 22
-
 @app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
 def get_annotation_data(annotation_ids, start_bp, end_bp):
     annotation_id = annotation_ids.split(",", 1)[0] # we don't know when there are multiple annotations yet
@@ -123,6 +121,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     annotation = loaded_annotations['GRCh38']
     aggregation_thresh = 5000
     r_data_in_range = []
+    ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
     #t0 = time.time()
     for gnode in query_result:
         abs_start = annotation.location_to_bp(gnode['chromid'], gnode['start'])
@@ -146,13 +145,12 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                      }
             r_data_in_range.append(r_data)
     #print("r_data_in_range take %s second" % (time.time() - t0))
-    print(sampling_rate)
     if sampling_rate > aggregation_thresh: # turn on aggregation!
         t0 = time.time()
         ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
         print("Clustering results take %s second" % (time.time() - t0))
     else:
-        ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX)
+        ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -162,16 +160,17 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "values": ret
     })
 
-def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px, ANNOTATION_HEIGHT_PX):
+def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px):
     if len(r_data_in_range) == 0: return []
     padding = 20 * sampling_rate
     last = r_data_in_range[0]
+    ANNOTATION_HEIGHT_PX = last['heightPx']
     ret = [last]
     for r_data in r_data_in_range[1:]:
         if r_data["startBp"] > last['endBp'] + padding:
             ret.append(r_data)
             last = r_data
-        elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
+        elif last["yOffsetPx"] < track_height_px - 2 * ANNOTATION_HEIGHT_PX:
             r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
             ret.append(r_data)
             last = r_data
@@ -187,6 +186,7 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
     cursor = annotation.db_find(start_bp, end_bp, types=['gene','exon'], min_length=sampling_rate*20)
     ret = []
     padding = 20 * sampling_rate
+    ANNOTATION_HEIGHT_PX = int(track_height_px/3) - 1
     last = None
     for feature_data in cursor:
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
