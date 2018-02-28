@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-from sirius.parsers.Parser import Parser
 import os, sys
 import json
 import re
+from sirius.parsers.Parser import Parser
+from sirius.realdata.constants import chromo_idxs
 
 def str_to_type(s):
     s = s.strip().lower()
@@ -98,71 +99,16 @@ class VCFParser(Parser):
         d['INFO'] = dinfo
         return d
 
-    def get_mongo_nodes(self):
-        raise NotImplementedError
-
-    def save_mongo_nodes(self, filename=None):
-        if filename == None: filename = self.filename + '.mongonodes'
-        genome_nodes, info_nodes, edge_nodes = self.get_mongo_nodes()
-        d = {'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edge_nodes': edge_nodes}
-        json.dump(d, open(filename, 'w'), indent=2)
 
 class VCFParser_ClinVar(VCFParser):
     def get_mongo_nodes(self):
-        """ Parse study data into three types of nodes:
-        GenomeNode: Information about SNP, unique ID is defined based on rs number
-            Example:
-                      {
-                        "_id": "snp_rs143888043",
-                        "assembly": "GRCh38",
-                        "location": "Chr1",
-                        "sourceurl": "test.vcf",
-                        "type": "SNP",
-                        "start": 1014042,
-                        "end": 1014042,
-                        "length": 1,
-                        "info": {
-                          "variant_ref": "G",
-                          "variant_alt": "A",
-                          "filter": ".",
-                          "qual": ".",
-                          "ALLELEID": 446939,
-                          "CLNVCSO": "SO:0001483",
-                          "GENEINFO": "ISG15:9636",
-                          "MC": "SO:0001583|missense_variant",
-                          "ORIGIN": "1",
-                          "CLNHGVS": "NC_000001.11:g.1014042G>A"
-                        }
-                      },
-
-        InfoNode: Information about trait, unique ID is defined based on trait name
-            Example:   {
-                         "_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
-                         "type": "trait",
-                         "name": "Immunodeficiency 38 with basal ganglia calcification",
-                         "sourceurl": "test.vcf",
-                         "info": {
-                           "MedGen": "C4015293",
-                           "OMIM": "616126",
-                           "Orphanet": "ORPHA319563"
-                             }
-                        },
-
-        EdgeNode: Study that connects SNP and trait
-            Example:     {
-                            "from_id": "snp_rs143888043",
-                            "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
-                            "from_type": "SNP",
-                            "to_type": "trait",
-                            "type": "association",
-                            "sourceurl": "test.vcf",
-                            "info": {
-                              "CLNREVSTAT": "criteria_provided,_single_submitter",
-                              "QUAL": ".",
-                              "FILTER": "."
-                            }
-                        },
-        """
+        """ Parse study data into three types of nodes """
+        # GenomeNode: Information about SNP, unique ID is defined based on rs number
+#
+        # InfoNode: Information about trait, unique ID is defined based on trait name
+#
+        # EdgeNode: Study that connects SNP and trait
+        
         genome_nodes, info_nodes, edge_nodes = [], [], []
         known_vid, known_traits = set(), set()
         if 'reference' in self.metadata:
@@ -181,14 +127,14 @@ class VCFParser_ClinVar(VCFParser):
                 varient_type = "SNP"
             else:
                 varient_type = d['INFO']['CLNVC'].lower()
-                location = 'Chr' + d['CHROM']
+                chromid = chromo_idxs[d['CHROM']]
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
-                varient_id = '_'.join([varient_type, location, pos, v_ref, v_alt])
+                varient_id = '_'.join([varient_type, chromid, pos, v_ref, v_alt])
             if varient_id not in known_vid:
                 known_vid.add(varient_id)
-                location = 'Chr' + d['CHROM']
-                gnode = {'_id': varient_id, 'assembly': assembly, 'location':location, 'sourceurl': sourceurl}
+                chromid = chromo_idxs[d['CHROM']]
+                gnode = {'_id': varient_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
                 gnode['type'] = varient_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
@@ -246,42 +192,8 @@ class VCFParser_ClinVar(VCFParser):
 
 class VCFParser_dbSNP(VCFParser):
     def get_mongo_nodes(self):
-        """ Parse study data into three types of nodes:
-        GenomeNode: Information about SNP, unique ID is defined based on rs number
-            Example:{
-                      "_id": "snp_rs367896724",
-                      "assembly": "GRCh38",
-                      "location": "Chr1",
-                      "sourceurl": "test_dbSNP.vcf",
-                      "type": "SNP",
-                      "start": 10177,
-                      "end": 10177,
-                      "length": 1,
-                      "info": {
-                        "variant_ref": "A",
-                        "variant_alt": "AC",
-                        "filter": ".",
-                        "qual": ".",
-                        "RS": 367896724,
-                        "RSPOS": 10177,
-                        "dbSNPBuildID": 138,
-                        "SSR": 0,
-                        "SAO": 0,
-                        "VP": "0x050000020005170026000200",
-                        "GENEINFO": "DDX11L1:100287102",
-                        "WGT": 1,
-                        "VC": "DIV",
-                        "R5": true,
-                        "ASP": true,
-                        "VLD": true,
-                        "G5A": true,
-                        "G5": true,
-                        "KGPhase3": true,
-                        "CAF": "0.5747,0.4253",
-                        "COMMON": 1
-                      }
-                    }
-        """
+        """ Parse study data into three types of nodes """
+        # GenomeNode: Information about SNP, unique ID is defined based on rs number
         genome_nodes, info_nodes, edge_nodes = [], [], []
         known_vid, known_traits = set(), set()
         if 'reference' in self.metadata:
@@ -304,8 +216,8 @@ class VCFParser_dbSNP(VCFParser):
                 continue
             if varient_id not in known_vid:
                 known_vid.add(varient_id)
-                location = 'Chr' + d['CHROM']
-                gnode = {'_id': varient_id, 'assembly': assembly, 'location':location, 'sourceurl': sourceurl}
+                chromid = chromo_idxs[d['CHROM']]
+                gnode = {'_id': varient_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
                 gnode['type'] = varient_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1

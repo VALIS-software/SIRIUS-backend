@@ -19,9 +19,8 @@ class Annotation(object):
         self.end_bp = datadict['end_bp']
         self.length = self.end_bp - self.start_bp + 1
         self.chromo_lengths = datadict['chromo_lengths']
-        self.seqids = datadict['seqids']
-        self.chromo_end_bps = [self.chromo_lengths[0]] #np.cumsum(self.chromo_lengths) + self.start_bp - 1
-        for l in self.chromo_lengths[1:]:
+        self.chromo_end_bps = [0]
+        for l in self.chromo_lengths:
             self.chromo_end_bps.append(l+self.chromo_end_bps[-1])
         assert self.end_bp == self.chromo_end_bps[-1], 'Sum of chromo_lengths should be consistent with start_bp and end_bp'
 
@@ -50,55 +49,30 @@ class Annotation(object):
         return None
 
     def db_find(self, start_bp, end_bp, types=None, min_length=0, verbose=False):
-        """
-        Find a GenomeNode in database. Example:
-        {'_id': ObjectId('5a83f2f63dbebd0eb31b45dc'),
-         'assembly': 'GRCh38',
-         'end': 14409,
-         'info': {'attributes': {'Dbxref': 'GeneID:100287102,HGNC:HGNC:37102',
-           'ID': 'gene0',
-           'Name': 'DDX11L1',
-           'description': 'DEAD/H-box helicase 11 like 1',
-           'gbkey': 'Gene',
-           'gene': 'DDX11L1',
-           'gene_biotype': 'misc_RNA',
-           'pseudo': 'true'},
-          'phase': '.',
-          'score': '.',
-          'seqid': 'NC_000001.11',
-          'source': 'BestRefSeq',
-          'strand': '+'},
-         'length': 2536,
-         'location': 'Chr1',
-         'sourceurl': 'https://www.ncbi.nlm.nih.gov/projects/genome/guide/human/index.shtml',
-         'start': 11874,
-         'type': 'gene'}
-        """
+        """ Find a GenomeNode in database """
         start_i_ch, start_bp_ch = self.find_bp_in_chromo(start_bp)
         end_i_ch, end_bp_ch = self.find_bp_in_chromo(end_bp)
         if types == None: types = ['gene', 'transcript', 'exon','lnc_RNA', 'mRNA']
         query = {'assembly': self.name, 'type': {'$in': types}, 'length': {"$gte": min_length}}
         if start_i_ch == end_i_ch:
             # we use seqid to query the start and end positions
-            seqid = self.seqids[start_i_ch]
-            query['info.seqid'] = seqid
+            query['chromid'] = start_i_ch
             query['start'] = {"$gte": start_bp_ch}
             query['end'] = {'$lte': end_bp_ch}
         else:
-            start_seqid = self.seqids[start_i_ch]
-            start_query = {'info.seqid':start_seqid, 'start': {'$gte': start_bp_ch}}
+            start_query = {'chromid':start_i_ch, 'start': {'$gte': start_bp_ch}}
             end_seqid = self.seqids[end_i_ch]
-            end_query = {'info.seqid':end_seqid, 'end': {"$lte": end_bp_ch}}
+            end_query = {'chromid':end_i_ch, 'end': {'$lte': end_bp_ch}}
             query["$or"] = [start_query, end_query]
             if end_i_ch - start_i_ch > 1:
-                mid_seqids = self.seqids[start_i_ch+1:end_i_ch]
-                mid_query = {'info.seqid': {"$in": mid_seqids}}
+                mid_chromids = list(range(start_query+1, end_query))
+                mid_query = {'chromid': {"$in": mid_chromids}}
                 query["$or"] = [start_query, mid_query, end_query]
         if verbose: print(query)
-        return GenomeNodes.find(query).sort([("seqid",1), ("start",1)])
+        return GenomeNodes.find(query).sort([("chromid",1), ("start",1)])
 
-    def location_to_bp(self, chomo, bp_in_ch):
-        if isinstance(chomo, str):
-            chomo = chromo_idxs[chomo]
-        prev_end = self.chromo_end_bps[chomo-1] if chomo > 0 else 0
+    def location_to_bp(self, chromid, bp_in_ch):
+        if isinstance(chromid, str):
+            chromid = chromo_idxs[chromid]
+        prev_end = self.chromo_end_bps[chromid-1] if chromid > 0 else 0
         return prev_end + bp_in_ch

@@ -40,23 +40,22 @@ class EQTLParser(Parser):
 
 
     def get_mongo_nodes(self):
-        """ Parse study data into three types of nodes:
-        EdgeNode: Study that connects SNP and gene
-            Example: { 'from_id': 'snp_rs945418', to_id: 'geneid_1187',
-                       'from_type': 'SNP', 'to_type': 'gene',
-                       ]]'type': 'association',
-                       'sourceurl': 'eQTL',
-                       'info': { "High_confidence": "N",
-                                 "Population": "CEU",
-                                 "CellType": "LCL",
-                                 "DataSet": "EGEUV_EUR",
-                                 "StudySet": "EGEUV",
-                                 "SameSet": "0",
-                                 "DiffSet": "1",
-                                 "TotalSet": "1"
-                               }
-                     }
-        """
+        """ Parse study data into three types of nodes """
+        # EdgeNode: Study that connects SNP and gene
+        #     Example: { 'from_id': 'snp_rs945418', to_id: 'geneid_1187',
+        #                'from_type': 'SNP', 'to_type': 'gene',
+        #                ]]'type': 'association',
+        #                'sourceurl': 'eQTL',
+        #                'info': { "High_confidence": "N",
+        #                          "Population": "CEU",
+        #                          "CellType": "LCL",
+        #                          "DataSet": "EGEUV_EUR",
+        #                          "StudySet": "EGEUV",
+        #                          "SameSet": "0",
+        #                          "DiffSet": "1",
+        #                          "TotalSet": "1"
+        #                        }
+        #              }
         genome_nodes, info_nodes, edge_nodes = [], [], []
         if 'reference' in self.metadata:
             assembly = self.metadata['reference']
@@ -81,10 +80,3 @@ class EQTLParser(Parser):
             if self.verbose and len(edge_nodes) % 100000 == 0:
                 print("%d varients parsed" % len(edge_nodes), end='\r')
         return genome_nodes, info_nodes, edge_nodes
-
-
-    def save_mongo_nodes(self, filename=None):
-        if filename == None: filename = self.filename + '.mongonodes'
-        genome_nodes, info_nodes, edge_nodes = self.get_mongo_nodes()
-        d = {'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edge_nodes': edge_nodes}
-        json.dump(d, open(filename, 'w'), indent=2)

@@ -23,7 +23,7 @@ client = MongoClient(server_address, username=uname, password=pwd, authSource=au
 testdb = client.testdb
 
 # for main database, sirius can only read
-db = client.database
+db = client.database1
 GenomeNodes = db.GenomeNodes
 InfoNodes = db.InfoNodes
 EdgeNodes = db.EdgeNode

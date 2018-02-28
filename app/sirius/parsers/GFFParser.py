@@ -3,13 +3,32 @@
 from sirius.parsers.Parser import Parser
 import os, sys
 import json
+from sirius.realdata.constants import chromo_idxs
 
 class GFFParser(Parser):
-    #def __init__(self, **args):
-    #    super.__init__(**args)
 
     def parse(self):
         """ Parse the GFF3 data format. Ref: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md """
+        # Example: {
+        #           "seqid": "NC_000001.11",
+        #           "source": "BestRefSeq",
+        #           "type": "gene",
+        #           "start": 11874,
+        #           "end": 14409,
+        #           "score": ".",
+        #           "strand": "+",
+        #           "phase": ".",
+        #           "attributes": {
+        #             "ID": "gene0",
+        #             "Dbxref": "GeneID:100287102,HGNC:HGNC:37102",
+        #             "Name": "DDX11L1",
+        #             "description": "DEAD/H-box helicase 11 like 1",
+        #             "gbkey": "Gene",
+        #             "gene": "DDX11L1",
+        #             "gene_biotype": "misc_RNA",
+        #             "pseudo": "true"
+        #           }
+        #          }
         gff_labels = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
         self.metadata = {'filename': self.filename}
         self.features = []
@@ -42,8 +61,38 @@ class GFFParser(Parser):
             d['attributes'][key] = value
         return d
 
-    def get_genomenodes(self):
-        genomenodes = []
+    def get_mongo_nodes(self):
+        # Example:
+        # {
+        #   "assembly": "GRCh38",
+        #   "sourceurl": "test.gff",
+        #   "type": "gene",
+        #   "chromid": 1,
+        #   "info": {
+        #     "seqid": "NC_000001.11",
+        #     "source": "BestRefSeq",
+        #     "score": ".",
+        #     "strand": "+",
+        #     "phase": ".",
+        #     "attributes": {
+        #       "ID": "gene0",
+        #       "description": "DEAD/H-box helicase 11 like 1",
+        #       "gbkey": "Gene",
+        #       "gene": "DDX11L1",
+        #       "gene_biotype": "misc_RNA",
+        #       "pseudo": "true",
+        #       "GeneID": "100287102",
+        #       "HGNC": "HGNC:37102"
+        #     },
+        #     "name": "DDX11L1"
+        #   },
+        #   "start": 11874,
+        #   "end": 14409,
+        #   "_id": "geneid_100287102",
+        #   "length": 2536
+        # }
+        if hasattr(self, 'mongonodes'): return self.mongonodes
+        genome_nodes, info_nodes, edge_nodes = [], [], []
         gene_id_set = set()
         if 'assembly' in self.metadata:
             assembly = self.metadata['assembly']
@@ -57,20 +106,31 @@ class GFFParser(Parser):
         seqid_loc = dict()
         for d in self.features:
             ft = d['type']
+            # we are skipping the contigs for now, since we don't know where they are
+            if not d['seqid'].startswith("NC_000"): continue
             if ft == 'region':
                 if 'chromosome' in d['attributes']:
-                    seqid_loc[d['seqid']] = 'Chr' + d['attributes']['chromosome']
+                    try:
+                        seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
+                    except:
+                        seqid_loc[d['seqid']] = None
             gnode = {'assembly': assembly, 'sourceurl': sourceurl, 'type': ft}
             try:
-                gnode['location'] = seqid_loc[d['seqid']]
+                gnode['chromid'] = seqid_loc[d['seqid']]
             except KeyError:
-                gnode['location'] = "Unknown"
+                gnode['chromid'] = None
             gnode['info'] = dict()
             for k,v in d.items():
                 if k == 'start' or k == 'end':
                     gnode[k] = v
                 elif k != 'type':
                     gnode['info'][k] = v
+            # try to set the info.Name
+            try:
+                name = gnode['info']['attributes'].pop('Name')
+                gnode['info']['name'] = name
+            except:
+                pass
             # get geneID fron Dbxref, e.g GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102
             try:
                 dbxref = gnode['info']['attributes'].pop('Dbxref')
@@ -87,12 +147,8 @@ class GFFParser(Parser):
             except KeyError:
                 pass
             gnode['length'] = gnode['end'] - gnode['start'] + 1
-            genomenodes.append(gnode)
-            if self.verbose and len(genomenodes) % 100000 == 0:
-                print("%d GenomeNodes prepared" % len(genomenodes), end='\r')
-        return genomenodes
-
-    def save_gnode(self, filename=None):
-        if filename == None:
-            filename = self.filename + '.gnode'
-        json.dump(self.get_genomenodes(), open(filename, 'w'), indent=2)
+            genome_nodes.append(gnode)
+            if self.verbose and len(genome_nodes) % 100000 == 0:
+                print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
+        self.mongonodes = (genome_nodes, info_nodes, edge_nodes)
+        return self.mongonodes
