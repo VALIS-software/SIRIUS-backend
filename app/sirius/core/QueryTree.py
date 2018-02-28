@@ -22,7 +22,7 @@ class QueryNode:
         self.edge_rule = 0 if edge_rule == None else edge_rule
         self.verbose = verbose
 
-    def find(self):
+    def find(self, sort=None):
         """
         Find all nodes from self.pool, based on self.filter and the edge connected.
         Return a cursor of MongoDB.find() query, or an empty list if none found
@@ -44,7 +44,10 @@ class QueryNode:
             query['_id'] = {"$in": list(result_ids)}
         if self.verbose == True:
             print(query)
-        return self.pool.find(query)
+        if sort != None:
+            return self.pool.find(query).sort(sort)
+        else:
+            return self.pool.find(query)
 
     def findid(self):
         """
@@ -78,7 +81,7 @@ class QueryEdge:
         self.nextnode = nextnode
         self.verbose = verbose
 
-    def find(self):
+    def find(self, sort=None):
         """
         Find all EdgeNodes from self.pool, based on self.filter, and the next node I connect to
         Return a cursor of MongoDB.find() query, or an empty list if Nothing found
@@ -91,7 +94,10 @@ class QueryEdge:
             query['to_id'] = {'$in': target_ids}
         if self.verbose == True:
             print(query)
-        return self.pool.find(query)
+        if sort != None:
+            return self.pool.find(query).sort(sort)
+        else:
+            return self.pool.find(query)
 
     def find_from_id(self):
         """
@@ -121,6 +127,7 @@ class QueryTree:
         self.head = self.build_recur(query)
 
     def build_recur(self, query):
+        if query == None: return None
         query = NonDict(query)
         typ = query['type'].lower()
         qfilter = self.build_filter(query['filters'])
@@ -146,6 +153,7 @@ class QueryTree:
         """ Parse a filter dictionary to match MongoDB query language """
         if not dfilter: return dict()
         result = dict()
+        text_key = None
         for key, value in dfilter.items():
             #key = key.lower()
             if isinstance(value, dict):
@@ -153,7 +161,11 @@ class QueryTree:
                 for k,v in value.items():
                     # handle "$contain" operator here
                     if k == '$contain':
-                        result['$text'] = {'$search': '\"'+v+'\"'}
+                        if text_key == None:
+                            result['$text'] = {'$search': '\"'+v+'\"'}
+                            text_key = key
+                        else:
+                            print("Error, only one text key can exist in a filter")
                     else:
                         new_k = self.Query_operators[k]
                         new_v = v#.lower() if isinstance(v, str) else v
@@ -161,9 +173,11 @@ class QueryTree:
                 result[key] = new_value
             else:
                 result[key] = value
+        if text_key in result:
+            result.pop(text_key)
         return result
 
-    def find(self):
-        return self.head.find()
+    def find(self, sort):
+        return self.head.find(sort)
 
 
