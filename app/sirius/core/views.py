@@ -147,17 +147,19 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     #print("r_data_in_range take %s second" % (time.time() - t0))
     if sampling_rate > aggregation_thresh: # turn on aggregation!
         t0 = time.time()
-        ret = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
+        ret, annotation_count = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
         print("Clustering results take %s second" % (time.time() - t0))
     else:
         ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
+        annotation_count = len(ret)
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
         "annotationIds": annotation_id,
-        "values": ret
+        "values": ret,
+        "countInRange": annotation_count
     })
 
 def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px):

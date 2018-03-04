@@ -26,10 +26,12 @@ def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
     cluster_ends = list(cluster_ends) + [ndata]
     # build the return data
     ret = []
+    total_annotations = 0
     c_begin = 0
     for c_end in cluster_ends:
         r_cluster = r_data_in_range[c_begin: c_end+1]
         c_size = len(r_cluster)
+        total_annotations += c_size
         if c_size > 1:
             label = str(c_size)
             startBp = r_cluster[0]['startBp']
@@ -37,19 +39,20 @@ def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
             color_level = max(min(c_size / 100, 1.0), 0.2) # between (0.2~1.0)
             color = [0.15, 0.55, 1.0, color_level]
             r_data = {'id': 'cluster',
+                      'count': c_size,
                       'startBp': startBp,
                       'endBp': endBp,
                       'labels': [[label, True, 4, 0, 0]],
                       'yOffsetPx': 0,
                       'heightPx': track_height_px,
-                      "segments": [[0, endBp-startBp+1, None, color, 20]],
+                      'segments': [[0, endBp-startBp+1, None, color, 20]],
                       'aggregation': True
                      }
             ret.append(r_data)
         else:
             ret += r_cluster
         c_begin = c_end+1
-    return ret
+    return ret, total_annotations
 
 def build_bin_count_dist_mat(bincount):
     data = np.repeat(np.arange(bincount.size), bincount).reshape(-1,1)
