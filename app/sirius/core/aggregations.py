@@ -7,8 +7,8 @@ from scipy.cluster import hierarchy
 def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
     """ Optimized clustering algorithm that handles arbitrary size of data, with a certain resolution """
     ndata = len(r_data_in_range)
-    if ndata == 0: return []
-    elif ndata == 1: return r_data_in_range
+    if ndata == 0: return [], 0
+    elif ndata == 1: return r_data_in_range, 1
     pos = np.array([0.5*(r['startBp']+r['endBp']) for r in r_data_in_range]).astype(int)
     # normalize the resolution of data
     pos = (pos/sampling_rate).astype(int)
@@ -156,5 +156,3 @@ def cluster_r_data_old(r_data_in_range, sampling_rate, track_height_px):
                  }
         ret.append(r_data)
     return ret
-
-
