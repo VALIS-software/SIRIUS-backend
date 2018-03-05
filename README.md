@@ -43,8 +43,10 @@ To launch terminal inside container (for debugging):
 docker run -p 5000:5000 -ti sirius-dev:latest /bin/bash
 ```
 
-
-
+To launch a local mongo container (you will need to load data in yourself using the parser scripts):
+```
+sudo docker run --name some-mongo -p 27017:27017 -d mongo
+```
     
 ## Configuration Files
 Configurations are located in the config/ folder
