@@ -120,11 +120,13 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     print("Query returns %s results" % len(query_result), get_query_results.cache_info())
     annotation = loaded_annotations['GRCh38']
     aggregation_thresh = 5000
-    r_data_in_range = []
+    chr_r_data_in_range = [[] for _ in range(len(chromo_idxs)+1)] # r_data for each chromosome, initial one is empty
     ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
     #t0 = time.time()
+    count_in_range = 0
     for gnode in query_result:
-        abs_start = annotation.location_to_bp(gnode['chromid'], gnode['start'])
+        chr_id = gnode['chromid']
+        abs_start = annotation.location_to_bp(chr_id, gnode['start'])
         abs_end = abs_start + gnode['length'] - 1
         fid = gnode['_id'] = str(gnode['_id'])
         try:
@@ -143,15 +145,18 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                       'entity': gnode,
                       'aggregation': False
                      }
-            r_data_in_range.append(r_data)
+            chr_r_data_in_range[chr_id].append(r_data)
+            count_in_range += 1
     #print("r_data_in_range take %s second" % (time.time() - t0))
-    if sampling_rate > aggregation_thresh: # turn on aggregation!
-        t0 = time.time()
-        ret, annotation_count = cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
-        print("Clustering results take %s second" % (time.time() - t0))
-    else:
-        ret = fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
-        annotation_count = len(ret)
+    t0 = time.time()
+    ret = []
+    for i_ch in range(1, len(chromo_idxs)+1):
+        r_data_in_range = chr_r_data_in_range[i_ch]
+        if sampling_rate > aggregation_thresh: # turn on aggregation!
+            ret += cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
+        else:
+            ret += fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
+    print("Data aggregation take %s second" % (time.time() - t0))
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -159,7 +164,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "trackHeightPx": track_height_px,
         "annotationIds": annotation_id,
         "values": ret,
-        "countInRange": annotation_count
+        "countInRange": count_in_range
     })
 
 def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px):
