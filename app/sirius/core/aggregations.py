@@ -7,31 +7,33 @@ from scipy.cluster import hierarchy
 def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
     """ Optimized clustering algorithm that handles arbitrary size of data, with a certain resolution """
     ndata = len(r_data_in_range)
-    if ndata == 0: return [], 0
-    elif ndata == 1: return r_data_in_range, 1
-    pos = np.array([0.5*(r['startBp']+r['endBp']) for r in r_data_in_range]).astype(int)
-    # normalize the resolution of data
-    pos = (pos/sampling_rate).astype(int)
-    pos -= pos.min()
-    norm_factor = max(ndata / 1000, 1)
-    bc = np.bincount(pos)
-    bc = ( bc / norm_factor).astype(int)
-    dist_mat = build_bin_count_dist_mat(bc)
-    linkage = hierarchy.average(dist_mat)
-    cluster_results = hierarchy.fcluster(linkage, t=100, criterion='distance')
-    cluster_ends = np.nonzero(np.diff(cluster_results))[0]
-    # scale back
-    cluster_ends = (cluster_ends * norm_factor).astype(int)
-    # add the last end
-    cluster_ends = list(cluster_ends) + [ndata]
-    # build the return data
+    if ndata == 0: return []
+    elif ndata == 1:
+        # convert the single annotation to a length 1 block
+        cluster_ends = [ndata]
+    else:
+        # clustering when more than 2 data points are provided
+        pos = np.array([0.5*(r['startBp']+r['endBp']) for r in r_data_in_range]).astype(int)
+        # normalize the resolution of data
+        pos = (pos/sampling_rate).astype(int)
+        pos -= pos.min()
+        norm_factor = max(ndata / 1000, 1)
+        bc = np.bincount(pos)
+        bc = ( bc / norm_factor).astype(int)
+        dist_mat = build_bin_count_dist_mat(bc)
+        linkage = hierarchy.average(dist_mat)
+        cluster_results = hierarchy.fcluster(linkage, t=100, criterion='distance')
+        cluster_ends = np.nonzero(np.diff(cluster_results))[0]
+        # scale back
+        cluster_ends = (cluster_ends * norm_factor).astype(int)
+        # add the last end
+        cluster_ends = list(cluster_ends) + [ndata]
+    # build the return blocks
     ret = []
-    total_annotations = 0
     c_begin = 0
     for c_end in cluster_ends:
         r_cluster = r_data_in_range[c_begin: c_end+1]
         c_size = len(r_cluster)
-        total_annotations += c_size
         label = str(c_size)
         startBp = r_cluster[0]['startBp']
         endBp = r_cluster[-1]['endBp']
@@ -47,9 +49,9 @@ def cluster_r_data(r_data_in_range, sampling_rate, track_height_px):
                   'segments': [[0, endBp-startBp+1, None, color, 20]],
                   'aggregation': True
                  }
-            ret.append(r_data)
+        ret.append(r_data)
         c_begin = c_end+1
-    return ret, total_annotations
+    return ret
 
 def build_bin_count_dist_mat(bincount):
     data = np.repeat(np.arange(bincount.size), bincount).reshape(-1,1)
