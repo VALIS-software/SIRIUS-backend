@@ -18,13 +18,20 @@ class TestSirius(unittest.TestCase):
         print("Real annotation class test passed")
 
     def test_core_views(self):
-        from sirius.core.views import get_real_annotation_data
+        from sirius.core.views import get_real_annotation_data, get_annotation_query
         result = get_real_annotation_data('GRCh38', 11800, 14500, 100, 96)
         d = json.loads(result)
         assert d['startBp'] == 11800 and d['endBp'] == 14500
         assert d["values"][0]['entity']['chromid'] == 1
         print("Real annotation request test passed")
-    
+        # test the query api
+        query = {'type': 'GenomeNode', "filters":{"chromid": 1, "type":'gene'}}
+        result = get_annotation_query('GRCh38', 0, 1000000, 100000, 96, query)
+        d = json.loads(result)
+        assert d['countInRange'] > 50
+        print("Real annotation request test passed")
+
+
     def test_query_filter(self):
         from sirius.core.QueryTree import QueryTree
         dfilter = {'type': 'InfoNode', 'name': {"$contain": "cancer", 'info.pvalue': {"<": 0.1}}}
@@ -32,6 +39,8 @@ class TestSirius(unittest.TestCase):
         qt = QueryTree(dfilter)
         print(qt.find().count())
         print("query build and search test passed")
+
+
 
 if __name__ == "__main__":
     unittest.main()
