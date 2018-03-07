@@ -175,56 +175,43 @@ def get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_heigh
         for i in range(0, num_samples):
             idx = i * sampling_rate + start_bp
             chrom = 'chr' + find_chromosome(idx)
-            if chrom != 'chr1':
-                d = 0.0
+            if aggregations[0] == 'none':
+                # just sample linearly
                 if data_key == 'sequence':
-                    track_data_type = 'gbands'
-                    ret.append(0.0)
+                    if sampling_rate == 1:
+                        track_data_type = 'basepairs'
+                        d = [0, 0, 0, 0]
+                        r = random.randint(0, 3)
+                        d[r] = 1.0
+                        if float(d[0]) > 0.0 :
+                            ret.append(0.0)
+                        elif float(d[1]) > 0.0:
+                            ret.append(0.25)
+                        elif float(d[2]) > 0.0:
+                            ret.append(0.5)
+                        elif float(d[3]) > 0.0:
+                            ret.append(0.75)
+                    else:
+                        track_data_type = 'gbands'
+                        # TODO: should be computing g-band here
+                        ret.append(random.random())
                     curr = find_chromosome(idx)
                     ret.append(chromosome_to_idx(curr))
                     chr_range = chromosome_range(curr)
                     ret.append(float(idx - chr_range[0]) / (chr_range[1] - chr_range[0]))
                 else:
-                    for aggregation in aggregations:
-                        ret.append(float(d))
+                    ret.append(random.random())
             else:
-                if aggregations[0] == 'none':
-                    # just sample linearly
-                    if data_key == 'sequence':
-                        if sampling_rate == 1:
-                            track_data_type = 'basepairs'
-                            d = [0, 0, 0, 0]
-                            r = random.randint(0, 3)
-                            d[r] = 1.0
-                            if float(d[0]) > 0.0 :
-                                ret.append(0.0)
-                            elif float(d[1]) > 0.0:
-                                ret.append(0.25)
-                            elif float(d[2]) > 0.0:
-                                ret.append(0.5)
-                            elif float(d[3]) > 0.0:
-                                ret.append(0.75)
-                        else:
-                            track_data_type = 'gbands'
-                            # TODO: should be computing g-band here
-                            ret.append(random.random())
-                        curr = find_chromosome(idx)
-                        ret.append(chromosome_to_idx(curr))
-                        chr_range = chromosome_range(curr)
-                        ret.append(float(idx - chr_range[0]) / (chr_range[1] - chr_range[0]))
-                    else:
-                        ret.append(random.random())
-                else:
-                    d = random.random()
-                    for aggregation in aggregations:
-                        if aggregation == 'max':
-                            ret.append(d*2.0)
-                        elif aggregation == 'mean':
-                            ret.append(d)
-                        elif aggregation == 'min':
-                            ret.append(d * 0.8)
-                        elif aggregation == 'median':
-                            ret.append(d * 1.5)
+                d = random.random()
+                for aggregation in aggregations:
+                    if aggregation == 'max':
+                        ret.append(d*2.0)
+                    elif aggregation == 'mean':
+                        ret.append(d)
+                    elif aggregation == 'min':
+                        ret.append(d * 0.8)
+                    elif aggregation == 'median':
+                        ret.append(d * 1.5)
 
         if track_data_type == 'basepairs':
             dimensions = ['symbol', 'chromsome_index', 'chromosome_location']
