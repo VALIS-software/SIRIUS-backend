@@ -151,8 +151,6 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     #print("r_data_in_range take %s second" % (time.time() - t0))
     t0 = time.time()
     ret = []
-    import IPython
-    IPython.embed()
     for i_ch in range(1, len(chromo_idxs)+1):
         r_data_in_range = chr_r_data_in_range[i_ch]
         if sampling_rate > aggregation_thresh: # turn on aggregation!
