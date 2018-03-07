@@ -171,7 +171,7 @@ Assuming the `SIRIUS-backend` repository is cloned into the home folder.
 
 ```
 cd GRCh38_gff
-/app/sirius/tools/parse_upload_data.py GRCh38_latest_genomic.gff gff --upload
+/app/sirius/tools/parse_upload_gff_chunk.py GRCh38_latest_genomic.gff --upload
 cd ..
 ```
 
@@ -192,9 +192,15 @@ Some warning messages will be shown when parsing data, feel free to ignore them.
 #### 5.2.3 Parse and upload the eQTL data
 
 ```
-cd gwas
+cd eQTL
 /app/sirius/tools/parse_upload_data.py GSexSNP_allc_allp_ld8.txt eqtl --upload
 cd ..
+```
+
+#### 5.2.4 Build the indices in MongoDB
+
+```
+/app/sirius/tools/build_mongo_index.py
 ```
 
 Now your local MongoDB server has all the data ready. You can then exit the Docker container
