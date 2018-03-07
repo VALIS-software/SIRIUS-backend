@@ -126,6 +126,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     count_in_range = 0
     for gnode in query_result:
         chr_id = gnode['chromid']
+        if chr_id == None: continue # Genome with unknown locations are ignored for now
         abs_start = annotation.location_to_bp(chr_id, gnode['start'])
         abs_end = abs_start + gnode['length'] - 1
         fid = gnode['_id'] = str(gnode['_id'])
@@ -150,6 +151,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     #print("r_data_in_range take %s second" % (time.time() - t0))
     t0 = time.time()
     ret = []
+    import IPython
+    IPython.embed()
     for i_ch in range(1, len(chromo_idxs)+1):
         r_data_in_range = chr_r_data_in_range[i_ch]
         if sampling_rate > aggregation_thresh: # turn on aggregation!

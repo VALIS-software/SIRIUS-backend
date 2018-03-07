@@ -140,7 +140,6 @@ class GFFParser(Parser):
         if hasattr(self, 'mongonodes'): return self.mongonodes
         metadata, features = self.data['metadata'], self.data['features']
         genome_nodes, info_nodes, edge_nodes = [], [], []
-        gene_id_set = set()
         if 'assembly' in metadata:
             assembly = metadata['assembly']
         else:
@@ -150,7 +149,8 @@ class GFFParser(Parser):
             sourceurl = metadata['sourceurl']
         else:
             sourceurl = self.filename
-        seqid_loc = dict()
+        if not hasattr(self, 'seqid_loc'): self.seqid_loc = dict()
+        if not hasattr(self, 'gene_id_set'): self.gene_id_set = set()
         for d in features:
             ft = d['type']
             # we are skipping the contigs for now, since we don't know where they are
@@ -158,12 +158,12 @@ class GFFParser(Parser):
             if ft == 'region':
                 if 'chromosome' in d['attributes']:
                     try:
-                        seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
+                        self.seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
                     except:
-                        seqid_loc[d['seqid']] = None
+                        self.seqid_loc[d['seqid']] = None
             gnode = {'assembly': assembly, 'sourceurl': sourceurl, 'type': ft}
             try:
-                gnode['chromid'] = seqid_loc[d['seqid']]
+                gnode['chromid'] = self.seqid_loc[d['seqid']]
             except KeyError:
                 gnode['chromid'] = None
             gnode['info'] = dict()
@@ -186,9 +186,9 @@ class GFFParser(Parser):
                     gnode['info']['attributes'][refname] = ref_id
                     # use GeneID as the ID for this gene
                     if refname == 'GeneID' and gnode['type'] == 'gene':
-                        if ref_id not in gene_id_set:
+                        if ref_id not in self.gene_id_set:
                             gnode['_id'] = 'geneid_' + ref_id
-                            gene_id_set.add(ref_id) # make sure it's unique
+                            self.gene_id_set.add(ref_id) # make sure it's unique
                         else:
                             print("Warning, gene with GeneID %s already exists!" % ref_id)
             except KeyError:

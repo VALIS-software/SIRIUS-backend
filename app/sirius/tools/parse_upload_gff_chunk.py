@@ -20,8 +20,15 @@ if args.url:
 chunk_fnames = parser.parse_save_data_in_chunks()
 
 # parse and upload data in chunks to reduce memory usage
+prev_parser = None
 for fname in chunk_fnames:
     parser = GFFParser(fname)
+    # the GFF data set are sequencially depending on each other
+    # so we need to inherit some information from previous parser
+    if prev_parser != None:
+        parser.seqid_loc = prev_parser.seqid_loc
+        parser.gene_id_set = prev_parser.gene_id_set
+        del prev_parser
     with open(fname) as chunkfile:
         parser.load_json(chunkfile)
         genome_nodes, info_nodes, edge_nodes = parser.get_mongo_nodes()
@@ -32,3 +39,4 @@ for fname in chunk_fnames:
                 print("GenomeNodes from %s uploaded" % fname)
             except Exception as e:
                 print(e)
+    prev_parser = parser
