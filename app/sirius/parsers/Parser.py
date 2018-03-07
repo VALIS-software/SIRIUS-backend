@@ -5,11 +5,19 @@ import json
 
 class Parser(object):
 
+    @property
+    def metadata(self):
+        return self.data['metadata']
+
+    @metadata.setter
+    def metadata(self, value):
+        self.data['metadata'] = value
+
     def __init__(self, filename, verbose=False):
         self.filename = filename
         self.verbose = verbose
         _, self.ext = os.path.splitext(os.path.basename(filename))
-        self.data = None
+        self.data = {'metadata': dict()}
 
     def parse(self):
         raise NotImplementedError
@@ -22,6 +30,9 @@ class Parser(object):
             filename = self.filename + '.json'
         with open(filename, 'w') as out:
             json.dump(self.data, out, indent=2)
+
+    def load_json(self, filename):
+        self.data = json.load(filename)            
 
     def get_mongo_nodes(self):
         raise NotImplementedError

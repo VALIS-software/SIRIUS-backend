@@ -1,11 +1,19 @@
 #!/usr/bin/env python
 
-from sirius.parsers.Parser import Parser
 import os, sys
 import json
+from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs
 
 class GFFParser(Parser):
+
+    @property
+    def features(self):
+        return self.data['features']
+
+    @features.setter
+    def features(self, value):
+        self.data['features'] = value
 
     def parse(self):
         """ Parse the GFF3 data format. Ref: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md """
@@ -30,23 +38,61 @@ class GFFParser(Parser):
         #           }
         #          }
         gff_labels = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
-        self.metadata = {'filename': self.filename}
-        self.features = []
+        metadata = {'filename': self.filename}
+        features = []
         for line in open(self.filename):
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#' or line[1] == '!':
                     ls = line[2:].split(maxsplit=1)
                     if len(ls) == 2:
-                        self.metadata[ls[0]] = ls[1]
+                        metadata[ls[0]] = ls[1]
                     elif len(ls) == 1:
-                        self.metadata[ls[0]] = None
+                        metadata[ls[0]] = None
             elif line:
                 d = self.parse_one_line_data(line)
-                self.features.append(d)
-                if self.verbose and len(self.features) % 100000 == 0:
-                    print("%d data parsed" % len(self.features), end='\r')
-        self.data = {'metadata': self.metadata, 'features': self.features}
+                features.append(d)
+                if self.verbose and len(features) % 100000 == 0:
+                    print("%d data parsed" % len(features), end='\r')
+        self.data = {'metadata': metadata, 'features': features}
+
+    def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
+        """ Specializd function to parse and safe data in chunks to reduce memory usage """
+        gff_labels = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
+        metadata = {'filename': self.filename}
+        features = []
+        i_chunk = 0
+        out_filenames = []
+        for line in open(self.filename):
+            line = line.strip() # remove '\n'
+            if line[0] == '#':
+                if line[1] == '#' or line[1] == '!':
+                    ls = line[2:].split(maxsplit=1)
+                    if len(ls) == 2:
+                        metadata[ls[0]] = ls[1]
+                    elif len(ls) == 1:
+                        metadata[ls[0]] = None
+            elif line:
+                d = self.parse_one_line_data(line)
+                features.append(d)
+                if len(features) == chunk_size:
+                    filename = file_prefix + "_%04d.json" % i_chunk
+                    chunk_data = {'metadata': metadata, 'features': features}
+                    with open(filename, 'w') as out:
+                        json.dump(chunk_data, out, indent=2)
+                    out_filenames.append(filename)
+                    print("%s parsed and saved" % filename)
+                    features = []
+                    i_chunk += 1
+        # add the lask chunk
+        if len(features) > 0:
+            filename = file_prefix + "_%04d.json" % i_chunk
+            chunk_data = {'metadata': metadata, 'features': features}
+            with open(filename, 'w') as out:
+                json.dump(chunk_data, out, indent=2)
+            out_filenames.append(filename)
+            print("%s parsed and saved" % filename)
+        return out_filenames
 
     def parse_one_line_data(self, line):
         d = dict()
@@ -92,19 +138,20 @@ class GFFParser(Parser):
         #   "length": 2536
         # }
         if hasattr(self, 'mongonodes'): return self.mongonodes
+        metadata, features = self.data['metadata'], self.data['features']
         genome_nodes, info_nodes, edge_nodes = [], [], []
         gene_id_set = set()
-        if 'assembly' in self.metadata:
-            assembly = self.metadata['assembly']
+        if 'assembly' in metadata:
+            assembly = metadata['assembly']
         else:
             # we expect the gff file has a comment line like  #!genome-build GRCh38.p10
-            assembly = self.metadata['genome-build'].split('.')[0]
-        if 'sourceurl' in self.metadata:
-            sourceurl = self.metadata['sourceurl']
+            assembly = metadata['genome-build'].split('.')[0]
+        if 'sourceurl' in metadata:
+            sourceurl = metadata['sourceurl']
         else:
             sourceurl = self.filename
         seqid_loc = dict()
-        for d in self.features:
+        for d in features:
             ft = d['type']
             # we are skipping the contigs for now, since we don't know where they are
             if not d['seqid'].startswith("NC_000"): continue

@@ -19,9 +19,17 @@ def str_to_type(s):
 
 class VCFParser(Parser):
 
+    @property
+    def variants(self):
+        return self.data['variants']
+
+    @variants.setter
+    def variants(self, value):
+        self.data['variants'] = value
+
     def parse(self):
         """ Parse the vcf data format. Ref: http://www.internationalgenome.org/wiki/Analysis/vcf4.0/ """
-        # "varients": [
+        # "variants": [
         #   {
         #     "CHROM": "1",
         #     "POS": "1014042",
@@ -47,7 +55,7 @@ class VCFParser(Parser):
         #   },
         # ...]
         self.metadata = {'filename': self.filename, 'INFO':dict()}
-        self.varients = []
+        self.variants = []
         # for splitting the metadata info line
         pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
         for line in open(self.filename):
@@ -74,10 +82,9 @@ class VCFParser(Parser):
                     self.labels = line[1:].split()
             elif line:
                 d = self.parse_one_line_data(line)
-                self.varients.append(d)
-                if self.verbose and len(self.varients) % 100000 == 0:
-                    print("%d data parsed" % len(self.varients), end='\r')
-        self.data = {'metadata': self.metadata, 'varients': self.varients}
+                self.variants.append(d)
+                if self.verbose and len(self.variants) % 100000 == 0:
+                    print("%d data parsed" % len(self.variants), end='\r')
 
     def parse_one_line_data(self, line):
         ls = line.strip().split('\t')
@@ -120,22 +127,22 @@ class VCFParser_ClinVar(VCFParser):
         else:
             sourceurl = self.filename
         seqid_loc = dict()
-        for d in self.varients:
+        for d in self.variants:
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                varient_id = "snp_rs" + str(d["INFO"]["RS"])
-                varient_type = "SNP"
+                variant_id = "snp_rs" + str(d["INFO"]["RS"])
+                variant_type = "SNP"
             else:
-                varient_type = d['INFO']['CLNVC'].lower()
+                variant_type = d['INFO']['CLNVC'].lower()
                 chromid = chromo_idxs[d['CHROM']]
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
-                varient_id = '_'.join([varient_type, chromid, pos, v_ref, v_alt])
-            if varient_id not in known_vid:
-                known_vid.add(varient_id)
+                variant_id = '_'.join([variant_type, chromid, pos, v_ref, v_alt])
+            if variant_id not in known_vid:
+                known_vid.add(variant_id)
                 chromid = chromo_idxs[d['CHROM']]
-                gnode = {'_id': varient_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
-                gnode['type'] = varient_type
+                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
+                gnode['type'] = variant_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
                 gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}
@@ -173,8 +180,8 @@ class VCFParser_ClinVar(VCFParser):
             # create EdgeNode for each trait in this entry
             for trait_id in this_trait_ids:
                 # add study to edge_nodes
-                edgenode = {'from_id': varient_id , 'to_id': trait_id,
-                            'from_type': varient_type, 'to_type': 'trait',
+                edgenode = {'from_id': variant_id , 'to_id': trait_id,
+                            'from_type': variant_type, 'to_type': 'trait',
                             'type': 'association',
                             'sourceurl': sourceurl,
                             'info': {
@@ -183,7 +190,7 @@ class VCFParser_ClinVar(VCFParser):
                            }
                 edge_nodes.append(edgenode)
                 if self.verbose and len(edge_nodes) % 100000 == 0:
-                    print("%d varients parsed" % len(edge_nodes), end='\r')
+                    print("%d variants parsed" % len(edge_nodes), end='\r')
         return genome_nodes, info_nodes, edge_nodes
 
 
@@ -205,20 +212,20 @@ class VCFParser_dbSNP(VCFParser):
         else:
             sourceurl = self.filename
         seqid_loc = dict()
-        for d in self.varients:
+        for d in self.variants:
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                varient_id = "snp_rs" + str(d["INFO"]["RS"])
-                varient_type = "SNP"
+                variant_id = "snp_rs" + str(d["INFO"]["RS"])
+                variant_type = "SNP"
             else:
                 print(d)
                 print("Warning, RS number not found, skipping")
                 continue
-            if varient_id not in known_vid:
-                known_vid.add(varient_id)
+            if variant_id not in known_vid:
+                known_vid.add(variant_id)
                 chromid = chromo_idxs[d['CHROM']]
-                gnode = {'_id': varient_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
-                gnode['type'] = varient_type
+                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
+                gnode['type'] = variant_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
                 gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}

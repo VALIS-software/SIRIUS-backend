@@ -7,6 +7,15 @@ from sirius.realdata.constants import chromo_idxs, chromo_names
 
 class GWASParser(Parser):
 
+    @property
+    def studies(self):
+        return self.data['studies']
+
+    @studies.setter
+    def studies(self, value):
+        self.data['studies'] = value
+
+
     def parse(self):
         """ Parse the GWAS tsv data format. Ref: https://www.ebi.ac.uk/gwas/docs/fileheaders#_file_headers_for_catalog_version_1_0 """
         # Example:
@@ -56,7 +65,6 @@ class GWASParser(Parser):
                 self.studies.append(dict(zip(labels, ls)))
                 if self.verbose and len(self.studies) % 100000 == 0:
                     print("%d data parsed" % len(self.studies), end='\r')
-        self.data = {'metadata': self.metadata, 'studies': self.studies}
 
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes """

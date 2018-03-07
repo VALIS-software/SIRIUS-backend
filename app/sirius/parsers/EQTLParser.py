@@ -7,6 +7,14 @@ import re
 
 class EQTLParser(Parser):
 
+    @property
+    def eqtls(self):
+        return self.data['eqtls']
+
+    @eqtls.setter
+    def eqtls(self, value):
+        self.data['eqtls'] = value
+
     def parse(self):
         """ Parse the high quality eQTL data format. Ref: http://www.exsnp.org/eQTL """
         # Example data
@@ -36,7 +44,6 @@ class EQTLParser(Parser):
                     self.eqtls.append(d)
                     if self.verbose and len(self.eqtls) % 100000 == 0:
                         print("%d data parsed" % len(self.eqtls), end='\r')
-        self.data = {'metadata': self.metadata, 'eqtls': self.eqtls}
 
 
     def get_mongo_nodes(self):
