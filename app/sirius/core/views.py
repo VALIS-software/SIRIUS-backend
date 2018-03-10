@@ -6,7 +6,7 @@ import json
 from functools import lru_cache
 import time
 from sirius.main import app
-from sirius.realdata.loaddata import loaded_annotations
+from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
 from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import cluster_r_data
@@ -326,6 +326,20 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
         "values": edges
     })
 
+#**************************
+#*      /track_info       *
+#**************************
+@app.route("/track_info")
+def track_info():
+    """Return a list of track information"""
+    mock_track_info = [
+        {
+            'track_type': 'sequence',
+            'title': 'Sequence Tracks',
+            'description': 'Raw sequence data'
+        }
+    ]
+    return json.dumps(mock_track_info + loaded_track_info)
 
 
 # The query function is replaced by /annotation end point for now.

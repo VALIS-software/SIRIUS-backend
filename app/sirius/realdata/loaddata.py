@@ -2,10 +2,9 @@ import os
 import json
 from sirius.core.Annotation import Annotation
 from sirius.realdata.constants import chromo_idxs
-
+from sirius.mongo import GenomeNodes, InfoNodes, EdgeNodes
 
 def load_mongo_annotations():
-    from sirius.mongo import GenomeNodes
     anno_names = GenomeNodes.distinct('assembly')
     loaded_annotations = dict()
     for aname in anno_names:
@@ -25,3 +24,32 @@ def load_mongo_annotations():
 
 
 loaded_annotations = load_mongo_annotations()
+
+def load_mongo_data_information():
+    all_sourceurl = set()
+    for MongoNode in (GenomeNodes, InfoNodes, EdgeNodes):
+        for sourceurl in MongoNode.distinct('sourceurl'):
+            all_sourceurl.add(sourceurl)
+    track_info = []
+    for sourceurl in all_sourceurl:
+        if 'GRCh38_latest_genomic' in sourceurl:
+            track_info.append({
+                'track_type': 'GRCh38_gff',
+                'title': 'Genome Elements',
+                'description': 'Genes, Promoters, Enhansers, TF Sites, etc.'
+            })
+        elif 'gwas' in sourceurl:
+            track_info.append({
+                'track_type': 'gwas',
+                'title': 'Genome Wide Associations',
+                'description': 'Variants related to traits or diseases.'
+            })
+        elif 'exSNP' in sourceurl:
+            track_info.append({
+                'track_type': 'eqtl',
+                'title': 'Quantitative Trait Loci',
+                'description': 'Variants related to change in gene expression.'
+            })
+    return track_info
+
+loaded_track_info = load_mongo_data_information()

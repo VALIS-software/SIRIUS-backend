@@ -108,5 +108,9 @@ ENV/
 *.swp
 *.swo
 
+# vscode
+.vscode
+
 # valis frontend in valis-dist
 valis-dist
+
