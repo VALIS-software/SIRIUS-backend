@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("filename")
 parser.add_argument('datatype', choices=['gff', 'gwas', 'eqtl', 'clinvar', 'dbsnp'], help='What data are we parsing?')
 parser.add_argument("--url", help='sourceurl of data')
+parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
 parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
 args = parser.parse_args()
 
@@ -24,8 +25,9 @@ parser.parse()
 if args.url:
     parser.metadata['sourceurl'] = args.url
 
-parser.save_json()
-parser.save_mongo_nodes()
+if args.save:
+    parser.save_json()
+    parser.save_mongo_nodes()
 
 if args.upload == True:
     genome_nodes, info_nodes, edge_nodes = parser.get_mongo_nodes()
