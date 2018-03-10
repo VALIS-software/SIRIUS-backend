@@ -22,7 +22,8 @@ chunk_fnames = parser.parse_save_data_in_chunks()
 # parse and upload data in chunks to reduce memory usage
 prev_parser = None
 for fname in chunk_fnames:
-    parser = GFFParser(fname)
+    # we still want the original filename for each chunk
+    parser = GFFParser(args.filename)
     # the GFF data set are sequencially depending on each other
     # so we need to inherit some information from previous parser
     if prev_parser != None:
