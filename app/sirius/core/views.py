@@ -85,9 +85,8 @@ test_query = {
   ]
 }
 
-@app.route("/annotations/<string:annotation_ids>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
+@app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
 def get_annotation_data(annotation_ids, start_bp, end_bp):
-    annotation_id = annotation_ids.split(",", 1)[0] # we don't know when there are multiple annotations yet
     start_bp = int(start_bp)
     end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
@@ -102,7 +101,7 @@ def get_annotation_data(annotation_ids, start_bp, end_bp):
     elif annotation_id in loaded_annotations:
         result = get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
-        result = get_mock_annotation_data(annotation_ids, start_bp, end_bp, sampling_rate, track_height_px)
+        result = get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     #print(result)
     return result
 
