@@ -86,7 +86,7 @@ test_query = {
 }
 
 @app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
-def get_annotation_data(annotation_ids, start_bp, end_bp):
+def get_annotation_data(annotation_id, start_bp, end_bp):
     start_bp = int(start_bp)
     end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
@@ -156,7 +156,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "endBp" : end_bp,
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
-        "annotationIds": annotation_id,
+        "annotationId": annotation_id,
         "values": ret,
         "countInRange": annotation_count
     })
@@ -218,7 +218,7 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         "endBp" : end_bp,
         "samplingRate": sampling_rate,
         "trackHeightPx": track_height_px,
-        "annotationIds": annotation_id,
+        "annotationId": annotation_id,
         "values": ret
     })
 
