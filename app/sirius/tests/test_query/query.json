@@ -10,7 +10,7 @@
       "type": "EdgeNode",
       "filters": {
         "type": "association",
-        "info.pvalue": {"<": 0.5}
+        "info.p-value": {"<": 0.5}
       },
       "toNode": {
         "type": "InfoNode",

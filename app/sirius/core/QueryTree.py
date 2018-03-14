@@ -127,7 +127,7 @@ class QueryTree:
         self.head = self.build_recur(query)
 
     def build_recur(self, query):
-        if query == None: return None
+        if not query: return None
         query = NonDict(query)
         typ = query['type'].lower()
         qfilter = self.build_filter(query['filters'])
@@ -151,6 +151,7 @@ class QueryTree:
 
     def build_filter(self, dfilter=None):
         """ Parse a filter dictionary to match MongoDB query language """
+        print(dfilter)
         if not dfilter: return dict()
         result = dict()
         text_key = None
@@ -160,7 +161,7 @@ class QueryTree:
                 new_value = dict()
                 for k,v in value.items():
                     # handle "$contain" operator here
-                    if k == '$contain':
+                    if k.startswith('$contain'):
                         if text_key == None:
                             result['$text'] = {'$search': '\"'+v+'\"'}
                             text_key = key

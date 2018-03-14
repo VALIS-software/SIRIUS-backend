@@ -46,7 +46,7 @@ def annotation(annotation_id):
     elif annotation_id in MOCK_ANNOTATIONS:
         return json.dumps(MOCK_ANNOTATIONS[annotation_id])
     else:
-        abort(404, "Annotation not found")
+        return json.dumps({'annotationId': annotation_id, 'startBp': 1, 'endBp': 3088269832})
 
 test_query = {
   "type": "GenomeNode",
@@ -91,8 +91,13 @@ def get_annotation_data(annotation_id, start_bp, end_bp):
     end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     track_height_px = int(request.args.get('track_height_px', default=0))
-    if annotation_id == 'GWASCatalog':
-        #query = request.get_json()
+
+    query = request.get_json()
+    if query:
+        # let show some real data!!
+        print(query)
+        result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
+    elif annotation_id == 'GWASCatalog':
         query = test_query
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id == "GRCh38":
