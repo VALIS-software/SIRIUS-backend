@@ -14,12 +14,13 @@ class NonDict(dict):
 
 
 class QueryNode:
-    def __init__(self, pool=None, qfilter=dict(), edges=None, edge_rule=None, verbose=False):
+    def __init__(self, pool=None, qfilter=dict(), edges=None, edge_rule=None, limit=0, verbose=False):
         self.pool = pool
         self.filter = qfilter
         self.edges = [] if edges == None else edges
         # edge_rule: 0 means "and", 1 means "or", 2 means "not"
         self.edge_rule = 0 if edge_rule == None else edge_rule
+        self.limit = int(limit)
         self.verbose = verbose
 
     def find(self, sort=None):
@@ -45,9 +46,9 @@ class QueryNode:
         if self.verbose == True:
             print(query)
         if sort != None:
-            return self.pool.find(query).sort(sort)
+            return self.pool.find(query, limit=self.limit).sort(sort)
         else:
-            return self.pool.find(query)
+            return self.pool.find(query, limit=self.limit)
 
     def findid(self):
         """
@@ -71,14 +72,15 @@ class QueryNode:
             query['_id'] = {"$in": list(result_ids)}
         if self.verbose == True:
             print(query)
-        return set(d['_id'] for d in self.pool.find(query, {'_id':1}))
+        return set(d['_id'] for d in self.pool.find(query, {'_id':1}, limit=self.limit))
 
 
 class QueryEdge:
-    def __init__(self, pool=None, qfilter=dict(), nextnode=None, verbose=False):
+    def __init__(self, pool=None, qfilter=dict(), nextnode=None, limit=0, verbose=False):
         self.pool = pool
         self.filter = qfilter
         self.nextnode = nextnode
+        self.limit = int(limit)
         self.verbose = verbose
 
     def find(self, sort=None):
@@ -95,9 +97,9 @@ class QueryEdge:
         if self.verbose == True:
             print(query)
         if sort != None:
-            return self.pool.find(query).sort(sort)
+            return self.pool.find(query, limit=self.limit).sort(sort)
         else:
-            return self.pool.find(query)
+            return self.pool.find(query, limit=self.limit)
 
     def find_from_id(self):
         """
@@ -111,7 +113,7 @@ class QueryEdge:
             query['to_id'] = {'$in': target_ids}
         if self.verbose == True:
             print(query)
-        return set(d['from_id'] for d in self.pool.find(query, {'from_id':1}))
+        return set(d['from_id'] for d in self.pool.find(query, {'from_id':1}, limit=self.limit))
 
 
 class QueryTree:
@@ -131,9 +133,10 @@ class QueryTree:
         query = NonDict(query)
         typ = query['type'].lower()
         qfilter = self.build_filter(query['filters'])
+        limit = query['limit'] if 'limit' in query else 100000 # 100000 by default can finish in 1s
         if typ == 'edgenode':
             nextnode = self.build_recur(query['toNode'])
-            resultNode = QueryEdge(EdgeNodes, qfilter, nextnode)
+            resultNode = QueryEdge(EdgeNodes, qfilter, nextnode, limit)
         elif typ == 'genomenode' or typ == 'infonode':
             edgeRule = self.EdgeRules[query['edgeRule']]
             if 'toEdges' in query:
@@ -141,9 +144,9 @@ class QueryTree:
             else:
                 edges = []
             if typ == 'genomenode':
-                resultNode = QueryNode(GenomeNodes, qfilter, edges, edgeRule)
+                resultNode = QueryNode(GenomeNodes, qfilter, edges, edgeRule, limit)
             else:
-                resultNode = QueryNode(InfoNodes, qfilter, edges, edgeRule)
+                resultNode = QueryNode(InfoNodes, qfilter, edges, edgeRule, limit)
         else:
             raise NotImplementedError("Query with type %s not implemented yet." % query['type'])
         resultNode.verbose = self.verbose
