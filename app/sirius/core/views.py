@@ -11,6 +11,8 @@ from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import cluster_r_data
 
+
+
 #**************************
 #*     static urls        *
 #**************************
@@ -343,6 +345,27 @@ def track_info():
     ]
     return json.dumps(mock_track_info + loaded_track_info)
 
+
+#**************************
+#*     /distince_values   *
+#**************************
+from sirius.mongo import GenomeNodes, InfoNodes, EdgeNodes
+from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
+
+@app.route("/distinct_values/<string:query_type>/<string:index>")
+def distinct_values(query_type, index):
+    """ Return all possible values for a certain index for certain query type """
+    # We restrict the choices here to prevent crashing the server with sth like index = '_id'
+    if query_type == QUERY_TYPE_GENOME:
+        if index in ('type', 'chromid', 'assembly', 'sourceurl'):
+            result = GenomeNodes.distinct(index)
+    elif query_type == QUERY_TYPE_INFO:
+        if index in ('type', 'name', 'sourceurl'):
+            result = InfoNodes.distinct(index)
+    elif query_type == QUERY_TYPE_EDGE:
+        if index in ('type', 'from_type', 'to_type', 'sourceurl'):
+            result = EdgeNodes.distinct(index)
+    return json.dumps(result)
 
 # The query function is replaced by /annotation end point for now.
 #**************************

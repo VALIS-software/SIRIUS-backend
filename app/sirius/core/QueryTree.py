@@ -2,6 +2,7 @@
 
 import os, sys
 from sirius.mongo import GenomeNodes, InfoNodes, EdgeNodes
+from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 class KeyDict(dict):
     def __missing__(self, key):
@@ -131,19 +132,19 @@ class QueryTree:
     def build_recur(self, query):
         if not query: return None
         query = NonDict(query)
-        typ = query['type'].lower()
+        typ = query['type']
         qfilter = self.build_filter(query['filters'])
         limit = query['limit'] if 'limit' in query else 100000 # 100000 by default can finish in 1s
-        if typ == 'edgenode':
+        if typ == QUERY_TYPE_EDGE:
             nextnode = self.build_recur(query['toNode'])
             resultNode = QueryEdge(EdgeNodes, qfilter, nextnode, limit)
-        elif typ == 'genomenode' or typ == 'infonode':
+        elif typ == QUERY_TYPE_GENOME or typ == QUERY_TYPE_INFO:
             edgeRule = self.EdgeRules[query['edgeRule']]
             if 'toEdges' in query:
                 edges = [self.build_recur(d) for d in query['toEdges']]
             else:
                 edges = []
-            if typ == 'genomenode':
+            if typ == QUERY_TYPE_GENOME:
                 resultNode = QueryNode(GenomeNodes, qfilter, edges, edgeRule, limit)
             else:
                 resultNode = QueryNode(InfoNodes, qfilter, edges, edgeRule, limit)
@@ -154,7 +155,6 @@ class QueryTree:
 
     def build_filter(self, dfilter=None):
         """ Parse a filter dictionary to match MongoDB query language """
-        print(dfilter)
         if not dfilter: return dict()
         result = dict()
         text_key = None
