@@ -95,7 +95,9 @@ Node3 = {
 ```
 {
   "_id": ObjectId or <str>, (e.g. "snp_rs4950928" or "geneid_100287102")
+  "sourceurl": "GRCh38_latest.gff",
   "assembly": "GRCh38",
+  "chromid": 1,
   "type": "gene" | "exon" | "transcript" | "SNP" | "variant" | ... ,
   "start": <int: startBP>,
   "end": <int: endBP>,
@@ -125,6 +127,7 @@ Supported logical operators: (Check MongoDB query operators for more)
 ```
 {
   "_id": <str>, (e.g. "trait_ykl-40 levels")
+  "sourceurl": "gwas.tsv",
   "type": "trait" | ... (to be added)
   "name": <str>, (e.g. 'ykl-40 levels')
 }
@@ -158,10 +161,11 @@ For example, `"name": {"$contains": "cancer"}` will match all InfoNodes with "na
 ```
 {
   "type": <str>, (e.g. "association")
-  "info.pvalue": <float> (e.g. 1e-13)
+  "sourceurl": "gwas.tsv",
+  "info.p-value": <float> (e.g. 1e-13)
 }
 ```
 
-Same operators as for GenomeNodes can be used here, e.g. `"info.pvalue": {"<": 0.3}`
+Same operators as for GenomeNodes can be used here, e.g. `"info.p-value": {"<": 0.3}`
 
 -------------------------
