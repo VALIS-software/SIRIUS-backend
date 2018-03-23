@@ -1,0 +1,20 @@
+Ref: http://pauldone.blogspot.com/2017/06/deploying-mongodb-on-kubernetes-gke25.html
+
+0. Setup kubectl and gcloud, create a storage-class "fast"
+$ kubectl create -f googlecloud_ssd.yaml 
+
+1. Setup a kubernetes secret for internal auth
+
+$ /usr/bin/openssl rand -base64 741 > internal-auth-mongodb-keyfile
+$ kubectl create secret generic shared-bootstrap-data --from-file=./internal-auth-mongodb-keyfile
+
+2. Create the MongoDB service with StatefulSets
+$ kubectl create -f mongo-statefulset.yaml
+
+3. Log into the Mongo container then initiate and setup user name and passwords
+$ kubectl exec -ti mongo-0 bash 
+> rs.initiate({_id: "MainRepSet", version: 1, members: [{ _id: 0, host: "mongo-0.mongo-service.production.svc.cluster.local:27017" }] })
+> use admin
+> db.createUser({user: 'admin', pwd: 'password', roles:[{role: 'root', db: 'admin'}] })
+...
+
