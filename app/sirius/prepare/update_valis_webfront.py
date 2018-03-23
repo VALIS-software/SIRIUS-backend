@@ -31,11 +31,13 @@ def update_valis_webfront():
     # We use the relative path to the location of this file, to allow running this script from anywhere
     this_file_folder = os.path.dirname(os.path.realpath(__file__))
     target_path = os.path.join(this_file_folder, "../valis-dist")
-    # check if the target folder already exists, if so, remove it
+    # check if the target folder already exists
     if os.path.isdir(target_path):
-        shutil.rmtree(target_path)
+        print("%s already exists, returning...")
+        return
     shutil.move(tmp_path, target_path)
     print("valis-dist folder was replaced. All step finished!")
 
 if __name__ == "__main__":
-     update_valis_webfront()
+    update_valis_webfront()
+
