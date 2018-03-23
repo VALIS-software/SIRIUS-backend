@@ -1,0 +1,32 @@
+We are using namespace to separate the production and development environment.
+Ref: https://kubernetes.io/docs/tasks/administer-cluster/namespaces-walkthrough/
+Steps:
+
+0. Check existing namespaces
+    kubectl get namespaces
+
+1. Create a new namespace called "production"
+    kubectl create -f namespace-prod.json
+
+2. Check current configuration
+    kubectl config view
+    kubectl config current-context
+
+3. Define new context
+    kubectl config set-context default --namespace=default \
+  --cluster=gke_valis-194104_us-west1-b_cluster-sirius \
+  --user=gke_valis-194104_us-west1-b_cluster-sirius
+
+    kubectl config set-context prod --namespace=production \
+  --cluster=gke_valis-194104_us-west1-b_cluster-sirius \
+  --user=gke_valis-194104_us-west1-b_cluster-sirius
+
+   * The new configuration will be saved into ~/.kube/config
+
+4. Switch to new context
+    kubectl config use-context prod
+   * The pods, services, etc. here will be separated from the default namespace
+   * Here we need to setup mongo container and sirius container same as before
+
+5. Switch back to default context
+    kubectl config use-context default
