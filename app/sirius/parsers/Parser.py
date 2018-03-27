@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys
-import json
+import os, json, hashlib
 
 class Parser(object):
 
@@ -32,7 +31,7 @@ class Parser(object):
             json.dump(self.data, out, indent=2)
 
     def load_json(self, filename):
-        self.data = json.load(filename)            
+        self.data = json.load(filename)
 
     def get_mongo_nodes(self):
         raise NotImplementedError
@@ -42,3 +41,7 @@ class Parser(object):
         genome_nodes, info_nodes, edge_nodes = self.get_mongo_nodes()
         d = {'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edge_nodes': edge_nodes}
         json.dump(d, open(filename, 'w'), indent=2)
+
+    def hash(self, string):
+        """ Return a consistent hash string for a string """
+        return hashlib.sha256(string.encode('utf-8')).hexdigest()

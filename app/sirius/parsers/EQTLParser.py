@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-import os, sys
-import json
-import re
+from sirius.realdata.constants import DATA_SOURCE_EQTL
 
 class EQTLParser(Parser):
 
@@ -51,7 +49,7 @@ class EQTLParser(Parser):
         # EdgeNode: Study that connects SNP and gene
         #     Example: { 'from_id': 'snp_rs945418', to_id: 'geneid_1187',
         #                'from_type': 'SNP', 'to_type': 'gene',
-        #                ]]'type': 'association',
+        #                'type': 'association',
         #                'sourceurl': 'eQTL',
         #                'info': { "High_confidence": "N",
         #                          "Population": "CEU",
@@ -63,27 +61,28 @@ class EQTLParser(Parser):
         #                          "TotalSet": "1"
         #                        }
         #              }
-        genome_nodes, info_nodes, edge_nodes = [], [], []
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = self.metadata.copy()
+        info_node.update({"_id": DATA_SOURCE_EQTL, "type": "dataSource", "source": DATA_SOURCE_EQTL})
+        info_nodes.append(info_node)
+        # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
         if 'reference' in self.metadata:
             assembly = self.metadata['reference']
         else:
             assembly = 'GRCh38'
-        if 'sourceurl' in self.metadata:
-            sourceurl = self.metadata['sourceurl']
-        else:
-            sourceurl = self.filename
         for d in self.eqtls:
             # create EdgeNode
-            edgenode = {'from_id': 'snp_rs'+d['exSNP'], 'to_id': 'geneid_'+d['exGENEID'],
+            edge = {'from_id': 'snp_rs'+d['exSNP'], 'to_id': 'geneid_'+d['exGENEID'],
                         'from_type': 'SNP', 'to_type': 'gene',
                         'type': 'association',
-                        'sourceurl': sourceurl,
+                        'source': DATA_SOURCE_EQTL,
                         'info': dict()
                        }
             for k,v in d.items():
                 if k not in ('exSNP', 'exGENEID', 'exGENE'):
-                    edgenode['info'][k] = v
-            edge_nodes.append(edgenode)
-            if self.verbose and len(edge_nodes) % 100000 == 0:
-                print("%d varients parsed" % len(edge_nodes), end='\r')
-        return genome_nodes, info_nodes, edge_nodes
+                    edge['info'][k] = v
+            edges.append(edge)
+            if self.verbose and len(edges) % 100000 == 0:
+                print("%d varients parsed" % len(edges), end='\r')
+        return genome_nodes, info_nodes, edges

@@ -7,7 +7,7 @@
       "start": 203186754,
       "end": 203186754,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4950928",
@@ -22,7 +22,7 @@
       "start": 39776775,
       "end": 39776775,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7993214",
@@ -37,7 +37,7 @@
       "start": 78513681,
       "end": 78513681,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs8034191",
@@ -52,7 +52,7 @@
       "start": 159711078,
       "end": 159711078,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2808630",
@@ -67,7 +67,7 @@
       "start": 190632672,
       "end": 190632672,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7626795",
@@ -82,7 +82,7 @@
       "start": 78601997,
       "end": 78601997,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1051730",
@@ -97,7 +97,7 @@
       "start": 127412547,
       "end": 127412547,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7014346",
@@ -112,7 +112,7 @@
       "start": 111300984,
       "end": 111300984,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs3802842",
@@ -127,7 +127,7 @@
       "start": 48927093,
       "end": 48927093,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4939827",
@@ -142,7 +142,7 @@
       "start": 8659256,
       "end": 8659256,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10795668",
@@ -157,7 +157,7 @@
       "start": 116618444,
       "end": 116618444,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs16892766",
@@ -172,7 +172,7 @@
       "start": 28140937,
       "end": 28140937,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs864745",
@@ -187,7 +187,7 @@
       "start": 12286011,
       "end": 12286011,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs12779790",
@@ -202,7 +202,7 @@
       "start": 71269322,
       "end": 71269322,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7961581",
@@ -217,7 +217,7 @@
       "start": 43505684,
       "end": 43505684,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7578597",
@@ -232,7 +232,7 @@
       "start": 64726228,
       "end": 64726228,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4607103",
@@ -247,7 +247,7 @@
       "start": 127279485,
       "end": 127279485,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2180341",
@@ -262,7 +262,7 @@
       "start": 119380704,
       "end": 119380704,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs11064768",
@@ -277,7 +277,7 @@
       "start": 9964756,
       "end": 9964756,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7442295",
@@ -292,7 +292,7 @@
       "start": 9933120,
       "end": 9933120,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs737267",
@@ -307,7 +307,7 @@
       "start": 192567683,
       "end": 192567683,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2816316",
@@ -322,7 +322,7 @@
       "start": 102355405,
       "end": 102355405,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs13015714",
@@ -337,7 +337,7 @@
       "start": 159947262,
       "end": 159947262,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs17810546",
@@ -352,7 +352,7 @@
       "start": 188394766,
       "end": 188394766,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1464510",
@@ -367,7 +367,7 @@
       "start": 159044945,
       "end": 159044945,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1738074",
@@ -382,7 +382,7 @@
       "start": 46046326,
       "end": 46046326,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10993994",
@@ -397,7 +397,7 @@
       "start": 50861367,
       "end": 50861367,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2735839",
@@ -412,7 +412,7 @@
       "start": 69227030,
       "end": 69227030,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7931342",
@@ -427,7 +427,7 @@
       "start": 160412632,
       "end": 160412632,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs9364554",
@@ -442,7 +442,7 @@
       "start": 98187015,
       "end": 98187015,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6465657",
@@ -457,7 +457,7 @@
       "start": 51486831,
       "end": 51486831,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs5945572",
@@ -472,7 +472,7 @@
       "start": 62904596,
       "end": 62904596,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs721048",
@@ -487,7 +487,7 @@
       "start": 125008303,
       "end": 125008303,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4962416",
@@ -502,7 +502,7 @@
       "start": 69227200,
       "end": 69227200,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10896449",
@@ -517,7 +517,7 @@
       "start": 27936944,
       "end": 27936944,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10486567",
@@ -532,7 +532,7 @@
       "start": 109279544,
       "end": 109279544,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs599839",
@@ -547,7 +547,7 @@
       "start": 5285279,
       "end": 5285279,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4910742",
@@ -562,7 +562,7 @@
       "start": 60493111,
       "end": 60493111,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs11886868",
@@ -577,7 +577,7 @@
       "start": 1084399,
       "end": 1084399,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1670533",
@@ -592,7 +592,7 @@
       "start": 1101493,
       "end": 1101493,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs3796619",
@@ -607,7 +607,7 @@
       "start": 28268218,
       "end": 28268218,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs916977",
@@ -622,7 +622,7 @@
       "start": 31301932,
       "end": 31301932,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs9888739",
@@ -637,7 +637,7 @@
       "start": 589564,
       "end": 589564,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4963128",
@@ -652,7 +652,7 @@
       "start": 58384450,
       "end": 58384450,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6445975",
@@ -667,7 +667,7 @@
       "start": 173340574,
       "end": 173340574,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10798269",
@@ -682,7 +682,7 @@
       "start": 11491677,
       "end": 11491677,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs13277113",
@@ -697,7 +697,7 @@
       "start": 31357553,
       "end": 31357553,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs11574637",
@@ -712,7 +712,7 @@
       "start": 101829919,
       "end": 101829919,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10516487",
@@ -727,7 +727,7 @@
       "start": 56018703,
       "end": 56018703,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1701704",
@@ -742,7 +742,7 @@
       "start": 230159944,
       "end": 230159944,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4846914",
@@ -757,7 +757,7 @@
       "start": 73568544,
       "end": 73568544,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs17145738",
@@ -772,7 +772,7 @@
       "start": 125474167,
       "end": 125474167,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs17321515",
@@ -787,7 +787,7 @@
       "start": 19547663,
       "end": 19547663,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs16996148",
@@ -802,7 +802,7 @@
       "start": 62726106,
       "end": 62726106,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs12130333",
@@ -817,7 +817,7 @@
       "start": 73606007,
       "end": 73606007,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs3812316",
@@ -832,7 +832,7 @@
       "start": 35319358,
       "end": 35319358,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6060369",
@@ -847,7 +847,7 @@
       "start": 54368658,
       "end": 54368658,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs17690232",
@@ -862,7 +862,7 @@
       "start": 89358801,
       "end": 89358801,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4932217",
@@ -877,7 +877,7 @@
       "start": 141386728,
       "end": 141386728,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs724016",
@@ -892,7 +892,7 @@
       "start": 79460955,
       "end": 79460955,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10078095",
@@ -907,7 +907,7 @@
       "start": 33176171,
       "end": 33176171,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2254287",
@@ -922,7 +922,7 @@
       "start": 27518370,
       "end": 27518370,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs780094",
@@ -937,7 +937,7 @@
       "start": 62583922,
       "end": 62583922,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1748195",
@@ -952,7 +952,7 @@
       "start": 154513713,
       "end": 154513713,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10260404",
@@ -967,7 +967,7 @@
       "start": 38551301,
       "end": 38551301,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10498345",
@@ -982,7 +982,7 @@
       "start": 9934286,
       "end": 9934286,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6855911",
@@ -997,7 +997,7 @@
       "start": 137681500,
       "end": 137681500,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10499194",
@@ -1012,7 +1012,7 @@
       "start": 88934558,
       "end": 88934558,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs12821256",
@@ -1027,7 +1027,7 @@
       "start": 92307319,
       "end": 92307319,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs12896399",
@@ -1042,7 +1042,7 @@
       "start": 466033,
       "end": 466033,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1540771",
@@ -1057,7 +1057,7 @@
       "start": 48099968,
       "end": 48099968,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1834640",
@@ -1072,7 +1072,7 @@
       "start": 89178528,
       "end": 89178528,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1042602",
@@ -1087,7 +1087,7 @@
       "start": 33951588,
       "end": 33951588,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs16891982",
@@ -1102,7 +1102,7 @@
       "start": 159308461,
       "end": 159308461,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2494250",
@@ -1117,7 +1117,7 @@
       "start": 159436169,
       "end": 159436169,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4128725",
@@ -1132,7 +1132,7 @@
       "start": 159709026,
       "end": 159709026,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs2794520",
@@ -1147,7 +1147,7 @@
       "start": 83788868,
       "end": 83788868,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs7552393",
@@ -1162,7 +1162,7 @@
       "start": 30608983,
       "end": 30608983,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs746961",
@@ -1177,7 +1177,7 @@
       "start": 131768766,
       "end": 131768766,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1106683",
@@ -1192,7 +1192,7 @@
       "start": 131768906,
       "end": 131768906,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1106684",
@@ -1207,7 +1207,7 @@
       "start": 65546652,
       "end": 65546652,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1333026",
@@ -1222,7 +1222,7 @@
       "start": 74382740,
       "end": 74382740,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs4471028",
@@ -1237,7 +1237,7 @@
       "start": 117588720,
       "end": 117588720,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1875517",
@@ -1252,7 +1252,7 @@
       "start": 40055127,
       "end": 40055127,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6599077",
@@ -1267,7 +1267,7 @@
       "start": 58330179,
       "end": 58330179,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs10492604",
@@ -1282,7 +1282,7 @@
       "start": 23597552,
       "end": 23597552,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs1158167",
@@ -1297,7 +1297,7 @@
       "start": 19765857,
       "end": 19765857,
       "length": 1,
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "assembly": "GRCh38",
       "info": {
         "ID": "rs6977660",
@@ -1308,208 +1308,215 @@
   ],
   "info_nodes": [
     {
+      "_id": "GWAS",
+      "type": "dataSource",
+      "source": "GWAS",
+      "filename": "gwas_test.tsv",
+      "sourceurl": "https://www.ebi.ac.uk/gwas/api/search/downloads/full"
+    },
+    {
       "_id": "trait_ykl-40 levels",
       "type": "trait",
-      "name": "ykl-40 levels",
-      "sourceurl": "gwas_test.tsv"
+      "name": "YKL-40 levels",
+      "source": "GWAS"
     },
     {
       "_id": "trait_psoriasis",
       "type": "trait",
-      "name": "psoriasis",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Psoriasis",
+      "source": "GWAS"
     },
     {
       "_id": "trait_lung cancer",
       "type": "trait",
-      "name": "lung cancer",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Lung cancer",
+      "source": "GWAS"
     },
     {
       "_id": "trait_nicotine dependence",
       "type": "trait",
-      "name": "nicotine dependence",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Nicotine dependence",
+      "source": "GWAS"
     },
     {
       "_id": "trait_colorectal cancer",
       "type": "trait",
-      "name": "colorectal cancer",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Colorectal cancer",
+      "source": "GWAS"
     },
     {
       "_id": "trait_type 2 diabetes",
       "type": "trait",
-      "name": "type 2 diabetes",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Type 2 diabetes",
+      "source": "GWAS"
     },
     {
       "_id": "trait_breast cancer",
       "type": "trait",
-      "name": "breast cancer",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Breast cancer",
+      "source": "GWAS"
     },
     {
       "_id": "trait_schizophrenia",
       "type": "trait",
-      "name": "schizophrenia",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Schizophrenia",
+      "source": "GWAS"
     },
     {
       "_id": "trait_urate levels",
       "type": "trait",
-      "name": "urate levels",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Urate levels",
+      "source": "GWAS"
     },
     {
       "_id": "trait_celiac disease",
       "type": "trait",
-      "name": "celiac disease",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Celiac disease",
+      "source": "GWAS"
     },
     {
       "_id": "trait_prostate cancer",
       "type": "trait",
-      "name": "prostate cancer",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Prostate cancer",
+      "source": "GWAS"
     },
     {
       "_id": "trait_ldl cholesterol",
       "type": "trait",
-      "name": "ldl cholesterol",
-      "sourceurl": "gwas_test.tsv"
+      "name": "LDL cholesterol",
+      "source": "GWAS"
     },
     {
       "_id": "trait_fetal hemoglobin levels",
       "type": "trait",
-      "name": "fetal hemoglobin levels",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Fetal hemoglobin levels",
+      "source": "GWAS"
     },
     {
       "_id": "trait_recombination rate (females)",
       "type": "trait",
-      "name": "recombination rate (females)",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Recombination rate (females)",
+      "source": "GWAS"
     },
     {
       "_id": "trait_recombination rate (males)",
       "type": "trait",
-      "name": "recombination rate (males)",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Recombination rate (males)",
+      "source": "GWAS"
     },
     {
       "_id": "trait_iris color",
       "type": "trait",
-      "name": "iris color",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Iris color",
+      "source": "GWAS"
     },
     {
       "_id": "trait_systemic lupus erythematosus",
       "type": "trait",
-      "name": "systemic lupus erythematosus",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Systemic lupus erythematosus",
+      "source": "GWAS"
     },
     {
       "_id": "trait_type 1 diabetes",
       "type": "trait",
-      "name": "type 1 diabetes",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Type 1 diabetes",
+      "source": "GWAS"
     },
     {
       "_id": "trait_hdl cholesterol",
       "type": "trait",
-      "name": "hdl cholesterol",
-      "sourceurl": "gwas_test.tsv"
+      "name": "HDL cholesterol",
+      "source": "GWAS"
     },
     {
       "_id": "trait_triglycerides",
       "type": "trait",
-      "name": "triglycerides",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Triglycerides",
+      "source": "GWAS"
     },
     {
       "_id": "trait_height",
       "type": "trait",
-      "name": "height",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Height",
+      "source": "GWAS"
     },
     {
       "_id": "trait_amyotrophic lateral sclerosis",
       "type": "trait",
-      "name": "amyotrophic lateral sclerosis",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Amyotrophic lateral sclerosis",
+      "source": "GWAS"
     },
     {
       "_id": "trait_coronary spasm",
       "type": "trait",
-      "name": "coronary spasm",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Coronary spasm",
+      "source": "GWAS"
     },
     {
       "_id": "trait_rheumatoid arthritis",
       "type": "trait",
-      "name": "rheumatoid arthritis",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Rheumatoid arthritis",
+      "source": "GWAS"
     },
     {
       "_id": "trait_blond vs. brown hair color",
       "type": "trait",
-      "name": "blond vs. brown hair color",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Blond vs. brown hair color",
+      "source": "GWAS"
     },
     {
       "_id": "trait_blue vs. green eyes",
       "type": "trait",
-      "name": "blue vs. green eyes",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Blue vs. green eyes",
+      "source": "GWAS"
     },
     {
       "_id": "trait_freckles",
       "type": "trait",
-      "name": "freckles",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Freckles",
+      "source": "GWAS"
     },
     {
       "_id": "trait_skin pigmentation",
       "type": "trait",
-      "name": "skin pigmentation",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Skin pigmentation",
+      "source": "GWAS"
     },
     {
       "_id": "trait_select biomarker traits",
       "type": "trait",
-      "name": "select biomarker traits",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Select biomarker traits",
+      "source": "GWAS"
     },
     {
       "_id": "trait_body mass index",
       "type": "trait",
-      "name": "body mass index",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Body mass index",
+      "source": "GWAS"
     },
     {
       "_id": "trait_waist circumference",
       "type": "trait",
-      "name": "waist circumference",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Waist circumference",
+      "source": "GWAS"
     },
     {
       "_id": "trait_sleep-related phenotypes",
       "type": "trait",
-      "name": "sleep-related phenotypes",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Sleep-related phenotypes",
+      "source": "GWAS"
     },
     {
       "_id": "trait_cystatin c",
       "type": "trait",
-      "name": "cystatin c",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Cystatin C",
+      "source": "GWAS"
     },
     {
       "_id": "trait_thyroid stimulating hormone",
       "type": "trait",
-      "name": "thyroid stimulating hormone",
-      "sourceurl": "gwas_test.tsv"
+      "name": "Thyroid stimulating hormone",
+      "source": "GWAS"
     }
   ],
   "edge_nodes": [
@@ -1519,7 +1526,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18403759",
@@ -1559,7 +1566,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18369459",
@@ -1599,7 +1606,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18385676",
@@ -1639,7 +1646,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18385676",
@@ -1679,7 +1686,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18385676",
@@ -1719,7 +1726,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18385738",
@@ -1759,7 +1766,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18385739",
@@ -1799,7 +1806,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372901",
@@ -1839,7 +1846,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372901",
@@ -1879,7 +1886,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372901",
@@ -1919,7 +1926,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372905",
@@ -1959,7 +1966,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372905",
@@ -1999,7 +2006,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372903",
@@ -2039,7 +2046,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372903",
@@ -2079,7 +2086,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372903",
@@ -2119,7 +2126,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372903",
@@ -2159,7 +2166,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18372903",
@@ -2199,7 +2206,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18326623",
@@ -2239,7 +2246,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-07-22",
         "PUBMEDID": "18332876",
@@ -2279,7 +2286,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "18327256",
@@ -2319,7 +2326,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "18327257",
@@ -2359,7 +2366,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18311140",
@@ -2399,7 +2406,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18311140",
@@ -2439,7 +2446,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18311140",
@@ -2479,7 +2486,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18311140",
@@ -2519,7 +2526,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18311140",
@@ -2559,7 +2566,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264097",
@@ -2599,7 +2606,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264097",
@@ -2639,7 +2646,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264097",
@@ -2679,7 +2686,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264097",
@@ -2719,7 +2726,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264097",
@@ -2759,7 +2766,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264098",
@@ -2799,7 +2806,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264098",
@@ -2839,7 +2846,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264096",
@@ -2879,7 +2886,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264096",
@@ -2919,7 +2926,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264096",
@@ -2959,7 +2966,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18264096",
@@ -2999,7 +3006,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-15",
         "PUBMEDID": "18262040",
@@ -3039,7 +3046,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-12",
         "PUBMEDID": "18245381",
@@ -3079,7 +3086,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-12",
         "PUBMEDID": "18245381",
@@ -3119,7 +3126,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "18239089",
@@ -3159,7 +3166,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18239089",
@@ -3199,7 +3206,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "18252221",
@@ -3239,7 +3246,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204446",
@@ -3279,7 +3286,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204446",
@@ -3319,7 +3326,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204446",
@@ -3359,7 +3366,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204446",
@@ -3399,7 +3406,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204098",
@@ -3439,7 +3446,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204098",
@@ -3479,7 +3486,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18204447",
@@ -3519,7 +3526,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18198356",
@@ -3559,7 +3566,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3599,7 +3606,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3639,7 +3646,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3679,7 +3686,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3719,7 +3726,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3759,7 +3766,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193044",
@@ -3799,7 +3806,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18193046",
@@ -3839,7 +3846,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18193045",
@@ -3879,7 +3886,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18193045",
@@ -3919,7 +3926,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18193045",
@@ -3959,7 +3966,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18193045",
@@ -3999,7 +4006,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "18193045",
@@ -4039,7 +4046,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4079,7 +4086,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4119,7 +4126,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4159,7 +4166,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4199,7 +4206,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4239,7 +4246,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4279,7 +4286,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-16",
         "PUBMEDID": "18193043",
@@ -4319,7 +4326,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18179892",
@@ -4359,7 +4366,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18179892",
@@ -4399,7 +4406,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18084291",
@@ -4439,7 +4446,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "18075462",
@@ -4479,7 +4486,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "17997608",
@@ -4519,7 +4526,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17982456",
@@ -4559,7 +4566,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17952075",
@@ -4599,7 +4606,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17952075",
@@ -4639,7 +4646,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17952075",
@@ -4679,7 +4686,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17952075",
@@ -4719,7 +4726,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17999355",
@@ -4759,7 +4766,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17999355",
@@ -4799,7 +4806,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17999355",
@@ -4839,7 +4846,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-06-16",
         "PUBMEDID": "17934461",
@@ -4879,7 +4886,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-11",
         "PUBMEDID": "17903293",
@@ -4919,7 +4926,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-11",
         "PUBMEDID": "17903293",
@@ -4959,7 +4966,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-11",
         "PUBMEDID": "17903293",
@@ -4999,7 +5006,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-11",
         "PUBMEDID": "17903293",
@@ -5039,7 +5046,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-11",
         "PUBMEDID": "17903293",
@@ -5079,7 +5086,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "17903300",
@@ -5119,7 +5126,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "17903300",
@@ -5159,7 +5166,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-17",
         "PUBMEDID": "17903300",
@@ -5199,7 +5206,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-12",
         "PUBMEDID": "17903300",
@@ -5239,7 +5246,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-12",
         "PUBMEDID": "17903300",
@@ -5279,7 +5286,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2014-08-01",
         "PUBMEDID": "17903308",
@@ -5319,7 +5326,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2014-08-01",
         "PUBMEDID": "17903308",
@@ -5359,7 +5366,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2009-09-28",
         "PUBMEDID": "17903292",
@@ -5399,7 +5406,7 @@
       "from_type": "SNP",
       "to_type": "trait",
       "type": "association",
-      "sourceurl": "gwas_test.tsv",
+      "source": "GWAS",
       "info": {
         "DATE ADDED TO CATALOG": "2008-09-02",
         "PUBMEDID": "17903292",

@@ -1,6 +1,7 @@
 {
   "metadata": {
-    "filename": "gwas_test.tsv"
+    "filename": "gwas_test.tsv",
+    "sourceurl": "https://www.ebi.ac.uk/gwas/api/search/downloads/full"
   },
   "studies": [
     {

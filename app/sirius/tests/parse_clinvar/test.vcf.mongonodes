@@ -1,0 +1,717 @@
+{
+  "genome_nodes": [
+    {
+      "_id": "snp_rs143888043",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014042,
+      "end": 1014042,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "A",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446939,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014042G>A"
+      }
+    },
+    {
+      "_id": "snp_rs786201005",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014143,
+      "end": 1014143,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 181485,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001587|nonsense",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014143C>T"
+      }
+    },
+    {
+      "_id": "snp_rs61766284",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014217,
+      "end": 1014217,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446987,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001819|synonymous_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014217C>T"
+      }
+    },
+    {
+      "_id": "snp_rs1921",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014228,
+      "end": 1014228,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "A",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 389314,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014228G>A"
+      }
+    },
+    {
+      "_id": "snp_rs672601345",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014316,
+      "end": 1014316,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "CG",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 171289,
+        "CLNVCSO": "SO:1000035",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001589|frameshift_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014319dupG"
+      }
+    },
+    {
+      "_id": "snp_rs672601312",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014359,
+      "end": 1014359,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 171288,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001587|nonsense",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014359G>T"
+      }
+    },
+    {
+      "_id": "snp_rs116002608",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014451,
+      "end": 1014451,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446936,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001819|synonymous_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014451C>T"
+      }
+    },
+    {
+      "_id": "snp_rs140447219",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1014471,
+      "end": 1014471,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "C",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446981,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "ISG15:9636",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1014471G>C"
+      }
+    },
+    {
+      "_id": "snp_rs776698665",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020177,
+      "end": 1020177,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "A",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446941,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020177C>A"
+      }
+    },
+    {
+      "_id": "snp_rs539283387",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020183,
+      "end": 1020183,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "C",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 364282,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020183G>C"
+      }
+    },
+    {
+      "_id": "snp_rs764659938",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020216,
+      "end": 1020216,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "G",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 364148,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020216C>G"
+      }
+    },
+    {
+      "_id": "snp_rs115173026",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020217,
+      "end": 1020217,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 133759,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001819|synonymous_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020217G>T"
+      }
+    },
+    {
+      "_id": "snp_rs1057523287",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020221,
+      "end": 1020221,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 364285,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020221C>T"
+      }
+    },
+    {
+      "_id": "snp_rs201073369",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1020239,
+      "end": 1020239,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "C",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 206690,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1020239G>C"
+      }
+    },
+    {
+      "_id": "snp_rs115704555",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1022188,
+      "end": 1022188,
+      "length": 1,
+      "info": {
+        "variant_ref": "A",
+        "variant_alt": "G",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 249265,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001627|intron_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1022188A>G"
+      }
+    },
+    {
+      "_id": "snp_rs756623659",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1022225,
+      "end": 1022225,
+      "length": 1,
+      "info": {
+        "variant_ref": "G",
+        "variant_alt": "A",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 244110,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1022225G>A"
+      }
+    },
+    {
+      "_id": "snp_rs6657048",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1022260,
+      "end": 1022260,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 133745,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001819|synonymous_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1022260C>T"
+      }
+    },
+    {
+      "_id": "snp_rs879253787",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1022313,
+      "end": 1022313,
+      "length": 1,
+      "info": {
+        "variant_ref": "A",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 244111,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1022313A>T"
+      }
+    },
+    {
+      "_id": "snp_rs140954236",
+      "assembly": "GRCh38",
+      "chromid": 1,
+      "sourceurl": "test.vcf",
+      "type": "SNP",
+      "start": 1035307,
+      "end": 1035307,
+      "length": 1,
+      "info": {
+        "variant_ref": "C",
+        "variant_alt": "T",
+        "filter": ".",
+        "qual": ".",
+        "ALLELEID": 446942,
+        "CLNVCSO": "SO:0001483",
+        "GENEINFO": "AGRN:375790",
+        "MC": "SO:0001583|missense_variant",
+        "ORIGIN": "1",
+        "CLNHGVS": "NC_000001.11:g.1035307C>T"
+      }
+    }
+  ],
+  "info_nodes": [
+    {
+      "_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "type": "trait",
+      "name": "Immunodeficiency 38 with basal ganglia calcification",
+      "sourceurl": "test.vcf",
+      "info": {
+        "MedGen": "C4015293",
+        "OMIM": "616126",
+        "Orphanet": "ORPHA319563"
+      }
+    },
+    {
+      "_id": "trait_not_specified",
+      "type": "trait",
+      "name": "not specified",
+      "sourceurl": "test.vcf",
+      "info": {
+        "MedGen": "CN169374"
+      }
+    },
+    {
+      "_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "type": "trait",
+      "name": "Myasthenic syndrome, congenital, 8",
+      "sourceurl": "test.vcf",
+      "info": {
+        "MedGen": "C3808739",
+        "OMIM": "615120"
+      }
+    },
+    {
+      "_id": "trait_not_provided",
+      "type": "trait",
+      "name": "not provided",
+      "sourceurl": "test.vcf",
+      "info": {
+        "MedGen": "CN517202"
+      }
+    },
+    {
+      "_id": "trait_Congenital_myasthenic_syndrome",
+      "type": "trait",
+      "name": "Congenital myasthenic syndrome",
+      "sourceurl": "test.vcf",
+      "info": {
+        "MedGen": "C0751882",
+        "Orphanet": "ORPHA590"
+      }
+    }
+  ],
+  "edge_nodes": [
+    {
+      "from_id": "snp_rs143888043",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs786201005",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "no_assertion_criteria_provided"
+      }
+    },
+    {
+      "from_id": "snp_rs61766284",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs1921",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs672601345",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "no_assertion_criteria_provided"
+      }
+    },
+    {
+      "from_id": "snp_rs672601312",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "no_assertion_criteria_provided"
+      }
+    },
+    {
+      "from_id": "snp_rs116002608",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs140447219",
+      "to_id": "trait_Immunodeficiency_38_with_basal_ganglia_calcification",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs776698665",
+      "to_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs539283387",
+      "to_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_multiple_submitters,_no_conflicts"
+      }
+    },
+    {
+      "from_id": "snp_rs539283387",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_multiple_submitters,_no_conflicts"
+      }
+    },
+    {
+      "from_id": "snp_rs764659938",
+      "to_id": "trait_not_provided",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs115173026",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_multiple_submitters,_no_conflicts"
+      }
+    },
+    {
+      "from_id": "snp_rs1057523287",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs201073369",
+      "to_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_conflicting_interpretations"
+      }
+    },
+    {
+      "from_id": "snp_rs201073369",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_conflicting_interpretations"
+      }
+    },
+    {
+      "from_id": "snp_rs115704555",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    },
+    {
+      "from_id": "snp_rs756623659",
+      "to_id": "trait_Congenital_myasthenic_syndrome",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "no_assertion_criteria_provided"
+      }
+    },
+    {
+      "from_id": "snp_rs6657048",
+      "to_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_multiple_submitters,_no_conflicts"
+      }
+    },
+    {
+      "from_id": "snp_rs6657048",
+      "to_id": "trait_not_specified",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_multiple_submitters,_no_conflicts"
+      }
+    },
+    {
+      "from_id": "snp_rs879253787",
+      "to_id": "trait_Congenital_myasthenic_syndrome",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "no_assertion_criteria_provided"
+      }
+    },
+    {
+      "from_id": "snp_rs140954236",
+      "to_id": "trait_Myasthenic_syndrome,_congenital,_8",
+      "from_type": "SNP",
+      "to_type": "trait",
+      "type": "association",
+      "sourceurl": "test.vcf",
+      "info": {
+        "CLNREVSTAT": "criteria_provided,_single_submitter"
+      }
+    }
+  ]
+}

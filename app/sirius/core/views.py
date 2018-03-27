@@ -341,6 +341,11 @@ def track_info():
             'track_type': 'sequence',
             'title': 'Sequence Tracks',
             'description': 'Raw sequence data'
+        },
+        {
+            'track_type': 'functional',
+            'title': 'Functional Tracks',
+            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more.'
         }
     ]
     return json.dumps(mock_track_info + loaded_track_info)
@@ -349,7 +354,7 @@ def track_info():
 #**************************
 #*     /distince_values   *
 #**************************
-from sirius.mongo import GenomeNodes, InfoNodes, EdgeNodes
+from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 @app.route("/distinct_values/<string:query_type>/<string:index>")
@@ -364,7 +369,7 @@ def distinct_values(query_type, index):
             result = InfoNodes.distinct(index)
     elif query_type == QUERY_TYPE_EDGE:
         if index in ('type', 'from_type', 'to_type', 'sourceurl'):
-            result = EdgeNodes.distinct(index)
+            result = Edges.distinct(index)
     return json.dumps(result)
 
 # The query function is replaced by /annotation end point for now.

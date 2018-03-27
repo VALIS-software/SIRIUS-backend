@@ -29,4 +29,4 @@ testdb = client.testdb
 db = client.database1
 GenomeNodes = db.GenomeNodes
 InfoNodes = db.InfoNodes
-EdgeNodes = db.EdgeNode
+Edges = db.Edges

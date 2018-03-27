@@ -3,10 +3,9 @@
 import os, sys
 import json
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME
 
 class GFFParser(Parser):
-
     @property
     def features(self):
         return self.data['features']
@@ -54,6 +53,8 @@ class GFFParser(Parser):
                 features.append(d)
                 if self.verbose and len(features) % 100000 == 0:
                     print("%d data parsed" % len(features), end='\r')
+        if self.verbose:
+            print("Parsing GFF data finished.")
         self.data = {'metadata': metadata, 'features': features}
 
     def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
@@ -111,7 +112,7 @@ class GFFParser(Parser):
         # Example:
         # {
         #   "assembly": "GRCh38",
-        #   "sourceurl": "test.gff",
+        #   "source": "GRCh38_gff",
         #   "type": "gene",
         #   "chromid": 1,
         #   "info": {
@@ -138,20 +139,19 @@ class GFFParser(Parser):
         #   "length": 2536
         # }
         if hasattr(self, 'mongonodes'): return self.mongonodes
-        metadata, features = self.data['metadata'], self.data['features']
         genome_nodes, info_nodes, edge_nodes = [], [], []
-        if 'assembly' in metadata:
-            assembly = metadata['assembly']
+        # add dataSource into InfoNodes
+        info_node = self.metadata.copy()
+        info_node.update({"_id": DATA_SOURCE_GENOME, "type": "dataSource", "source": DATA_SOURCE_GENOME})
+        info_nodes.append(info_node)
+        # add data as GenomeNodes
+        if 'assembly' in self.metadata:
+            assembly = self.metadata['assembly']
         else:
-            # we expect the gff file has a comment line like  #!genome-build GRCh38.p10
-            assembly = metadata['genome-build'].split('.')[0]
-        if 'sourceurl' in metadata:
-            sourceurl = metadata['sourceurl']
-        else:
-            sourceurl = self.filename
+            assembly = 'GRCh38'
         if not hasattr(self, 'seqid_loc'): self.seqid_loc = dict()
         if not hasattr(self, 'gene_id_set'): self.gene_id_set = set()
-        for d in features:
+        for d in self.data['features']:
             ft = d['type']
             # we are skipping the contigs for now, since we don't know where they are
             if not d['seqid'].startswith("NC_000"): continue
@@ -161,7 +161,7 @@ class GFFParser(Parser):
                         self.seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
                     except:
                         self.seqid_loc[d['seqid']] = None
-            gnode = {'assembly': assembly, 'sourceurl': sourceurl, 'type': ft}
+            gnode = {'assembly': assembly, "source": DATA_SOURCE_GENOME, 'type': ft}
             try:
                 gnode['chromid'] = self.seqid_loc[d['seqid']]
             except KeyError:
@@ -172,7 +172,7 @@ class GFFParser(Parser):
                     gnode[k] = v
                 elif k != 'type':
                     gnode['info'][k] = v
-            # try to set the info.Name
+            # try to set the info.name
             try:
                 name = gnode['info']['attributes'].pop('Name')
                 gnode['info']['name'] = name
@@ -197,5 +197,7 @@ class GFFParser(Parser):
             genome_nodes.append(gnode)
             if self.verbose and len(genome_nodes) % 100000 == 0:
                 print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
+        if self.verbose:
+            print("Parsing GFF into mongo nodes finished.")
         self.mongonodes = (genome_nodes, info_nodes, edge_nodes)
         return self.mongonodes

@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys
-import json
 import re
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_CLINVAR
 
 def str_to_type(s):
     s = s.strip().lower()
@@ -110,38 +108,38 @@ class VCFParser(Parser):
 class VCFParser_ClinVar(VCFParser):
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes """
-        # GenomeNode: Information about SNP, unique ID is defined based on rs number
-#
+        # GenomeNode: Information about SNP, unique ID is defined based on rs number or varient info
         # InfoNode: Information about trait, unique ID is defined based on trait name
-#
         # EdgeNode: Study that connects SNP and trait
-        
+
         genome_nodes, info_nodes, edge_nodes = [], [], []
+        # add dataSource into InfoNodes
+        info_node = self.metadata.copy()
+        info_node.update({"_id": DATA_SOURCE_CLINVAR, "type": "dataSource", "source": DATA_SOURCE_CLINVAR})
+        info_nodes.append(info_node)
         known_vid, known_traits = set(), set()
         if 'reference' in self.metadata:
             assembly = self.metadata['reference']
         else:
             assembly = 'GRCh38'
-        if 'sourceurl' in self.metadata:
-            sourceurl = self.metadata['source']
-        else:
-            sourceurl = self.filename
         seqid_loc = dict()
         for d in self.variants:
+            # we will abandon this entry if the CHROM is not recognized
+            if d['CHROM'] not in chromo_idxs: continue
+            chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 variant_id = "snp_rs" + str(d["INFO"]["RS"])
                 variant_type = "SNP"
             else:
                 variant_type = d['INFO']['CLNVC'].lower()
-                chromid = chromo_idxs[d['CHROM']]
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
-                variant_id = '_'.join([variant_type, chromid, pos, v_ref, v_alt])
+                variant_key_string = '_'.join([variant_type, str(chromid), pos, v_ref, v_alt])
+                variant_id = 'variant_' + self.hash(variant_key_string)
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
-                chromid = chromo_idxs[d['CHROM']]
-                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
+                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'source': DATA_SOURCE_CLINVAR}
                 gnode['type'] = variant_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
@@ -163,18 +161,19 @@ class VCFParser_ClinVar(VCFParser):
                 print("Number of traits in in CLNDN and CLNDISDB not consistent! Skipping.")
                 continue
             for trait_name, trait_disdb in zip(trait_names, trait_CLNDISDBs):
-                trait_id = 'trait_' + trait_name
+                trait_id = 'trait_' + self.hash(trait_name.lower())
                 this_trait_ids.append(trait_id)
                 if trait_id not in known_traits:
                     infonode = { '_id': trait_id,
                                 'type': 'trait',
                                 'name': trait_name.replace("_"," "), # use space here for text search in MongoDB
-                                'sourceurl': sourceurl,
+                                'source': DATA_SOURCE_CLINVAR,
                                 'info': dict()
                                 }
                     for nameidx in trait_disdb.split(','):
-                        name, idx = nameidx.split(':', 1)
-                        infonode['info'][name] = idx
+                        if ':' in nameidx:
+                            name, idx = nameidx.split(':', 1)
+                            infonode['info'][name] = idx
                     info_nodes.append(infonode)
                     known_traits.add(trait_id)
             # create EdgeNode for each trait in this entry
@@ -183,7 +182,7 @@ class VCFParser_ClinVar(VCFParser):
                 edgenode = {'from_id': variant_id , 'to_id': trait_id,
                             'from_type': variant_type, 'to_type': 'trait',
                             'type': 'association',
-                            'sourceurl': sourceurl,
+                            'source': DATA_SOURCE_CLINVAR,
                             'info': {
                                 "CLNREVSTAT": d['INFO']["CLNREVSTAT"]
                             }
@@ -191,17 +190,16 @@ class VCFParser_ClinVar(VCFParser):
                 edge_nodes.append(edgenode)
                 if self.verbose and len(edge_nodes) % 100000 == 0:
                     print("%d variants parsed" % len(edge_nodes), end='\r')
+        if self.verbose:
+            print("Parsing into mongo nodes finished.")
         return genome_nodes, info_nodes, edge_nodes
-
-
-
 
 
 class VCFParser_dbSNP(VCFParser):
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes """
-        # GenomeNode: Information about SNP, unique ID is defined based on rs number
         genome_nodes, info_nodes, edge_nodes = [], [], []
+
         known_vid, known_traits = set(), set()
         if 'reference' in self.metadata:
             assembly = self.metadata['reference'].split('.',1)[0]
@@ -213,6 +211,9 @@ class VCFParser_dbSNP(VCFParser):
             sourceurl = self.filename
         seqid_loc = dict()
         for d in self.variants:
+            # we will abandon this entry if the CHROM is not recognized
+            if d['CHROM'] not in chromo_idxs: continue
+            chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 variant_id = "snp_rs" + str(d["INFO"]["RS"])
@@ -223,7 +224,6 @@ class VCFParser_dbSNP(VCFParser):
                 continue
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
-                chromid = chromo_idxs[d['CHROM']]
                 gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
                 gnode['type'] = variant_type
                 gnode['start'] = gnode['end'] = int(d['POS'])

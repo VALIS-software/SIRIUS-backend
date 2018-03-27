@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import os, sys
-import json
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, chromo_names
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS
 
 class GWASParser(Parser):
 
@@ -76,7 +74,7 @@ class GWASParser(Parser):
         #      "start": 203186754,
         #      "end": 203186754,
         #      "length": 1,
-        #      "sourceurl": "gwas_catalog_v1.0.1-associations_e91_r2018-02-13.tsv",
+        #      "source": "GWAS",
         #      "assembly": "GRCh38",
         #      "info": {
         #        "ID": "rs4950928",
@@ -90,7 +88,13 @@ class GWASParser(Parser):
         #      "_id": "trait_ykl-40 levels",
         #      "type": "trait",
         #      "name": "ykl-40 levels",
-        #      "sourceurl": "gwas_catalog_v1.0.1-associations_e91_r2018-02-13.tsv"
+        #      "source": "GWAS"
+        #    }
+        #    {
+        #      "_id": "GWAS",
+        #      "source": "GWAS"
+        #      "type": "dataSource",
+        #      "sourceurl": "https://www.ebi.ac.uk/gwas/api/search/downloads/full"
         #    }
         #
         # EdgeNode: Study that connects SNP and trait
@@ -139,19 +143,19 @@ class GWASParser(Parser):
         # }
         if hasattr(self, 'mongonodes'): return self.mongonodes
         genome_nodes, info_nodes, edge_nodes = [], [], []
+        # add dataSource into InfoNodes
+        info_node = self.metadata.copy()
+        info_node.update({"_id": DATA_SOURCE_GWAS, "type": "dataSource", "source": DATA_SOURCE_GWAS})
+        info_nodes.append(info_node)
         known_rs, known_traits = set(), set()
-        if 'sourceurl' in self.metadata:
-            sourceurl = self.metadata['sourceurl']
-        else:
-            sourceurl = self.filename
         for study in self.studies:
-            trait = study["DISEASE/TRAIT"].lower()
-            trait_id = 'trait_'+trait
+            trait = study["DISEASE/TRAIT"]
+            trait_id = 'trait_'+self.hash(trait.lower())
             if trait_id not in known_traits:
                 infonode = { '_id': trait_id,
                              'type': 'trait',
                              'name': trait,
-                             'sourceurl': sourceurl
+                             'source': DATA_SOURCE_GWAS
                            }
                 info_nodes.append(infonode)
                 known_traits.add(trait_id)
@@ -185,7 +189,7 @@ class GWASParser(Parser):
                               'start': pos,
                               'end': pos,
                               'length': 1,
-                              'sourceurl': sourceurl,
+                              'source': DATA_SOURCE_GWAS,
                               'assembly': "GRCh38",
                               'info': {'ID': rs, 'name': rs}
                             }
@@ -194,7 +198,6 @@ class GWASParser(Parser):
                     except:
                         pass
                     genome_nodes.append(gnode)
-
             # add edge node for each SNP
             for rs_id in this_snp_ids:
                 # parse pvalue
@@ -206,7 +209,7 @@ class GWASParser(Parser):
                 edgenode = {'from_id': rs_id , 'to_id': trait_id,
                             'from_type': 'SNP', 'to_type': 'trait',
                             'type': 'association',
-                            'sourceurl': sourceurl,
+                            'source': DATA_SOURCE_GWAS,
                             'info': study
                            }
                 edge_nodes.append(edgenode)

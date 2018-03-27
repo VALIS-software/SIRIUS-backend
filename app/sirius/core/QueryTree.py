@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys
-from sirius.mongo import GenomeNodes, InfoNodes, EdgeNodes
+from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 class KeyDict(dict):
@@ -86,7 +86,7 @@ class QueryEdge:
 
     def find(self, sort=None):
         """
-        Find all EdgeNodes from self.pool, based on self.filter, and the next node I connect to
+        Find all Edges from self.pool, based on self.filter, and the next node I connect to
         Return a cursor of MongoDB.find() query, or an empty list if Nothing found
         """
         query = self.filter.copy()
@@ -104,7 +104,7 @@ class QueryEdge:
 
     def find_from_id(self):
         """
-        Find all EdgeNodes from self.pool, based on self.filter, and the next node I connect to
+        Find all Edges from self.pool, based on self.filter, and the next node I connect to
         Return a set that contain strings of edgenode['from_id']
         """
         query = self.filter.copy()
@@ -137,7 +137,7 @@ class QueryTree:
         limit = query['limit'] if 'limit' in query else 100000 # 100000 by default can finish in 1s
         if typ == QUERY_TYPE_EDGE:
             nextnode = self.build_recur(query['toNode'])
-            resultNode = QueryEdge(EdgeNodes, qfilter, nextnode, limit)
+            resultNode = QueryEdge(Edges, qfilter, nextnode, limit)
         elif typ == QUERY_TYPE_GENOME or typ == QUERY_TYPE_INFO:
             edgeRule = self.EdgeRules[query['edgeRule']]
             if 'toEdges' in query:
