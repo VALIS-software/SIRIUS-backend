@@ -341,6 +341,11 @@ def track_info():
             'track_type': 'sequence',
             'title': 'Sequence Tracks',
             'description': 'Raw sequence data'
+        },
+        {
+            'track_type': 'functional',
+            'title': 'Functional Tracks',
+            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more.'
         }
     ]
     return json.dumps(mock_track_info + loaded_track_info)

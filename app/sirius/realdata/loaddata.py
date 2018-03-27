@@ -35,8 +35,8 @@ def load_mongo_data_information():
         if 'GRCh38_latest_genomic' in sourceurl:
             track_info.append({
                 'track_type': 'GRCh38_gff',
-                'title': 'Genome Elements',
-                'description': 'Genes, Promoters, Enhansers, TF Sites, etc.'
+                'title': 'Genomic Elements',
+                'description': 'Genes, Promoters, Enhancers, Binding Sites and more.'
             })
         elif 'gwas' in sourceurl:
             track_info.append({
@@ -48,7 +48,7 @@ def load_mongo_data_information():
             track_info.append({
                 'track_type': 'eqtl',
                 'title': 'Quantitative Trait Loci',
-                'description': 'Variants related to change in gene expression.'
+                'description': 'Variants related to changes in gene expression or other quantitative measures.'
             })
     return track_info
 
