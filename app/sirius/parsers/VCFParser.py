@@ -184,7 +184,8 @@ class VCFParser_ClinVar(VCFParser):
                             'type': 'association',
                             'source': DATA_SOURCE_CLINVAR,
                             'info': {
-                                "CLNREVSTAT": d['INFO']["CLNREVSTAT"]
+                                "CLNREVSTAT": d['INFO']["CLNREVSTAT"],
+                                "p-value": 0,
                             }
                            }
                 edge_nodes.append(edgenode)
