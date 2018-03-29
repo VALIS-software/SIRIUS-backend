@@ -64,8 +64,9 @@ def main():
                 update_insert_many(GenomeNodes, genome_nodes)
         print("Data from %s uploaded" % fname)
     # we only upload info_nodes once here because all the chunks has the same single info node for the dataSource.
-    update_insert_many(InfoNodes, info_nodes)
-    print("InfoNodes uploaded")
+    if args.upload:
+        update_insert_many(InfoNodes, info_nodes)
+        print("InfoNodes uploaded")
 
 if __name__ == '__main__':
     main()
