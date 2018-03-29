@@ -11,8 +11,6 @@ from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import cluster_r_data
 
-
-
 #**************************
 #*     static urls        *
 #**************************
@@ -119,16 +117,17 @@ class HashableDict(dict):
 @lru_cache(maxsize=10000)
 def get_query_results(query):
     qt = QueryTree(query)#, verbose=True)
-    return list( qt.find(sort=[('chromid',1), ('start',1)]) )
+    return sorted(list(qt.find()), key=lambda d: (d['chromid'], d['start']))
 
 def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
+    t0 = time.time()
     query_result = get_query_results(HashableDict(query))
-    print("Query returns %s results" % len(query_result), get_query_results.cache_info())
+    t1 = time.time()
+    print("Query returns %s results in %.3f seconds" % (len(query_result), t1-t0), get_query_results.cache_info())
     annotation = loaded_annotations['GRCh38']
     aggregation_thresh = 5000
     chr_r_data_in_range = [[] for _ in range(len(chromo_idxs)+1)] # r_data for each chromosome, initial one is empty
     ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
-    #t0 = time.time()
     count_in_range = 0
     for gnode in query_result:
         chr_id = gnode['chromid']
@@ -154,8 +153,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                      }
             chr_r_data_in_range[chr_id].append(r_data)
             count_in_range += 1
-    #print("r_data_in_range take %s second" % (time.time() - t0))
-    t0 = time.time()
+    t2 = time.time()
+    print("Data arangement take %.3f second" % (t2 - t1))
     ret = []
     for i_ch in range(1, len(chromo_idxs)+1):
         r_data_in_range = chr_r_data_in_range[i_ch]
@@ -163,7 +162,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
             ret += cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
         else:
             ret += fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
-    print("Data aggregation take %s second" % (time.time() - t0))
+    print("Data aggregation take %s second" % (time.time() - t2))
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -333,20 +332,31 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
 #**************************
 #*      /track_info       *
 #**************************
+from sirius.realdata.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK
 @app.route("/track_info")
 def track_info():
     """Return a list of track information"""
     mock_track_info = [
         {
-            'track_type': 'sequence',
+            'track_type': TRACK_TYPE_SEQUENCE,
             'title': 'Sequence Tracks',
             'description': 'Raw sequence data'
         },
         {
-            'track_type': 'functional',
+            'track_type': TRACK_TYPE_FUNCTIONAL,
             'title': 'Functional Tracks',
-            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more.'
-        }
+            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more'
+        },
+        {
+            'track_type': TRACK_TYPE_3D,
+            'title': '3D Structure',
+            'description': 'Contact Maps, Chromatin Structure and more'
+        },
+        {
+            'track_type': TRACK_TYPE_NETWORK,
+            'title': 'Network Tracks',
+            'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
+        } 
     ]
     return json.dumps(mock_track_info + loaded_track_info)
 
@@ -354,22 +364,27 @@ def track_info():
 #**************************
 #*     /distince_values   *
 #**************************
-from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
-@app.route("/distinct_values/<string:query_type>/<string:index>")
-def distinct_values(query_type, index):
-    """ Return all possible values for a certain index for certain query type """
+@app.route("/distinct_values/<string:index>", methods=['POST'])
+def distinct_values(index):
+    """ Return all possible values for a certain index for certain query """
+    query = request.get_json()
+    if not query:
+        print("No query is posted, returning empty list")
+        return json.dumps([])
+    print(query)
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
-    if query_type == QUERY_TYPE_GENOME:
-        if index in ('type', 'chromid', 'assembly', 'sourceurl'):
-            result = GenomeNodes.distinct(index)
-    elif query_type == QUERY_TYPE_INFO:
-        if index in ('type', 'name', 'sourceurl'):
-            result = InfoNodes.distinct(index)
-    elif query_type == QUERY_TYPE_EDGE:
-        if index in ('type', 'from_type', 'to_type', 'sourceurl'):
-            result = Edges.distinct(index)
+    allowed_query_indices = {
+        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'sourceurl'},
+        QUERY_TYPE_INFO: {'type', 'name', 'sourceurl'},
+        QUERY_TYPE_EDGE: {'type', 'from_type', 'to_type', 'sourceurl'}
+    }
+    if index not in allowed_query_indices[query['type']]:
+        print("Query of index %s is not allowed for %s" % (index, query['type']))
+        return json.dumps([])
+    qt = QueryTree(query)
+    result = qt.find().distinct(index)
     return json.dumps(result)
 
 # The query function is replaced by /annotation end point for now.
