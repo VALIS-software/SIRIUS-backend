@@ -154,7 +154,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
             chr_r_data_in_range[chr_id].append(r_data)
             count_in_range += 1
     t2 = time.time()
-    print("Data arangement take %.3f second" % (t2 - t1))
+    print("Data arrangement take %.3f second" % (t2 - t1))
     ret = []
     for i_ch in range(1, len(chromo_idxs)+1):
         r_data_in_range = chr_r_data_in_range[i_ch]

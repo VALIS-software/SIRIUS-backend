@@ -146,64 +146,13 @@ root@09cee5403d0b:/app/sirius#
 
 Assuming you have finished step 4, so you're running bash shell inside the SIRIUS docker image.
 
-### 5.1 Download the currently avaiable data files.
-
-#### 5.1.1 Create a folder to put the data files
+* This step has been simplified to one command:
 
 ```
-mkdir genome_data; cd genome_data
+/app/sirius/tools/rebuild_mongo_database.py
 ```
 
-#### 5.1.2 Call the download script
-
-```
-/app/sirius/tools/download_genome_data.sh
-```
-
-This will print some messages showing the progress, and finish with 3 new folders `GRCh38_gff`, `gwas` and `eQTL` in the current folder.
-
-
-### 5.2 Parse and upload data to local MongoDB server
-
-#### 5.2.1 Parse and upload the GRCh38_gff data
-
-Assuming the `SIRIUS-backend` repository is cloned into the home folder.
-
-```
-cd GRCh38_gff
-/app/sirius/tools/parse_upload_gff_chunk.py GRCh38_latest_genomic.gff --upload
-cd ..
-```
-
-The python script will print the progress of data parsing, and upload the parsed data to the local MongoDB server.
-
-Some warning messages will be shown when parsing data, feel free to ignore them.
-
-#### 5.2.2 Parse and upload the gwas data
-
-```
-cd gwas
-/app/sirius/tools/parse_upload_data.py gwas.tsv gwas --upload
-cd ..
-```
-
-Some warning messages will be shown when parsing data, feel free to ignore them.
-
-#### 5.2.3 Parse and upload the eQTL data
-
-```
-cd eQTL
-/app/sirius/tools/parse_upload_data.py GSexSNP_allc_allp_ld8.txt eqtl --upload
-cd ..
-```
-
-#### 5.2.4 Build the indices in MongoDB
-
-```
-/app/sirius/tools/build_mongo_index.py
-```
-
-Now your local MongoDB server has all the data ready. You can then exit the Docker container
+The details will be printed as the script runs. After it finished, we can exit the container.
 
 ```
 exit

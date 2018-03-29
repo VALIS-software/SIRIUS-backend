@@ -9,7 +9,6 @@ def build_mongo_index():
         GenomeNodes.create_index(idx)
     
     print("InfoNodes")
-    print("Creating index type")
     for idx in ['source', 'type']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
