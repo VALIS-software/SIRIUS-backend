@@ -1,7 +1,7 @@
 import os
 import json
 from sirius.core.Annotation import Annotation
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+from sirius.realdata.constants import chromo_idxs
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 def load_mongo_annotations():
@@ -26,42 +26,31 @@ def load_mongo_annotations():
 loaded_annotations = load_mongo_annotations()
 
 def load_mongo_data_information():
-    track_info = []
+    from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+    from sirius.realdata.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL
+    loaded_dataSources = set(InfoNodes.distinct('source'))
     # the description is hard coded here, could be replaced by querying InfoNodes of type dataSource later
-    for source in InfoNodes.distinct('source'):
-        if source == DATA_SOURCE_GENOME:
-            track_info.append({
-                'track_type': DATA_SOURCE_GENOME,
-                'title': 'Genomic Elements',
-                'description': 'Genes, Promoters, Enhancers, Binding Sites and more.'
-            })
-        elif source == DATA_SOURCE_GWAS:
-            track_info.append({
-                'track_type': DATA_SOURCE_GWAS,
-                'title': 'Genome Wide Associations',
-                'description': 'Variants related to traits or diseases.'
-            })
-        elif source == DATA_SOURCE_EQTL:
-            track_info.append({
-                'track_type': DATA_SOURCE_EQTL,
-                'title': 'Quantitative Trait Loci',
-                'description': 'Variants related to changes in gene expression or other quantitative measures.'
-            })
-        elif source == DATA_SOURCE_CLINVAR:
-            track_info.append({
-                'track_type': DATA_SOURCE_CLINVAR,
-                'title': 'ClinVar',
-                'description': 'Variants related to phenotypes.'
-            })
-        elif source == DATA_SOURCE_DBSNP:
-            track_info.append({
-                'track_type': DATA_SOURCE_DBSNP,
-                'title': 'dbSNP',
-                'description': 'the NCBI database of genetic variation.'
-            })
-        else:
-            print("Warning, data source %s is not recognized" % source)
-
+    track_type_list = [
+        { 'track_type': TRACK_TYPE_GENOME,
+          'title': 'Genomic Elements',
+          'description': 'Genes, Promoters, Enhancers, Binding Sites and more.',
+          'depends': {DATA_SOURCE_GENOME}
+        },
+        { 'track_type': TRACK_TYPE_GWAS,
+          'title': 'Genome Wide Associations',
+          'description': 'Variants related to traits or diseases.',
+          'depends': {DATA_SOURCE_GWAS, DATA_SOURCE_EQTL}
+        },
+        { 'track_type': TRACK_TYPE_EQTL,
+          'title': 'Quantitative Trait Loci',
+          'description': 'Variants related to changes in gene expression or other quantitative measures.',
+          'depends': {DATA_SOURCE_EQTL}
+        }
+    ]
+    track_info = []
+    for t in track_type_list:
+        if any(d in loaded_dataSources for d in t.pop('depends')):
+            track_info.append(t)
     return track_info
 
 loaded_track_info = load_mongo_data_information()
