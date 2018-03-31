@@ -12,16 +12,9 @@ GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/full'
 EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 
-def drop_all_data():
-    " Drop all collections from database "
-    print("#1. Deleting existing data.")
-    for cname in db.list_collection_names():
-        print("Dropping %s" % cname)
-        db.drop_collection(cname)
-
 def download_genome_data():
     " Download Genome Data on to disk "
-    print("\n\n#2. Downloading all datasets to disk, please make sure you have 5 GB free space")
+    print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
     # GRCh38_gff
@@ -55,23 +48,38 @@ def download_genome_data():
     print("All downloads finished")
     os.chdir('..')
 
+def drop_all_data():
+    " Drop all collections from database "
+    print("#2. Deleting existing data.")
+    for cname in db.list_collection_names():
+        print("Dropping %s" % cname)
+        db.drop_collection(cname)
+
 def update_insert_many(dbCollection, nodes):
     if not nodes: return
-    all_ids = [node['_id'] for node in nodes if '_id' in node]
-    ids_need_update = set([result['_id'] for result in dbCollection.find({'_id': {'$in': all_ids}}, projection=['_id'])])
+    # we enforce all the node to have '_id' field defined
+    all_ids = [node['_id'] for node in nodes]
+    all_ids_need_update = set()
+    # query the database in batches to find existing document with id
+    batch_size = 100000
+    for i_batch in range(int(len(all_ids) / batch_size)+1):
+        batch_ids = all_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+        ids_need_update = set([result['_id'] for result in dbCollection.find({'_id': {'$in': batch_ids}}, projection=['_id'])])
+        all_ids_need_update |= ids_need_update
     insert_nodes, update_nodes = [], []
     for node in nodes:
-        if '_id' in node and node['_id'] in ids_need_update:
+        if node['_id'] in all_ids_need_update:
             update_nodes.append(node)
         else:
             node['source'] = [node['source']]
             insert_nodes.append(node)
+            # later node with the same id will be put into update_nodes
+            all_ids_need_update.add(node['_id'])
     if insert_nodes:
         try:
             dbCollection.insert_many(insert_nodes)
         except Exception as bwe:
             print(bwe.details)
-            raise
     for node in update_nodes:
         filt = {'_id': node.pop('_id')}
         update = {'$push': {'source': node.pop('source')}}
@@ -81,7 +89,10 @@ def update_insert_many(dbCollection, nodes):
             for key, value in info_dict.items():
                 node['info.'+key] = value
         update['$set'] = node
-        dbCollection.update_one(filt, update, upsert=True)
+        try:
+            dbCollection.update_one(filt, update, upsert=True)
+        except Exception as bwe:
+            print(bwe.details)
     print("%s finished. Updated: %d  Inserted: %d" % (dbCollection.name, len(update_nodes), len(insert_nodes)))
 
 def parse_upload_all_datasets():
@@ -126,7 +137,7 @@ def parse_upload_gff_chunk():
         # so we need to inherit some information from previous parser
         if prev_parser != None:
             parser.seqid_loc = prev_parser.seqid_loc
-            parser.gene_id_set = prev_parser.gene_id_set
+            parser.known_id_set = prev_parser.known_id_set
         prev_parser = parser
         with open(fname) as chunkfile:
             parser.load_json(chunkfile)
@@ -174,8 +185,8 @@ Instruction = '''
 | Automated script to rebuild the entire Mongo database |
 ---------------------------------------------------------
 Steps:
-1. Delete all data from existing database
-2. Download data sets files on to disk
+1. Download data sets files onto disk
+2. Delete all data from existing database
 3. Parse each data sets and upload to MongoDB
 4. Build index in data base
 5. Clean up
@@ -183,11 +194,21 @@ Steps:
 
 def main():
     print(Instruction)
-    drop_all_data()
-    download_genome_data()
-    parse_upload_all_datasets()
-    build_mongo_index()
-    clean_up()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
+    parser.add_argument('-k', '--keep_tmp', action='store_true', help='Keep gene_data_tmp folder.')
+    args = parser.parse_args()
+    if args.starting_step <= 1:
+        download_genome_data()
+    if args.starting_step <= 2:
+        drop_all_data()
+    if args.starting_step <= 3:
+        parse_upload_all_datasets()
+    if args.starting_step <= 4:
+        build_mongo_index()
+    if args.starting_step <= 5 and not args.keep_tmp:
+        clean_up()
 
 if __name__ == "__main__":
     main()

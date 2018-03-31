@@ -112,17 +112,16 @@ class VCFParser_ClinVar(VCFParser):
         # InfoNode: Information about trait, unique ID is defined based on trait name
         # EdgeNode: Study that connects SNP and trait
 
-        genome_nodes, info_nodes, edge_nodes = [], [], []
+        genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
         info_node.update({"_id": DATA_SOURCE_CLINVAR, "type": "dataSource", "source": DATA_SOURCE_CLINVAR})
         info_nodes.append(info_node)
-        known_vid, known_traits = set(), set()
+        known_vid, known_traits, known_edge_ids = set(), set(), set()
         if 'reference' in self.metadata:
             assembly = self.metadata['reference']
         else:
             assembly = 'GRCh38'
-        seqid_loc = dict()
         for d in self.variants:
             # we will abandon this entry if the CHROM is not recognized
             if d['CHROM'] not in chromo_idxs: continue
@@ -178,8 +177,8 @@ class VCFParser_ClinVar(VCFParser):
                     known_traits.add(trait_id)
             # create EdgeNode for each trait in this entry
             for trait_id in this_trait_ids:
-                # add study to edge_nodes
-                edgenode = {'from_id': variant_id , 'to_id': trait_id,
+                # add study to edges
+                edge = {'from_id': variant_id , 'to_id': trait_id,
                             'from_type': variant_type, 'to_type': 'trait',
                             'type': 'association',
                             'source': DATA_SOURCE_CLINVAR,
@@ -188,29 +187,30 @@ class VCFParser_ClinVar(VCFParser):
                                 "p-value": 0,
                             }
                            }
-                edge_nodes.append(edgenode)
-                if self.verbose and len(edge_nodes) % 100000 == 0:
-                    print("%d variants parsed" % len(edge_nodes), end='\r')
+                edge['_id'] = self.hash(str(edge))
+                if edge['_id'] not in known_edge_ids:
+                    known_edge_ids.add(edge['_id'])
+                    edges.append(edge)
+                if self.verbose and len(edges) % 100000 == 0:
+                    print("%d variants parsed" % len(edges), end='\r')
         if self.verbose:
             print("Parsing into mongo nodes finished.")
-        return genome_nodes, info_nodes, edge_nodes
+        return genome_nodes, info_nodes, edges
 
 
 class VCFParser_dbSNP(VCFParser):
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes """
-        genome_nodes, info_nodes, edge_nodes = [], [], []
-
-        known_vid, known_traits = set(), set()
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = self.metadata.copy()
+        info_node.update({"_id": DATA_SOURCE_DBSNP, "type": "dataSource", "source": DATA_SOURCE_DBSNP})
+        info_nodes.append(info_node)
+        known_vid = set()
         if 'reference' in self.metadata:
             assembly = self.metadata['reference'].split('.',1)[0]
         else:
             assembly = 'GRCh38'
-        if 'sourceurl' in self.metadata:
-            sourceurl = self.metadata['source']
-        else:
-            sourceurl = self.filename
-        seqid_loc = dict()
         for d in self.variants:
             # we will abandon this entry if the CHROM is not recognized
             if d['CHROM'] not in chromo_idxs: continue
@@ -229,7 +229,7 @@ class VCFParser_dbSNP(VCFParser):
                 gnode['type'] = variant_type
                 gnode['start'] = gnode['end'] = int(d['POS'])
                 gnode['length'] = 1
-                gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}
-                gnode['info'].update(d["INFO"])
+                gnode['info'] = d["INFO"].copy()
+                gnode['info'].update({"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']})
                 genome_nodes.append(gnode)
-        return genome_nodes, info_nodes, edge_nodes
+        return genome_nodes, info_nodes, edges

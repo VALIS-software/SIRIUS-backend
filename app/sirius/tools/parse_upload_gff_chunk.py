@@ -51,7 +51,7 @@ def main():
         # so we need to inherit some information from previous parser
         if prev_parser != None:
             parser.seqid_loc = prev_parser.seqid_loc
-            parser.gene_id_set = prev_parser.gene_id_set
+            parser.known_id_set = prev_parser.known_id_set
         prev_parser = parser
         with open(fname) as chunkfile:
             parser.load_json(chunkfile)

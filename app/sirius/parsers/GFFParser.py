@@ -150,7 +150,7 @@ class GFFParser(Parser):
         else:
             assembly = 'GRCh38'
         if not hasattr(self, 'seqid_loc'): self.seqid_loc = dict()
-        if not hasattr(self, 'gene_id_set'): self.gene_id_set = set()
+        if not hasattr(self, 'known_id_set'): self.known_id_set = set()
         for d in self.data['features']:
             ft = d['type']
             # we are skipping the contigs for now, since we don't know where they are
@@ -186,15 +186,17 @@ class GFFParser(Parser):
                     gnode['info']['attributes'][refname] = ref_id
                     # use GeneID as the ID for this gene
                     if refname == 'GeneID' and gnode['type'] == 'gene':
-                        if ref_id not in self.gene_id_set:
-                            gnode['_id'] = 'geneid_' + ref_id
-                            self.gene_id_set.add(ref_id) # make sure it's unique
-                        else:
-                            print("Warning, gene with GeneID %s already exists!" % ref_id)
+                        gnode['_id'] = 'geneid_' + ref_id
             except KeyError:
                 pass
             gnode['length'] = gnode['end'] - gnode['start'] + 1
-            genome_nodes.append(gnode)
+            if '_id' not in gnode:
+                gnode['_id'] = ft + '_' + self.hash(str(gnode))
+            if gnode['_id'] in self.known_id_set:
+                print("Warning, gnode with _id %s already exists!" % gnode['_id'])
+            else:
+                self.known_id_set.add(gnode['_id'])
+                genome_nodes.append(gnode)
             if self.verbose and len(genome_nodes) % 100000 == 0:
                 print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
         if self.verbose:

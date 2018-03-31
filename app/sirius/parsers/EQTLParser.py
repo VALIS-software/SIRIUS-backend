@@ -66,6 +66,7 @@ class EQTLParser(Parser):
         info_node = self.metadata.copy()
         info_node.update({"_id": DATA_SOURCE_EQTL, "type": "dataSource", "source": DATA_SOURCE_EQTL})
         info_nodes.append(info_node)
+        known_edge_ids = set()
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
         if 'reference' in self.metadata:
             assembly = self.metadata['reference']
@@ -73,16 +74,21 @@ class EQTLParser(Parser):
             assembly = 'GRCh38'
         for d in self.eqtls:
             # create EdgeNode
-            edge = {'from_id': 'snp_rs'+d['exSNP'], 'to_id': 'geneid_'+d['exGENEID'],
-                        'from_type': 'SNP', 'to_type': 'gene',
-                        'type': 'association',
-                        'source': DATA_SOURCE_EQTL,
-                        'info': dict()
-                       }
+            from_id = 'snp_rs'+d['exSNP']
+            to_id = 'geneid_'+d['exGENEID']
+            edge = {'from_id': from_id, 'to_id': to_id,
+                    'from_type': 'SNP', 'to_type': 'gene',
+                    'type': 'association',
+                    'source': DATA_SOURCE_EQTL,
+                    'info': dict()
+                   }
             for k,v in d.items():
                 if k not in ('exSNP', 'exGENEID', 'exGENE'):
                     edge['info'][k] = v
-            edges.append(edge)
+            edge['_id'] = self.hash(str(edge))
+            if edge['_id'] not in known_edge_ids:
+                known_edge_ids.add(edge['_id'])
+                edges.append(edge)
             if self.verbose and len(edges) % 100000 == 0:
                 print("%d varients parsed" % len(edges), end='\r')
         return genome_nodes, info_nodes, edges

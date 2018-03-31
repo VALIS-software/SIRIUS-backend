@@ -142,12 +142,12 @@ class GWASParser(Parser):
         #       }
         # }
         if hasattr(self, 'mongonodes'): return self.mongonodes
-        genome_nodes, info_nodes, edge_nodes = [], [], []
+        genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
         info_node.update({"_id": DATA_SOURCE_GWAS, "type": "dataSource", "source": DATA_SOURCE_GWAS})
         info_nodes.append(info_node)
-        known_rs, known_traits = set(), set()
+        known_rs, known_traits, known_edge_ids = set(), set(), set()
         for study in self.studies:
             trait = study["DISEASE/TRAIT"]
             trait_id = 'trait_'+self.hash(trait.lower())
@@ -205,13 +205,16 @@ class GWASParser(Parser):
                     study['p-value'] = float(study.pop('P-VALUE'))
                 except:
                     pass
-                # add study to edge_nodes
-                edgenode = {'from_id': rs_id , 'to_id': trait_id,
+                # add study to edges
+                edge = {'from_id': rs_id , 'to_id': trait_id,
                             'from_type': 'SNP', 'to_type': 'trait',
                             'type': 'association',
                             'source': DATA_SOURCE_GWAS,
                             'info': study
                            }
-                edge_nodes.append(edgenode)
-        self.mongonodes = genome_nodes, info_nodes, edge_nodes
+                edge['_id'] = self.hash(str(edge))
+                if edge['_id'] not in known_edge_ids:
+                    known_edge_ids.add(edge['_id'])
+                    edges.append(edge)
+        self.mongonodes = genome_nodes, info_nodes, edges
         return self.mongonodes
