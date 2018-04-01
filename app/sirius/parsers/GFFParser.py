@@ -135,14 +135,14 @@ class GFFParser(Parser):
         #   },
         #   "start": 11874,
         #   "end": 14409,
-        #   "_id": "geneid_100287102",
+        #   "_id": "Ggeneid_100287102",
         #   "length": 2536
         # }
         if hasattr(self, 'mongonodes'): return self.mongonodes
         genome_nodes, info_nodes, edge_nodes = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
-        info_node.update({"_id": DATA_SOURCE_GENOME, "type": "dataSource", "source": DATA_SOURCE_GENOME})
+        info_node.update({"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "source": DATA_SOURCE_GENOME})
         info_nodes.append(info_node)
         # add data as GenomeNodes
         if 'assembly' in self.metadata:
@@ -186,12 +186,12 @@ class GFFParser(Parser):
                     gnode['info']['attributes'][refname] = ref_id
                     # use GeneID as the ID for this gene
                     if refname == 'GeneID' and gnode['type'] == 'gene':
-                        gnode['_id'] = 'geneid_' + ref_id
+                        gnode['_id'] = 'Ggeneid_' + ref_id
             except KeyError:
                 pass
             gnode['length'] = gnode['end'] - gnode['start'] + 1
             if '_id' not in gnode:
-                gnode['_id'] = ft + '_' + self.hash(str(gnode))
+                gnode['_id'] = 'G' + ft + '_' + self.hash(str(gnode))
             if gnode['_id'] in self.known_id_set:
                 print("Warning, gnode with _id %s already exists!" % gnode['_id'])
             else:

@@ -54,3 +54,16 @@ def load_mongo_data_information():
     return track_info
 
 loaded_track_info = load_mongo_data_information()
+
+#def load_type_collection_map():
+#    result = dict()
+#    for collection in (GenomeNodes, InfoNodes, Edges):
+#        distinct_types = collection.distinct('type')
+#        for t in distinct_types:
+#            if t in result:
+#                print("Warning: type %s exist in both %s and %s" % (result[t].name, collection.name))
+#            result[t] = collection
+#    return result
+
+#type_collection_map = load_type_collection_map()
+

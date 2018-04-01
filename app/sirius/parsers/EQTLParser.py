@@ -47,7 +47,7 @@ class EQTLParser(Parser):
     def get_mongo_nodes(self):
         """ Parse study data into three types of nodes """
         # EdgeNode: Study that connects SNP and gene
-        #     Example: { 'from_id': 'snp_rs945418', to_id: 'geneid_1187',
+        #     Example: { 'from_id': 'Gsnp_rs945418', to_id: 'Ggeneid_1187',
         #                'from_type': 'SNP', 'to_type': 'gene',
         #                'type': 'association',
         #                'sourceurl': 'eQTL',
@@ -64,7 +64,7 @@ class EQTLParser(Parser):
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
-        info_node.update({"_id": DATA_SOURCE_EQTL, "type": "dataSource", "source": DATA_SOURCE_EQTL})
+        info_node.update({"_id": 'I'+DATA_SOURCE_EQTL, "type": "dataSource", "source": DATA_SOURCE_EQTL})
         info_nodes.append(info_node)
         known_edge_ids = set()
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
@@ -74,8 +74,8 @@ class EQTLParser(Parser):
             assembly = 'GRCh38'
         for d in self.eqtls:
             # create EdgeNode
-            from_id = 'snp_rs'+d['exSNP']
-            to_id = 'geneid_'+d['exGENEID']
+            from_id = 'Gsnp_rs'+d['exSNP']
+            to_id = 'Ggeneid_'+d['exGENEID']
             edge = {'from_id': from_id, 'to_id': to_id,
                     'from_type': 'SNP', 'to_type': 'gene',
                     'type': 'association',
@@ -85,7 +85,7 @@ class EQTLParser(Parser):
             for k,v in d.items():
                 if k not in ('exSNP', 'exGENEID', 'exGENE'):
                     edge['info'][k] = v
-            edge['_id'] = self.hash(str(edge))
+            edge['_id'] = 'E'+self.hash(str(edge))
             if edge['_id'] not in known_edge_ids:
                 known_edge_ids.add(edge['_id'])
                 edges.append(edge)

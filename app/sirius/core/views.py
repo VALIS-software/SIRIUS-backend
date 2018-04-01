@@ -356,7 +356,7 @@ def track_info():
             'track_type': TRACK_TYPE_NETWORK,
             'title': 'Network Tracks',
             'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
-        } 
+        }
     ]
     return json.dumps(mock_track_info + loaded_track_info)
 
@@ -386,6 +386,65 @@ def distinct_values(index):
     qt = QueryTree(query)
     result = qt.find().distinct(index)
     return json.dumps(result)
+
+#*******************************
+#*         /details            *
+#*******************************
+from sirius.mongo import GenomeNodes, InfoNodes, Edges
+
+@app.route("/details/<string:data_id>")
+def details(data_id):
+    prefix = data_id[0]
+    data = None
+    if prefix == 'G':
+        data = GenomeNodes.find_one({'_id': data_id})
+        relations = node_relations(data_id)
+    elif prefix == 'I':
+        data = InfoNodes.find_one({'_id': data_id})
+        relations = node_relations(data_id)
+    elif prefix == 'E':
+        data = Edges.find_one({'_id': data_id})
+        relations = edge_relations(data)
+    else:
+        print("Invalid data_id %s, ID should start with G, I or E" % data_id)
+    if not data:
+        return abort(404, 'data with _id %s not found' % data_id)
+    result = {'details': data, 'relations': relations}
+    return json.dumps(result)
+
+def node_relations(data_id):
+    result = []
+    for edge in Edges.find({'from_id': data_id}):
+        result.append({
+            'Title': edge['type'].capitalize() + ' To',
+            'Source': '/'.join(edge['source']),
+            'Type': edge['to_type'],
+            'data_id': edge['_id']
+        })
+    for edge in Edges.find({'to_id': data_id}):
+        result.append({
+            'Title': edge['type'].capitalize() + ' From',
+            'Source': '/'.join(edge['source']),
+            'Type': edge['from_type'],
+            'data_id': edge['_id']
+        })
+    return result
+
+def edge_relations(edge):
+    result = []
+    if edge:
+        result.append({
+            'Title': 'From',
+            'Type': edge['from_type'],
+            'data_id': edge['from_id']
+        })
+        result.append({
+            'Title': 'To',
+            'Type': edge['to_type'],
+            'data_id': edge['to_id']
+        })
+    return result
+
 
 # The query function is replaced by /annotation end point for now.
 #**************************

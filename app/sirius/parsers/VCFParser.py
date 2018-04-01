@@ -115,7 +115,7 @@ class VCFParser_ClinVar(VCFParser):
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
-        info_node.update({"_id": DATA_SOURCE_CLINVAR, "type": "dataSource", "source": DATA_SOURCE_CLINVAR})
+        info_node.update({"_id": 'I'+DATA_SOURCE_CLINVAR, "type": "dataSource", "source": DATA_SOURCE_CLINVAR})
         info_nodes.append(info_node)
         known_vid, known_traits, known_edge_ids = set(), set(), set()
         if 'reference' in self.metadata:
@@ -128,14 +128,14 @@ class VCFParser_ClinVar(VCFParser):
             chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                variant_id = "snp_rs" + str(d["INFO"]["RS"])
+                variant_id = "Gsnp_rs" + str(d["INFO"]["RS"])
                 variant_type = "SNP"
             else:
                 variant_type = d['INFO']['CLNVC'].lower()
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
                 variant_key_string = '_'.join([variant_type, str(chromid), pos, v_ref, v_alt])
-                variant_id = 'variant_' + self.hash(variant_key_string)
+                variant_id = 'Gvariant_' + self.hash(variant_key_string)
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
                 gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'source': DATA_SOURCE_CLINVAR}
@@ -160,7 +160,7 @@ class VCFParser_ClinVar(VCFParser):
                 print("Number of traits in in CLNDN and CLNDISDB not consistent! Skipping.")
                 continue
             for trait_name, trait_disdb in zip(trait_names, trait_CLNDISDBs):
-                trait_id = 'trait_' + self.hash(trait_name.lower())
+                trait_id = 'Itrait_' + self.hash(trait_name.lower())
                 this_trait_ids.append(trait_id)
                 if trait_id not in known_traits:
                     infonode = { '_id': trait_id,
@@ -179,15 +179,15 @@ class VCFParser_ClinVar(VCFParser):
             for trait_id in this_trait_ids:
                 # add study to edges
                 edge = {'from_id': variant_id , 'to_id': trait_id,
-                            'from_type': variant_type, 'to_type': 'trait',
-                            'type': 'association',
-                            'source': DATA_SOURCE_CLINVAR,
-                            'info': {
-                                "CLNREVSTAT": d['INFO']["CLNREVSTAT"],
-                                "p-value": 0,
-                            }
-                           }
-                edge['_id'] = self.hash(str(edge))
+                        'from_type': variant_type, 'to_type': 'trait',
+                        'type': 'association',
+                        'source': DATA_SOURCE_CLINVAR,
+                        'info': {
+                            "CLNREVSTAT": d['INFO']["CLNREVSTAT"],
+                            "p-value": 0,
+                        }
+                       }
+                edge['_id'] = 'E'+self.hash(str(edge))
                 if edge['_id'] not in known_edge_ids:
                     known_edge_ids.add(edge['_id'])
                     edges.append(edge)
@@ -204,7 +204,7 @@ class VCFParser_dbSNP(VCFParser):
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = self.metadata.copy()
-        info_node.update({"_id": DATA_SOURCE_DBSNP, "type": "dataSource", "source": DATA_SOURCE_DBSNP})
+        info_node.update({"_id": 'I'+DATA_SOURCE_DBSNP, "type": "dataSource", "source": DATA_SOURCE_DBSNP})
         info_nodes.append(info_node)
         known_vid = set()
         if 'reference' in self.metadata:
@@ -217,7 +217,7 @@ class VCFParser_dbSNP(VCFParser):
             chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                variant_id = "snp_rs" + str(d["INFO"]["RS"])
+                variant_id = "Gsnp_rs" + str(d["INFO"]["RS"])
                 variant_type = "SNP"
             else:
                 print(d)

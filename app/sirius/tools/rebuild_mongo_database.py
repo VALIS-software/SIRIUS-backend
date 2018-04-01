@@ -57,8 +57,13 @@ def drop_all_data():
 
 def update_insert_many(dbCollection, nodes):
     if not nodes: return
-    # we enforce all the node to have '_id' field defined
-    all_ids = [node['_id'] for node in nodes]
+    # append 'G', 'I', 'E' to all _id fields depend on type
+    prefix = dbCollection.name[0]
+    all_ids = []
+    for node in nodes:
+        # we require all nodes have _id field start with prefix
+        assert node['_id'][0] == prefix
+        all_ids.append(node['_id'])
     all_ids_need_update = set()
     # query the database in batches to find existing document with id
     batch_size = 100000
