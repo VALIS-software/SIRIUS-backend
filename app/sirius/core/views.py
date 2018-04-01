@@ -117,7 +117,7 @@ class HashableDict(dict):
 @lru_cache(maxsize=10000)
 def get_query_results(query):
     qt = QueryTree(query)#, verbose=True)
-    return sorted(list(qt.find()), key=lambda d: (d['chromid'], d['start']))
+    return sorted(list(qt.find(projection=['_id','chromid','start','end','length','info.name'])), key=lambda d: (d['chromid'], d['start']))
 
 def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
     t0 = time.time()
@@ -162,7 +162,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
             ret += cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
         else:
             ret += fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
-    print("Data aggregation take %s second" % (time.time() - t2))
+    print("Data aggregation take %.3f second" % (time.time() - t2))
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,

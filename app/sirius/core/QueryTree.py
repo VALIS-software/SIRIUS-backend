@@ -24,7 +24,7 @@ class QueryNode:
         self.limit = int(limit)
         self.verbose = verbose
 
-    def find(self, sort=None):
+    def find(self, projection=None):
         """
         Find all nodes from self.pool, based on self.filter and the edge connected.
         Return a cursor of MongoDB.find() query, or an empty list if none found
@@ -46,8 +46,8 @@ class QueryNode:
             query['_id'] = {"$in": list(result_ids)}
         if self.verbose == True:
             print(query)
-        if sort != None:
-            return self.pool.find(query, limit=self.limit).sort(sort)
+        if projection != None:
+            return self.pool.find(query, limit=self.limit, projection=projection)
         else:
             return self.pool.find(query, limit=self.limit)
 
@@ -84,7 +84,7 @@ class QueryEdge:
         self.limit = int(limit)
         self.verbose = verbose
 
-    def find(self, sort=None):
+    def find(self, projection=None):
         """
         Find all Edges from self.pool, based on self.filter, and the next node I connect to
         Return a cursor of MongoDB.find() query, or an empty list if Nothing found
@@ -97,8 +97,8 @@ class QueryEdge:
             query['to_id'] = {'$in': target_ids}
         if self.verbose == True:
             print(query)
-        if sort != None:
-            return self.pool.find(query, limit=self.limit).sort(sort)
+        if projection != None:
+            return self.pool.find(query, limit=self.limit, projection=projection)
         else:
             return self.pool.find(query, limit=self.limit)
 
@@ -181,7 +181,7 @@ class QueryTree:
             result.pop(text_key)
         return result
 
-    def find(self, sort=None):
-        return self.head.find(sort)
+    def find(self, projection=None):
+        return self.head.find(projection=projection)
 
 
