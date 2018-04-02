@@ -159,22 +159,15 @@ class QueryTree:
         result = dict()
         text_key = None
         for key, value in dfilter.items():
-            #key = key.lower()
             if isinstance(value, dict):
                 new_value = dict()
                 for k,v in value.items():
-                    # handle "$contain" operator here
-                    if k.startswith('$contain'):
-                        if text_key == None:
-                            result['$text'] = {'$search': '\"'+v+'\"'}
-                            text_key = key
-                        else:
-                            print("Error, only one text key can exist in a filter")
-                    else:
-                        new_k = self.Query_operators[k]
-                        new_v = v#.lower() if isinstance(v, str) else v
-                        new_value[new_k] = new_v
+                    new_k = self.Query_operators[k]
+                    new_v = v
+                    new_value[new_k] = new_v
                 result[key] = new_value
+            elif key == '$text':
+                result['$text'] = {'$search': '\"' + value + '\"'}
             else:
                 result[key] = value
         if text_key in result:
