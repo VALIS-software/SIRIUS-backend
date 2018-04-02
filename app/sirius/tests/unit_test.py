@@ -22,7 +22,6 @@ class TestSirius(unittest.TestCase):
         result = get_real_annotation_data('GRCh38', 11800, 14500, 100, 96)
         d = json.loads(result)
         assert d['startBp'] == 11800 and d['endBp'] == 14500
-        assert d["values"][0]['entity']['chromid'] == 1
         print("Real annotation request test passed")
         # test the query api
         query = {'type': 'GenomeNode', "filters":{"chromid": 1, "type":'gene'}}
