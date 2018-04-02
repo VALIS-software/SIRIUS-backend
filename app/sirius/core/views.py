@@ -117,7 +117,7 @@ class HashableDict(dict):
 @lru_cache(maxsize=10000)
 def get_query_results(query):
     qt = QueryTree(query)#, verbose=True)
-    return sorted(list(qt.find(projection=['_id','chromid','start','end','length','info.name'])), key=lambda d: (d['chromid'], d['start']))
+    return sorted(list(qt.find(projection=['_id','chromid','start','length','name'])), key=lambda d: (d['chromid'], d['start']))
 
 def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
     t0 = time.time()
@@ -136,7 +136,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         abs_end = abs_start + gnode['length'] - 1
         fid = gnode['_id'] = str(gnode['_id'])
         try:
-            fname = gnode['info']['name']
+            fname = gnode['name']
         except KeyError:
             fname = 'Unknown'
         if start_bp <= abs_start and abs_end <= end_bp:
@@ -148,7 +148,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                       'yOffsetPx': 0,
                       'heightPx': ANNOTATION_HEIGHT_PX,
                       "segments": [[0, gnode['length'], None, color, 20]],
-                      'entity': gnode,
+                      'title': fname,
                       'aggregation': False
                      }
             chr_r_data_in_range[chr_id].append(r_data)
@@ -203,7 +203,7 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
         color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
         feature_data['_id'] = str(feature_data['_id']) # convert to string for json
         try:
-            fname = feature_data['info']['name']
+            fname = feature_data['name']
         except:
             fname = 'Unknown'
         r_data = {'id': feature_data['_id'],
@@ -211,7 +211,7 @@ def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, tra
                   'yOffsetPx': 0,
                   'heightPx': ANNOTATION_HEIGHT_PX,
                   "segments": [[0, feature_data['length'], None, color, 20]],
-                  'entity': feature_data # all infomation here for frontend to display
+                  'title': fname
                  }
         i_ch = feature_data['chromid']
         r_data['startBp'] = annotation.location_to_bp(i_ch, feature_data['start'])
@@ -376,9 +376,9 @@ def distinct_values(index):
     print(query)
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
-        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'sourceurl'},
-        QUERY_TYPE_INFO: {'type', 'name', 'sourceurl'},
-        QUERY_TYPE_EDGE: {'type', 'from_type', 'to_type', 'sourceurl'}
+        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source'},
+        QUERY_TYPE_INFO: {'type', 'source', 'info.description'},
+        QUERY_TYPE_EDGE: {'type', 'from_type', 'to_type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:
         print("Query of index %s is not allowed for %s" % (index, query['type']))
@@ -394,54 +394,82 @@ from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 @app.route("/details/<string:data_id>")
 def details(data_id):
+    if not data_id: return
+    data = get_data_with_id(data_id)
+    if not data:
+        return abort(404, 'data with _id %s not found' % data_id)
+    if data_id[0] == 'G' or data_id[0] == 'I':
+        relations = node_relations(data_id)
+    elif data_id[0] == 'E':
+        relations = edge_relations(data)
+    else:
+        print("Invalid data_id %s, ID should start with G, I or E" % data_id)
+    result = {'details': data, 'relations': relations}
+    return json.dumps(result)
+
+def get_data_with_id(data_id):
     prefix = data_id[0]
     data = None
     if prefix == 'G':
         data = GenomeNodes.find_one({'_id': data_id})
-        relations = node_relations(data_id)
     elif prefix == 'I':
         data = InfoNodes.find_one({'_id': data_id})
-        relations = node_relations(data_id)
     elif prefix == 'E':
         data = Edges.find_one({'_id': data_id})
-        relations = edge_relations(data)
     else:
         print("Invalid data_id %s, ID should start with G, I or E" % data_id)
-    if not data:
-        return abort(404, 'data with _id %s not found' % data_id)
-    result = {'details': data, 'relations': relations}
-    return json.dumps(result)
+    # format source into string
+    if data:
+        data['source'] = '/'.join(data['source'])
+    else:
+        print("Data not found for _id %s" % data_id)
+    return data
 
 def node_relations(data_id):
     result = []
     for edge in Edges.find({'from_id': data_id}):
+        target_data = get_data_with_id(edge['to_id'])
+        if target_data:
+            description = target_data['type'] + ' ' + target_data['name']
+        else:
+            description = "data not found"
         result.append({
-            'Title': edge['type'].capitalize() + ' To',
-            'Source': '/'.join(edge['source']),
-            'Type': edge['to_type'],
-            'data_id': edge['_id']
+            'title': edge['type'].capitalize() + ' To',
+            'source': edge['source'],
+            'description': description,
+            'id': edge['_id']
         })
     for edge in Edges.find({'to_id': data_id}):
+        target_data = get_data_with_id(edge['from_id'])
+        if target_data:
+            description = target_data['type'] + ' ' + target_data['name']
+        else:
+            description = "data not found"
         result.append({
-            'Title': edge['type'].capitalize() + ' From',
-            'Source': '/'.join(edge['source']),
-            'Type': edge['from_type'],
-            'data_id': edge['_id']
+            'title': edge['type'].capitalize() + ' From',
+            'source': edge['source'],
+            'description': description,
+            'id': edge['_id']
         })
     return result
 
 def edge_relations(edge):
     result = []
-    if edge:
+    from_data = get_data_with_id(edge['from_id'])
+    if from_data:
         result.append({
-            'Title': 'From',
-            'Type': edge['from_type'],
-            'data_id': edge['from_id']
+            'title': 'From ' + from_data['type'],
+            'source': from_data['source'],
+            'description': from_data['name'],
+            'id': edge['from_id']
         })
+    to_data = get_data_with_id(edge['to_id'])
+    if to_data:
         result.append({
-            'Title': 'To',
-            'Type': edge['to_type'],
-            'data_id': edge['to_id']
+            'title': 'To ' + to_data['type'],
+            'source': to_data['source'],
+            'description': to_data['name'],
+            'id': edge['to_id']
         })
     return result
 
