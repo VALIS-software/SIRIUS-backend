@@ -427,7 +427,7 @@ def get_data_with_id(data_id):
 
 def node_relations(data_id):
     result = []
-    for edge in Edges.find({'from_id': data_id}):
+    for edge in Edges.find({'from_id': data_id}, limit=100):
         target_data = get_data_with_id(edge['to_id'])
         if target_data:
             description = target_data['type'] + ' ' + target_data['name']
@@ -439,7 +439,7 @@ def node_relations(data_id):
             'description': description,
             'id': edge['_id']
         })
-    for edge in Edges.find({'to_id': data_id}):
+    for edge in Edges.find({'to_id': data_id}, limit=100):
         target_data = get_data_with_id(edge['from_id'])
         if target_data:
             description = target_data['type'] + ' ' + target_data['name']
