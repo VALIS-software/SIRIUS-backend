@@ -173,11 +173,11 @@ def build_mongo_index():
     for idx in ['source', 'type']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
-    print("Creating text index 'name'")
-    InfoNodes.create_index([('name', 'text')], default_language='english')
+    print("Creating text index 'info.description'")
+    InfoNodes.create_index([('info.description', 'text')], default_language='english')
 
     print("Edges")
-    for idx in ['source', 'from_id', 'to_id', 'from_type', 'to_type', 'type', 'info.p-value']:
+    for idx in ['source', 'from_id', 'to_id', 'type', 'info.p-value']:
         print("Creating index %s" % idx)
         Edges.create_index(idx)
 

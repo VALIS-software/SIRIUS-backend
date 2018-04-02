@@ -114,8 +114,13 @@ class VCFParser_ClinVar(VCFParser):
 
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
-        info_node = self.metadata.copy()
-        info_node.update({"_id": 'I'+DATA_SOURCE_CLINVAR, "type": "dataSource", "source": DATA_SOURCE_CLINVAR})
+        info_node= {
+            "_id": 'I'+DATA_SOURCE_CLINVAR,
+            "type": "dataSource",
+            'name':DATA_SOURCE_CLINVAR,
+            "source": DATA_SOURCE_CLINVAR,
+            'info': self.metadata.copy()
+            }
         info_nodes.append(info_node)
         known_vid, known_traits, known_edge_ids = set(), set(), set()
         if 'reference' in self.metadata:
@@ -128,21 +133,37 @@ class VCFParser_ClinVar(VCFParser):
             chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                variant_id = "Gsnp_rs" + str(d["INFO"]["RS"])
+                rs = str(d["INFO"]["RS"])
+                variant_id = "Gsnp_rs" + rs
                 variant_type = "SNP"
+                name = 'RS' + rs
             else:
                 variant_type = d['INFO']['CLNVC'].lower()
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
                 variant_key_string = '_'.join([variant_type, str(chromid), pos, v_ref, v_alt])
                 variant_id = 'Gvariant_' + self.hash(variant_key_string)
+                name = ' '.join(s.capitalize() for s in variant_type.split('_'))
+            pos = int(d['POS'])
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
-                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'source': DATA_SOURCE_CLINVAR}
-                gnode['type'] = variant_type
-                gnode['start'] = gnode['end'] = int(d['POS'])
-                gnode['length'] = 1
-                gnode['info'] = {"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']}
+                gnode = {
+                    '_id': variant_id,
+                    'assembly': assembly,
+                    'chromid':chromid,
+                    'start': pos,
+                    'end': pos,
+                    'length': 1,
+                    'source': DATA_SOURCE_CLINVAR,
+                    'name': name,
+                    'type': variant_type
+                }
+                gnode['info'] = {
+                    'variant_ref': d["REF"],
+                    'variant_alt': d['ALT'],
+                    'filter': d['FILTER'],
+                    'qual': d['QUAL']
+                }
                 for key in ('ALLELEID', 'CLNVCSO', 'GENEINFO', 'MC', 'ORIGIN', 'CLNHGVS'):
                     try:
                         gnode['info'][key] = d["INFO"][key]
@@ -160,31 +181,37 @@ class VCFParser_ClinVar(VCFParser):
                 print("Number of traits in in CLNDN and CLNDISDB not consistent! Skipping.")
                 continue
             for trait_name, trait_disdb in zip(trait_names, trait_CLNDISDBs):
-                trait_id = 'Itrait_' + self.hash(trait_name.lower())
+                trait_desp = trait_name.replace("_"," ")
+                trait_id = 'Itrait_' + self.hash(trait_desp.lower())
                 this_trait_ids.append(trait_id)
+                short_name = (''.join(s[0] for s in trait_desp.split())).upper()
                 if trait_id not in known_traits:
-                    infonode = { '_id': trait_id,
-                                'type': 'trait',
-                                'name': trait_name.replace("_"," "), # use space here for text search in MongoDB
-                                'source': DATA_SOURCE_CLINVAR,
-                                'info': dict()
-                                }
+                    infonode = {
+                        '_id': trait_id,
+                        'type': 'trait',
+                        'name': short_name,
+                        'source': DATA_SOURCE_CLINVAR,
+                        'info': dict()
+                    }
                     for nameidx in trait_disdb.split(','):
                         if ':' in nameidx:
                             name, idx = nameidx.split(':', 1)
                             infonode['info'][name] = idx
+                    # The info.description is where we search for trait
+                    # use space here for text search in MongoDB
+                    infonode['info']['description'] = trait_desp
                     info_nodes.append(infonode)
                     known_traits.add(trait_id)
             # create EdgeNode for each trait in this entry
             for trait_id in this_trait_ids:
                 # add study to edges
                 edge = {'from_id': variant_id , 'to_id': trait_id,
-                        'from_type': variant_type, 'to_type': 'trait',
                         'type': 'association',
                         'source': DATA_SOURCE_CLINVAR,
+                        'name': 'ClinVar',
                         'info': {
-                            "CLNREVSTAT": d['INFO']["CLNREVSTAT"],
-                            "p-value": 0,
+                            'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
+                            'p-value': 0,
                         }
                        }
                 edge['_id'] = 'E'+self.hash(str(edge))
@@ -203,8 +230,13 @@ class VCFParser_dbSNP(VCFParser):
         """ Parse study data into three types of nodes """
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
-        info_node = self.metadata.copy()
-        info_node.update({"_id": 'I'+DATA_SOURCE_DBSNP, "type": "dataSource", "source": DATA_SOURCE_DBSNP})
+        info_node= {
+            "_id": 'I'+DATA_SOURCE_DBSNP,
+            "type": "dataSource",
+            'name':DATA_SOURCE_DBSNP,
+            "source": DATA_SOURCE_DBSNP,
+            'info': self.metadata.copy()
+        }
         info_nodes.append(info_node)
         known_vid = set()
         if 'reference' in self.metadata:
@@ -217,19 +249,33 @@ class VCFParser_dbSNP(VCFParser):
             chromid = chromo_idxs[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                variant_id = "Gsnp_rs" + str(d["INFO"]["RS"])
+                rs = str(d["INFO"]["RS"])
+                variant_id = "Gsnp_rs" + rs
                 variant_type = "SNP"
+                name = 'RS' + rs
             else:
                 print(d)
                 print("Warning, RS number not found, skipping")
                 continue
+            pos = int(d['POS'])
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
-                gnode = {'_id': variant_id, 'assembly': assembly, 'chromid':chromid, 'sourceurl': sourceurl}
-                gnode['type'] = variant_type
-                gnode['start'] = gnode['end'] = int(d['POS'])
-                gnode['length'] = 1
-                gnode['info'] = d["INFO"].copy()
-                gnode['info'].update({"variant_ref": d["REF"], 'variant_alt': d['ALT'], 'filter': d['FILTER'], 'qual': d['QUAL']})
+                gnode = {
+                    '_id': variant_id,
+                    'assembly': assembly,
+                    'chromid': chromid,
+                    'start': pos,
+                    'end': pos,
+                    'length': 1,
+                    'source': DATA_SOURCE_DBSNP,
+                    'name': name,
+                    'info': d['info'].copy()
+                }
+                gnode['info'].update({
+                    "variant_ref": d["REF"],
+                    'variant_alt': d['ALT'],
+                    'filter': d['FILTER'],
+                    'qual': d['QUAL']
+                })
                 genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges

@@ -50,7 +50,8 @@ class EQTLParser(Parser):
         #     Example: { 'from_id': 'Gsnp_rs945418', to_id: 'Ggeneid_1187',
         #                'from_type': 'SNP', 'to_type': 'gene',
         #                'type': 'association',
-        #                'sourceurl': 'eQTL',
+        #                'source': 'eQTL',
+        #                'name': 'eQTL',
         #                'info': { "High_confidence": "N",
         #                          "Population": "CEU",
         #                          "CellType": "LCL",
@@ -59,12 +60,13 @@ class EQTLParser(Parser):
         #                          "SameSet": "0",
         #                          "DiffSet": "1",
         #                          "TotalSet": "1"
-        #                        }
+        #                        },
+        #                '_id': 'Ejfiea12131294012j12903'
         #              }
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
-        info_node = self.metadata.copy()
-        info_node.update({"_id": 'I'+DATA_SOURCE_EQTL, "type": "dataSource", "source": DATA_SOURCE_EQTL})
+        info_node = {"_id": 'I'+DATA_SOURCE_EQTL, "type": "dataSource", 'name': DATA_SOURCE_EQTL, "source": DATA_SOURCE_EQTL}
+        info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         known_edge_ids = set()
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
@@ -80,6 +82,7 @@ class EQTLParser(Parser):
                     'from_type': 'SNP', 'to_type': 'gene',
                     'type': 'association',
                     'source': DATA_SOURCE_EQTL,
+                    'name': DATA_SOURCE_EQTL,
                     'info': dict()
                    }
             for k,v in d.items():

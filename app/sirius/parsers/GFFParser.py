@@ -121,18 +121,16 @@ class GFFParser(Parser):
         #     "score": ".",
         #     "strand": "+",
         #     "phase": ".",
-        #     "attributes": {
-        #       "ID": "gene0",
-        #       "description": "DEAD/H-box helicase 11 like 1",
-        #       "gbkey": "Gene",
-        #       "gene": "DDX11L1",
-        #       "gene_biotype": "misc_RNA",
-        #       "pseudo": "true",
-        #       "GeneID": "100287102",
-        #       "HGNC": "HGNC:37102"
-        #     },
-        #     "name": "DDX11L1"
+        #     "ID": "gene0",
+        #     "description": "DEAD/H-box helicase 11 like 1",
+        #     "gbkey": "Gene",
+        #     "gene": "DDX11L1",
+        #     "gene_biotype": "misc_RNA",
+        #     "pseudo": "true",
+        #     "GeneID": "100287102",
+        #     "HGNC": "HGNC:37102"
         #   },
+        #   "name": "DDX11L1"
         #   "start": 11874,
         #   "end": 14409,
         #   "_id": "Ggeneid_100287102",
@@ -141,8 +139,8 @@ class GFFParser(Parser):
         if hasattr(self, 'mongonodes'): return self.mongonodes
         genome_nodes, info_nodes, edge_nodes = [], [], []
         # add dataSource into InfoNodes
-        info_node = self.metadata.copy()
-        info_node.update({"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "source": DATA_SOURCE_GENOME})
+        info_node = {"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "name": DATA_SOURCE_GENOME, "source": DATA_SOURCE_GENOME}
+        info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         # add data as GenomeNodes
         if 'assembly' in self.metadata:
@@ -151,8 +149,9 @@ class GFFParser(Parser):
             assembly = 'GRCh38'
         if not hasattr(self, 'seqid_loc'): self.seqid_loc = dict()
         if not hasattr(self, 'known_id_set'): self.known_id_set = set()
-        for d in self.data['features']:
-            ft = d['type']
+        for feature in self.data['features']:
+            d = feature.copy()
+            ft = d.pop('type')
             # we are skipping the contigs for now, since we don't know where they are
             if not d['seqid'].startswith("NC_000"): continue
             if ft == 'region':
@@ -161,35 +160,35 @@ class GFFParser(Parser):
                         self.seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
                     except:
                         self.seqid_loc[d['seqid']] = None
+            # create gnode document with basic information
             gnode = {'assembly': assembly, "source": DATA_SOURCE_GENOME, 'type': ft}
             try:
-                gnode['chromid'] = self.seqid_loc[d['seqid']]
+                gnode['chromid'] = self.seqid_loc[d.pop('seqid')]
+                gnode['start'] = d.pop('start')
+                gnode['end'] = d.pop('end')
+                gnode['length'] = gnode['end'] - gnode['start'] + 1
             except KeyError:
-                gnode['chromid'] = None
-            gnode['info'] = dict()
-            for k,v in d.items():
-                if k == 'start' or k == 'end':
-                    gnode[k] = v
-                elif k != 'type':
-                    gnode['info'][k] = v
-            # try to set the info.name
+                # we ignore those genes with unknown locations for now
+                continue
             try:
-                name = gnode['info']['attributes'].pop('Name')
-                gnode['info']['name'] = name
-            except:
-                pass
+                gnode['name'] = d['attributes'].pop('Name')
+            except KeyError:
+                # we use type as name
+                gnode['name'] = ft
+            # add additional information to gnode['info']
+            gnode['info'] = d.pop('attributes')
+            gnode['info'].update(d)
             # get geneID fron Dbxref, e.g GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102
             try:
-                dbxref = gnode['info']['attributes'].pop('Dbxref')
+                dbxref = gnode['info'].pop('Dbxref')
                 for ref in dbxref.split(','):
                     refname, ref_id = ref.split(':', 1)
-                    gnode['info']['attributes'][refname] = ref_id
+                    gnode['info'][refname] = ref_id
                     # use GeneID as the ID for this gene
                     if refname == 'GeneID' and gnode['type'] == 'gene':
                         gnode['_id'] = 'Ggeneid_' + ref_id
             except KeyError:
                 pass
-            gnode['length'] = gnode['end'] - gnode['start'] + 1
             if '_id' not in gnode:
                 gnode['_id'] = 'G' + ft + '_' + self.hash(str(gnode))
             if gnode['_id'] in self.known_id_set:

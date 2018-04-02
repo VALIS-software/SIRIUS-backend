@@ -9,11 +9,11 @@ def load_mongo_annotations():
     loaded_annotations = dict()
     for aname in anno_names:
         chromo_info = dict()
-        for d in GenomeNodes.find({'type': 'region', 'assembly': aname, 'info.attributes.genome': 'chromosome'}):
+        for d in GenomeNodes.find({'type': 'region', 'assembly': aname, 'info.genome': 'chromosome'}):
             chromoid = d['chromid']
             chromo_info[chromoid] = {'start': d['start'], 'end': d['end']}
         if not chromo_info:
-            print("AnnotationID %s not found in %s" % (annotationId, GenomeNodes.name))
+            print("Annotation %s info not found in %s" % (aname, GenomeNodes.name))
             return
         chromo_lengths = [chromo_info[i]['end'] - chromo_info[i]['start'] + 1 for i in chromo_idxs.values()]
         start_bp = chromo_info[1]['start']
