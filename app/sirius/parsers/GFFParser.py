@@ -35,8 +35,7 @@ class GFFParser(Parser):
         #             "gene_biotype": "misc_RNA",
         #             "pseudo": "true"
         #           }
-        #          }
-        gff_labels = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
+        #         }
         metadata = {'filename': self.filename}
         features = []
         for line in open(self.filename):
@@ -55,11 +54,11 @@ class GFFParser(Parser):
                     print("%d data parsed" % len(features), end='\r')
         if self.verbose:
             print("Parsing GFF data finished.")
-        self.data = {'metadata': metadata, 'features': features}
+        self.metadata.update(metadata)
+        self.data['features'] = features
 
     def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
         """ Specializd function to parse and safe data in chunks to reduce memory usage """
-        gff_labels = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
         metadata = {'filename': self.filename}
         features = []
         i_chunk = 0

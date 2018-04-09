@@ -16,7 +16,7 @@ class Parser(object):
         self.filename = filename
         self.verbose = verbose
         _, self.ext = os.path.splitext(os.path.basename(filename))
-        self.data = {'metadata': dict()}
+        self.data = {'metadata': {'filename': filename}}
 
     def parse(self):
         raise NotImplementedError

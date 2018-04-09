@@ -53,7 +53,6 @@ class GWASParser(Parser):
         #     "PLATFORM [SNPS PASSING QC]": "Affymetrix [290325]",
         #     "CNV\n": "N\n"
         # }
-        self.metadata = {'filename': self.filename}
         self.studies = []
         with open(self.filename) as f:
             labels = f.readline()[:-1].split('\t')

@@ -29,8 +29,6 @@ class EQTLParser(Parser):
         #     "DiffSet": "1",
         #     "TotalSet": "1"
         #  },
-
-        self.metadata = {'filename': self.filename}
         self.eqtls = []
         with open(self.filename) as infile:
             title = infile.readline().strip()

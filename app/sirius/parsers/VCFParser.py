@@ -52,7 +52,7 @@ class VCFParser(Parser):
         #     }
         #   },
         # ...]
-        self.metadata = {'filename': self.filename, 'INFO':dict()}
+        self.metadata['INFO'] = dict()
         self.variants = []
         # for splitting the metadata info line
         pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
