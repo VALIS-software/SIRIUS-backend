@@ -4,26 +4,42 @@ from sirius.core.Annotation import Annotation
 from sirius.realdata.constants import chromo_idxs
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
-def load_mongo_annotations():
-    anno_names = GenomeNodes.distinct('assembly')
+this_file_folder = os.path.dirname(os.path.realpath(__file__))
+
+# def load_mongo_annotations():
+#     anno_names = GenomeNodes.distinct('assembly')
+#     loaded_annotations = dict()
+#     for aname in anno_names:
+#         chromo_info = dict()
+#         for d in GenomeNodes.find({'type': 'region', 'assembly': aname, 'info.genome': 'chromosome'}):
+#             chromoid = d['chromid']
+#             chromo_info[chromoid] = {'start': d['start'], 'end': d['end']}
+#         if not chromo_info:
+#             print("Annotation %s info not found in %s" % (aname, GenomeNodes.name))
+#             break
+#         chromo_lengths = [chromo_info[i]['end'] - chromo_info[i]['start'] + 1 for i in chromo_idxs.values()]
+#         start_bp = chromo_info[1]['start']
+#         end_bp = sum(chromo_lengths) + start_bp - 1
+#         adata = {'start_bp': start_bp, 'end_bp': end_bp, 'chromo_lengths': chromo_lengths}
+#         loaded_annotations[aname] = Annotation(name=aname, datadict=adata)
+#     return loaded_annotations
+
+#loaded_annotations = load_mongo_annotations()
+
+# we load from the json file on disk
+def load_annotations():
     loaded_annotations = dict()
-    for aname in anno_names:
-        chromo_info = dict()
-        for d in GenomeNodes.find({'type': 'region', 'assembly': aname, 'info.genome': 'chromosome'}):
-            chromoid = d['chromid']
-            chromo_info[chromoid] = {'start': d['start'], 'end': d['end']}
-        if not chromo_info:
-            print("Annotation %s info not found in %s" % (aname, GenomeNodes.name))
-            return
-        chromo_lengths = [chromo_info[i]['end'] - chromo_info[i]['start'] + 1 for i in chromo_idxs.values()]
-        start_bp = chromo_info[1]['start']
-        end_bp = sum(chromo_lengths) + start_bp - 1
-        adata = {'start_bp': start_bp, 'end_bp': end_bp, 'chromo_lengths': chromo_lengths}
-        loaded_annotations[aname] = Annotation(name=aname, datadict=adata)
+    with open(os.path.join(this_file_folder, 'realAnnotations.json')) as jsonin:
+        json_data = json.load(jsonin)
+        for aname, adata in json_data.items():
+            loaded_annotations[aname] = Annotation(name=aname, datadict=adata)
     return loaded_annotations
 
+loaded_annotations = load_annotations()
 
-loaded_annotations = load_mongo_annotations()
+
+
+
 
 def load_mongo_data_information():
     from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
