@@ -66,7 +66,7 @@ test_query = {
         "type": "InfoNode",
         "filters": {
           "type": "trait",
-          "name": {"$contain": "cancer"}
+          "$text": "cancer"
         }
       }
     },
@@ -101,7 +101,7 @@ def get_annotation_data(annotation_id, start_bp, end_bp):
         query = test_query
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id == "GRCh38":
-        query = {'type': 'GenomeNode', "filters":{"type":'gene'}}
+        query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id in loaded_annotations:
         result = get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
@@ -373,19 +373,25 @@ def distinct_values(index):
     if not query:
         print("No query is posted, returning empty list")
         return json.dumps([])
-    print(query)
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
-        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source'},
+        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source', 'info.biosample', 'info.targets'},
         QUERY_TYPE_INFO: {'type', 'source', 'info.description'},
-        QUERY_TYPE_EDGE: {'type', 'from_type', 'to_type', 'source'}
+        QUERY_TYPE_EDGE: {'type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:
         print("Query of index %s is not allowed for %s" % (index, query['type']))
         return json.dumps([])
+    query = HashableDict(query)
+    result = get_query_distinct_values(query, index)
+    print("/distinct_values/%s for query %s returns %d results. " % (index, query, len(result)), get_query_distinct_values.cache_info())
+    return json.dumps(result)
+
+@lru_cache(maxsize=10000)
+def get_query_distinct_values(query, index):
     qt = QueryTree(query)
     result = qt.find().distinct(index)
-    return json.dumps(result)
+    return result
 
 #*******************************
 #*         /details            *
