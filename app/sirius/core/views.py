@@ -490,12 +490,13 @@ def query_api(query):
         print("/query endpoint works only with post method")
         return ""
     query = HashableDict(request.get_json())
-    results = get_query_results(query, index)
-    print("/query for query %s returns %d results. " % (query, len(results)), get_query_results.cache_info())
+    results = get_query_raw_results(query, index)
+    print("/query for query %s returns %d results. " % (query, len(results)), get_query_raw_results.cache_info())
     return json.dumps(results)
 
 @lru_cache(maxsize=10000)
-def get_query_results(query):
+def get_query_raw_results(query):
     qt = QueryTree(query)
     results = list(qt.find())
     return results
+
