@@ -439,18 +439,39 @@ def edge_relations(edge):
 #*       /query           *
 #**************************
 
-@app.route('/query', methods=['POST'])
-def query_api():
+@app.route('/query/full', methods=['POST'])
+def query_full():
+    """ Returns results for a query, with only basic information, useful for search """
     if request.method != 'POST':
         print("/query endpoint works only with post method")
         return ""
     query = HashableDict(request.get_json())
-    results = get_query_raw_results(query)
-    print("/query for query %s returns %d results. " % (query, len(results)), get_query_raw_results.cache_info())
+    results = get_query_full_results(query)
+    print("%d results for full query %s" % (len(results), query), get_query_full_results.cache_info())
     return json.dumps(results)
 
 @lru_cache(maxsize=10000)
-def get_query_raw_results(query):
+def get_query_full_results(query):
+    """ Cached function for getting full query results """
     qt = QueryTree(query)
     results = list(qt.find())
+    return results
+
+@app.route('/query/basic', methods=['POST'])
+def query_basic():
+    """ Returns results for a query, with only basic information, useful for search """
+    if request.method != 'POST':
+        print("/query endpoint works only with post method")
+        return ""
+    query = HashableDict(request.get_json())
+    results = get_query_basic_results(query)
+    print("%d results for basic query %s" % (len(results), query), get_query_basic_results.cache_info())
+    return json.dumps(results)
+
+@lru_cache(maxsize=10000)
+def get_query_basic_results(query):
+    """ Cached function for getting basic query results """
+    basic_projection = ['_id', 'source', 'type', 'name', 'info.description']
+    qt = QueryTree(query)
+    results = list(qt.find(projection=basic_projection))
     return results
