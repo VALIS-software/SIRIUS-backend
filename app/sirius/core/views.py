@@ -485,7 +485,7 @@ def edge_relations(edge):
 #**************************
 
 @app.route('/query', methods=['POST'])
-def query_api(query):
+def query_api():
     if request.method != 'POST':
         print("/query endpoint works only with post method")
         return ""
