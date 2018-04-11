@@ -9,7 +9,7 @@ from sirius.main import app
 from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
 from sirius.realdata.constants import chromo_idxs, chromo_names
 from sirius.core.QueryTree import QueryTree
-from sirius.core.aggregations import cluster_r_data
+from sirius.core.aggregations import get_aggregation_segments
 
 #**************************
 #*     static urls        *
@@ -93,20 +93,17 @@ def get_annotation_data(annotation_id, start_bp, end_bp):
     track_height_px = int(request.args.get('track_height_px', default=0))
     query = request.get_json()
     if query:
-        # let show some real data!!
-        print(query)
+        # let us show some real data!!
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
+    # the 'GWASCatalog' and 'GRCh38' are left over mocks and we replace them with real queries
     elif annotation_id == 'GWASCatalog':
         query = test_query
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id == "GRCh38":
         query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
-    elif annotation_id in loaded_annotations:
-        result = get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
     else:
         result = get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
-    #print(result)
     return result
 
 class HashableDict(dict):
@@ -114,57 +111,76 @@ class HashableDict(dict):
         return hash(json.dumps(self, sort_keys=True))
 
 @lru_cache(maxsize=10000)
-def get_query_results(query):
+def get_gnome_query_results(query):
     qt = QueryTree(query)#, verbose=True)
-    return sorted(list(qt.find(projection=['_id','chromid','start','length','name'])), key=lambda d: (d['chromid'], d['start']))
-
-def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
-    t0 = time.time()
-    query_result = get_query_results(HashableDict(query))
-    t1 = time.time()
-    print("Query returns %s results in %.3f seconds" % (len(query_result), t1-t0), get_query_results.cache_info())
     try:
         annotation = loaded_annotations[query['filters']['assembly']]
     except:
         annotation = loaded_annotations['GRCh38']
-    aggregation_thresh = 5000
-    chr_r_data_in_range = [[] for _ in range(len(chromo_idxs)+1)] # r_data for each chromosome, initial one is empty
-    ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
-    count_in_range = 0
-    for gnode in query_result:
+    # we split the results into each of the 24 chromosomes
+    results = [[] for _ in range(len(chromo_idxs)+1)]
+    for gnode in qt.find(projection=['_id', 'chromid','start','length','name']):
         chr_id = gnode['chromid']
         if chr_id == None: continue # Genome with unknown locations are ignored for now
         abs_start = annotation.location_to_bp(chr_id, gnode['start'])
         abs_end = abs_start + gnode['length'] - 1
-        fid = gnode['_id'] = str(gnode['_id'])
-        try:
-            fname = gnode['name']
-        except KeyError:
-            fname = 'Unknown'
-        if start_bp <= abs_start and abs_end <= end_bp:
-            color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
-            r_data = {'id': fid,
-                      'startBp': abs_start,
-                      'endBp': abs_end,
-                      'labels': [[fname, True, 0, 0, 0]],
-                      'yOffsetPx': 0,
-                      'heightPx': ANNOTATION_HEIGHT_PX,
-                      "segments": [[0, gnode['length'], None, color, 20]],
-                      'title': fname,
-                      'aggregation': False
-                     }
-            chr_r_data_in_range[chr_id].append(r_data)
-            count_in_range += 1
+        fid = gnode['_id']
+        name = gnode['name']
+        genome_data = (abs_start, abs_end, fid, name)
+        results[chr_id].append(genome_data)
+    return list(map(sorted, results))
+
+def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
+    t0 = time.time()
+    gnome_query_results = get_gnome_query_results(HashableDict(query))
+    total_query_count = sum(len(g) for g in gnome_query_results)
+    t1 = time.time()
+    print("%d gnome_query_results; %.3f seconds; query %s" % (total_query_count, t1-t0, query), get_gnome_query_results.cache_info())
+    # get annotation information for computing abs location
+    try:
+        annotation = loaded_annotations[query['filters']['assembly']]
+    except:
+        annotation = loaded_annotations['GRCh38']
+    # find the chromosomes in range
+    # here we use a naive filter, the performance will be improved if we use interval tree
+    all_gnome_in_range = []
+    for i_ch in range(1, len(annotation.chromo_end_bps)):
+        ch_start = annotation.chromo_end_bps[i_ch-1] + 1
+        ch_end = annotation.chromo_end_bps[i_ch]
+        gnome_query_ch = gnome_query_results[i_ch]
+        if ch_start >= start_bp:
+            if ch_start < end_bp:
+                if ch_end <= end_bp:
+                    # if the entire chromosome is in range, append it
+                    all_gnome_in_range.append(gnome_query_ch)
+                else:
+                    # if the first half of chromosome is in range
+                    ch_gnome_in_range = list(filter(lambda g: (g[1] < end_bp), gnome_query_ch))
+                    all_gnome_in_range.append(ch_gnome_in_range)
+                    break
+        elif ch_start < start_bp:
+            if ch_end > start_bp:
+                if ch_end <= end_bp:
+                    # if the later half of the chromosome is in range
+                    ch_gnome_in_range = list(filter(lambda g: (g[0] > start_bp), gnome_query_ch))
+                    all_gnome_in_range.append(ch_gnome_in_range)
+                else:
+                    # if the chromosome covers the range
+                    ch_gnome_in_range = list(filter(lambda g: (g[0] > start_bp and g[1] < end_bp), gnome_query_ch))
+                    all_gnome_in_range.append(ch_gnome_in_range)
+                    break
+    count_in_range = sum(len(g) for g in all_gnome_in_range)
     t2 = time.time()
-    print("Data arrangement %s take %.3f second" % (annotation.name, (t2 - t1)))
+    print("Intersect filter: %d results; %.3f seconds" % (count_in_range, t2 - t1))
+    aggregation_thresh = 5000
     ret = []
-    for i_ch in range(1, len(chromo_idxs)+1):
-        r_data_in_range = chr_r_data_in_range[i_ch]
-        if sampling_rate > aggregation_thresh: # turn on aggregation!
-            ret += cluster_r_data(r_data_in_range, sampling_rate, track_height_px)
-        else:
-            ret += fit_results_in_track(r_data_in_range, sampling_rate, track_height_px)
-    print("Data aggregation take %.3f second" % (time.time() - t2))
+    if sampling_rate > aggregation_thresh: # turn on aggregation!
+        for gnome_in_range in all_gnome_in_range:
+            ret += get_aggregation_segments(gnome_in_range, annotation, sampling_rate, track_height_px)
+    else:
+        for gnome_in_range in all_gnome_in_range:
+            ret += get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_px)
+    print("Data aggregation: assembly %s, %.3f seconds" % (annotation.name, time.time() - t2))
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,
@@ -175,64 +191,39 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
         "countInRange": count_in_range
     })
 
-def fit_results_in_track(r_data_in_range, sampling_rate, track_height_px):
-    if len(r_data_in_range) == 0: return []
-    padding = 20 * sampling_rate
-    last = r_data_in_range[0]
-    ANNOTATION_HEIGHT_PX = last['heightPx']
-    ret = [last]
-    for r_data in r_data_in_range[1:]:
-        if r_data["startBp"] > last['endBp'] + padding:
-            ret.append(r_data)
-            last = r_data
-        elif last["yOffsetPx"] < track_height_px - 2 * ANNOTATION_HEIGHT_PX:
-            r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
-            ret.append(r_data)
-            last = r_data
-    return ret
-
-
-def get_real_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px):
-    annotation = loaded_annotations[annotation_id]
-    start_bp = max(start_bp, annotation.start_bp)
-    end_bp = min(end_bp, annotation.end_bp)
-    cursor = annotation.db_find(start_bp, end_bp, types=['gene','exon'], min_length=sampling_rate*20)
+def get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_px):
     ret = []
+    ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
+    last_end, last_y = -float('inf'), 0
     padding = 20 * sampling_rate
-    ANNOTATION_HEIGHT_PX = int(track_height_px/3) - 1
-    last = None
-    for feature_data in cursor:
-        color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
-        feature_data['_id'] = str(feature_data['_id']) # convert to string for json
-        try:
-            fname = feature_data['name']
-        except:
-            fname = 'Unknown'
-        r_data = {'id': feature_data['_id'],
-                  'labels': [[fname, True, 0, 0, 0]],
-                  'yOffsetPx': 0,
-                  'heightPx': ANNOTATION_HEIGHT_PX,
-                  "segments": [[0, feature_data['length'], None, color, 20]],
-                  'title': fname
-                 }
-        i_ch = feature_data['chromid']
-        r_data['startBp'] = annotation.location_to_bp(i_ch, feature_data['start'])
-        r_data['endBp'] = annotation.location_to_bp(i_ch, feature_data['end'])
-        if last == None or r_data["startBp"] > last['endBp'] + padding:
+    for gnome_data in gnome_in_range:
+        (abs_start, abs_end, fid, name) = gnome_data
+        will_append = False
+        if abs_start > last_end + padding:
+            will_append = True
+            last_end = abs_end
+            yOffset = 0
+            last_y = 0
+        elif last_y <= track_height_px - 2 * ANNOTATION_HEIGHT_PX + 1:
+            will_append = True
+            last_end = max(last_end, abs_end)
+            yOffset = last_y + ANNOTATION_HEIGHT_PX + 1
+            last_y = yOffset
+        if will_append == True:
+            color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
+            r_data = {
+                'id': fid,
+                'startBp': abs_start,
+                'endBp': abs_end,
+                'labels': [[name, True, 0, 0, 0]],
+                'yOffsetPx': yOffset,
+                'heightPx': ANNOTATION_HEIGHT_PX,
+                "segments": [[0, abs_end-abs_start+1, None, color, 20]],
+                'title': name,
+                'aggregation': False
+            }
             ret.append(r_data)
-            last = r_data
-        elif last["yOffsetPx"] < track_height_px - ANNOTATION_HEIGHT_PX:
-            r_data["yOffsetPx"] = last["yOffsetPx"] + ANNOTATION_HEIGHT_PX + 1
-            ret.append(r_data)
-            last = r_data
-    return json.dumps({
-        "startBp" : start_bp,
-        "endBp" : end_bp,
-        "samplingRate": sampling_rate,
-        "trackHeightPx": track_height_px,
-        "annotationId": annotation_id,
-        "values": ret
-    })
+    return ret
 
 
 
@@ -501,4 +492,3 @@ def get_query_raw_results(query):
     qt = QueryTree(query)
     results = list(qt.find())
     return results
-
