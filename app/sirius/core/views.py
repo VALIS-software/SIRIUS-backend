@@ -483,7 +483,7 @@ def query_api():
         print("/query endpoint works only with post method")
         return ""
     query = HashableDict(request.get_json())
-    results = get_query_raw_results(query, index)
+    results = get_query_raw_results(query)
     print("/query for query %s returns %d results. " % (query, len(results)), get_query_raw_results.cache_info())
     return json.dumps(results)
 
