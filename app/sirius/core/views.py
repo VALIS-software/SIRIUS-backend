@@ -427,25 +427,27 @@ def get_data_with_id(data_id):
 def node_relations(data_id):
     result = []
     for edge in Edges.find({'from_id': data_id}, limit=100):
+        source_str = '/'.join(edge['source'])
         target_data = get_data_with_id(edge['to_id'])
         if target_data:
-            description = target_data['type'] + ' ' + target_data['name']
+            description = 'To ' + target_data['type'] + ' ' + target_data['name']
         else:
             description = "data not found"
         result.append({
-            'title': edge['type'].capitalize() + ' To',
+            'title': source_str + ' ' + edge['type'].capitalize(),
             'source': edge['source'],
             'description': description,
             'id': edge['_id']
         })
     for edge in Edges.find({'to_id': data_id}, limit=100):
+        source_str = '/'.join(edge['source'])
         target_data = get_data_with_id(edge['from_id'])
         if target_data:
-            description = target_data['type'] + ' ' + target_data['name']
+            description = 'From ' + target_data['type'] + ' ' + target_data['name']
         else:
             description = "data not found"
         result.append({
-            'title': edge['type'].capitalize() + ' From',
+            'title': source_str + ' ' + edge['type'].capitalize(),
             'source': edge['source'],
             'description': description,
             'id': edge['_id']
