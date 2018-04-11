@@ -91,7 +91,6 @@ def get_annotation_data(annotation_id, start_bp, end_bp):
     end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     track_height_px = int(request.args.get('track_height_px', default=0))
-
     query = request.get_json()
     if query:
         # let show some real data!!
@@ -124,7 +123,10 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     query_result = get_query_results(HashableDict(query))
     t1 = time.time()
     print("Query returns %s results in %.3f seconds" % (len(query_result), t1-t0), get_query_results.cache_info())
-    annotation = loaded_annotations['GRCh38']
+    try:
+        annotation = loaded_annotations[query['filters']['assembly']]
+    except:
+        annotation = loaded_annotations['GRCh38']
     aggregation_thresh = 5000
     chr_r_data_in_range = [[] for _ in range(len(chromo_idxs)+1)] # r_data for each chromosome, initial one is empty
     ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
@@ -154,7 +156,7 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
             chr_r_data_in_range[chr_id].append(r_data)
             count_in_range += 1
     t2 = time.time()
-    print("Data arrangement take %.3f second" % (t2 - t1))
+    print("Data arrangement %s take %.3f second" % (annotation.name, (t2 - t1)))
     ret = []
     for i_ch in range(1, len(chromo_idxs)+1):
         r_data_in_range = chr_r_data_in_range[i_ch]

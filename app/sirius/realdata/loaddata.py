@@ -42,8 +42,8 @@ loaded_annotations = load_annotations()
 
 
 def load_mongo_data_information():
-    from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
-    from sirius.realdata.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL
+    from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ENCODE
+    from sirius.realdata.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE
     loaded_dataSources = set(InfoNodes.distinct('source'))
     # the description is hard coded here, could be replaced by querying InfoNodes of type dataSource later
     track_type_list = [
@@ -61,7 +61,12 @@ def load_mongo_data_information():
           'title': 'Quantitative Trait Loci',
           'description': 'Variants related to changes in gene expression or other quantitative measures.',
           'depends': {DATA_SOURCE_EQTL}
-        }
+        },
+        { 'track_type': TRACK_TYPE_ENCODE,
+          'title': 'Encyclopedia of DNA Elements',
+          'description': 'Comprehensive parts list of functional elements in the human genome.',
+          'depends': {DATA_SOURCE_ENCODE}
+        },
     ]
     track_info = []
     for t in track_type_list:
