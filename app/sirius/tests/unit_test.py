@@ -18,11 +18,7 @@ class TestSirius(unittest.TestCase):
         print("Real annotation class test passed")
 
     def test_core_views(self):
-        from sirius.core.views import get_real_annotation_data, get_annotation_query
-        result = get_real_annotation_data('GRCh38', 11800, 14500, 100, 96)
-        d = json.loads(result)
-        assert d['startBp'] == 11800 and d['endBp'] == 14500
-        print("Real annotation request test passed")
+        from sirius.core.views import get_annotation_query
         # test the query api
         query = {'type': 'GenomeNode', "filters":{"chromid": 1, "type":'gene'}}
         result = get_annotation_query('GRCh38', 0, 1000000, 100000, 96, query)

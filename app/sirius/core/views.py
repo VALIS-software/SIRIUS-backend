@@ -48,43 +48,6 @@ def annotation(annotation_id):
     else:
         return json.dumps({'annotationId': annotation_id, 'startBp': 1, 'endBp': 3088269832})
 
-test_query = {
-  "type": "GenomeNode",
-  "filters": {
-    "assembly": "GRCh38",
-    "type": "SNP"
-  },
-  "edgeRule": "and",
-  "toEdges": [
-    {
-      "type": "EdgeNode",
-      "filters": {
-        "type": "association",
-        "info.p-value": {"<": 0.5}
-      },
-      "toNode": {
-        "type": "InfoNode",
-        "filters": {
-          "type": "trait",
-          "$text": "cancer"
-        }
-      }
-    },
-    {
-      "type": "EdgeNode",
-      "filters": {
-        "type": "association",
-      },
-      "toNode": {
-        "type": "GenomeNode",
-        "filters": {
-           "type": "gene",
-        }
-      }
-    }
-  ]
-}
-
 @app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
 def get_annotation_data(annotation_id, start_bp, end_bp):
     start_bp = int(start_bp)
@@ -95,11 +58,8 @@ def get_annotation_data(annotation_id, start_bp, end_bp):
     if query:
         # let us show some real data!!
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
-    # the 'GWASCatalog' and 'GRCh38' are left over mocks and we replace them with real queries
-    elif annotation_id == 'GWASCatalog':
-        query = test_query
-        result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     elif annotation_id == "GRCh38":
+        # this was the default track
         query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
         result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
     else:
