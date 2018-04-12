@@ -20,7 +20,8 @@ def request_search():
     return response_json_dict
 
 def download_parse_upload_data(response_json_dict):
-    for data_dict in response_json_dict['@graph'][:10]:
+    all_data_dicts = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])[:5]
+    for data_dict in all_data_dicts:
         accession = data_dict['accession']
         description = data_dict['description']
         biosample = data_dict['biosample_term_name']
@@ -28,9 +29,10 @@ def download_parse_upload_data(response_json_dict):
         if 'targets' in data_dict:
             for d in data_dict['targets']:
                 targets.append(d['label'])
-        if not os.path.isdir(accession):
-            os.mkdir(accession)
-        os.chdir(accession)
+        afolder = 'tmp_' + accession
+        if not os.path.exists(afolder):
+            os.mkdir(afolder)
+        os.chdir(afolder)
         file_info = download_annotation_bed(accession)
         filename = file_info['filename']
         metadata = {
@@ -42,6 +44,8 @@ def download_parse_upload_data(response_json_dict):
             'sourceurl': file_info['sourceurl']
         }
         parse_upload_bed(filename, metadata)
+        # we remove this file to save disk space
+        os.remove(filename)
         os.chdir('..')
 
 def download_annotation_bed(accession):
