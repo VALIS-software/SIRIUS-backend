@@ -329,7 +329,7 @@ def distinct_values(index):
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
         QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source', 'info.biosample', 'info.targets'},
-        QUERY_TYPE_INFO: {'type', 'source', 'info.description'},
+        QUERY_TYPE_INFO: {'type', 'source', 'info.description', 'info.biosample', 'info.targets', 'info.types'},
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:
@@ -453,6 +453,7 @@ def query_full():
 @lru_cache(maxsize=10000)
 def get_query_full_results(query):
     """ Cached function for getting full query results """
+    if not query: return []
     qt = QueryTree(query)
     results = list(qt.find())
     return results
@@ -471,6 +472,7 @@ def query_basic():
 @lru_cache(maxsize=10000)
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
+    if not query: return []
     basic_projection = ['_id', 'source', 'type', 'name', 'info.description']
     qt = QueryTree(query)
     results = list(qt.find(projection=basic_projection))

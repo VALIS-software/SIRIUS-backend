@@ -60,19 +60,18 @@ class BEDParser_ENCODE(BEDParser):
         description = self.metadata['description']
         targets = self.metadata['targets']
         self.metadata['assembly'] = Synonyms[self.metadata['assembly']]
+        # dict for converting chr in bed file to chromid
+        chr_name_id = dict(('chr'+s, i) for s,i in chromo_idxs.items())
         # start parsing
         genome_nodes, info_nodes, edges = [], [], []
-        chr_name_id = dict(('chr'+s, i) for s,i in chromo_idxs.items())
-        # add ENCODE_accession into InfoNodes
-        info_node = {"_id": 'I_'+accession, "type": "ENCODE_accession", "name": accession, "source": DATA_SOURCE_ENCODE}
-        info_node['info'] = self.metadata.copy()
-        info_nodes.append(info_node)
         # add data as GenomeNodes
         assembly = self.metadata['assembly']
+        all_types = set()
         for interval in self.data['intervals']:
             d = interval.copy()
             color = tuple(int(c) for c in d.pop('itemRgb').split(','))
             tp = ENCODE_COLOR_TYPES[color]
+            all_types.add(tp) # keep track of the types for this data file
             name = d.pop('name')
             chromid = chr_name_id[d.pop('chrom')]
             start, end = int(d.pop('start')), int(d.pop('end'))
@@ -96,6 +95,12 @@ class BEDParser_ENCODE(BEDParser):
             genome_nodes.append(gnode)
             if self.verbose and len(genome_nodes) % 100000 == 0:
                 print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
+        # add ENCODE_accession into InfoNodes
+        info_node = {"_id": 'I_'+accession, "type": "ENCODE_accession", "name": accession, "source": DATA_SOURCE_ENCODE}
+        info_node['info'] = self.metadata.copy()
+        # store all available types in the InfoNode
+        info_node['info']['types'] = list(all_types)
+        info_nodes.append(info_node)
         if self.verbose:
             print("Parsing BED into mongo nodes finished.")
         self.mongonodes = (genome_nodes, info_nodes, edges)
