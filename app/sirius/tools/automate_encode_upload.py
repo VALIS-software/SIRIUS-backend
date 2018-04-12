@@ -19,10 +19,14 @@ def request_search():
         json.dump(response_json_dict, outfile, indent=2)
     return response_json_dict
 
-def download_parse_upload_data(response_json_dict):
-    all_data_dicts = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])[:5]
-    for data_dict in all_data_dicts:
+def download_parse_upload_data(response_json_dict, nmax=5):
+    all_data_dicts = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])
+    # limit the number of files
+    if nmax > 0:
+        all_data_dicts = all_data_dicts[:nmax]
+    for idata, data_dict in enumerate(all_data_dicts):
         accession = data_dict['accession']
+        print("%6d: data from accession %s" % (idata, accession))
         description = data_dict['description']
         biosample = data_dict['biosample_term_name']
         targets = []
@@ -81,21 +85,23 @@ def parse_upload_bed(filename, metadata):
     parser.metadata.update(metadata)
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     print(f'parsing {filename} results in {len(genome_nodes)} GenomeNodes, {len(info_nodes)} InfoNodes, {len(edges)} Edges')
-    #json.dump({'genome_nodes': genome_nodes, 'info_nodes': info_nodes, 'edges': edges}, open('mongo_nodes.json','w'), indent=2)
     print("Uploading to MongoDB")
-    update_insert_many(GenomeNodes, genome_nodes)
-    update_insert_many(InfoNodes, info_nodes)
-    update_insert_many(Edges, edges)
+    update_insert_many(GenomeNodes, genome_nodes, update=False)
+    update_insert_many(InfoNodes, info_nodes, update=False)
+    update_insert_many(Edges, edges, update=False)
 
 def insert_encode_dataSource(metadata):
     from sirius.realdata.constants import DATA_SOURCE_ENCODE
     ds = DATA_SOURCE_ENCODE
     InfoNodes.insert_one({'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds})
 
-def main():
+def auto_parse_upload(nmax=5):
     search_dict = request_search()
-    download_parse_upload_data(search_dict)
+    download_parse_upload_data(search_dict, nmax=nmax)
     insert_encode_dataSource({'searchUrl': SEARCHURL})
+
+def main():
+    auto_parse_upload()
 
 if __name__ == '__main__':
     main()

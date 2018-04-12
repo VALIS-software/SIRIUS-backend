@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def update_insert_many(dbCollection, nodes):
+def update_insert_many(dbCollection, nodes, update=True):
     if not nodes: return
     prefix = dbCollection.name[0]
     all_ids = []
@@ -9,12 +9,13 @@ def update_insert_many(dbCollection, nodes):
         assert node['_id'][0] == prefix
         all_ids.append(node['_id'])
     all_ids_need_update = set()
-    # query the database in batches to find existing document with id
-    batch_size = 100000
-    for i_batch in range(int(len(all_ids) / batch_size)+1):
-        batch_ids = all_ids[i_batch*batch_size:(i_batch+1)*batch_size]
-        ids_need_update = set([result['_id'] for result in dbCollection.find({'_id': {'$in': batch_ids}}, projection=['_id'])])
-        all_ids_need_update |= ids_need_update
+    if update == True:
+        # query the database in batches to find existing document with id
+        batch_size = 100000
+        for i_batch in range(int(len(all_ids) / batch_size)+1):
+            batch_ids = all_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+            ids_need_update = set([result['_id'] for result in dbCollection.find({'_id': {'$in': batch_ids}}, projection=['_id'])])
+            all_ids_need_update |= ids_need_update
     insert_nodes, update_nodes = [], []
     for node in nodes:
         if node['_id'] in all_ids_need_update:
