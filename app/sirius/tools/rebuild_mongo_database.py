@@ -62,7 +62,7 @@ def drop_all_data():
         print("Dropping %s" % cname)
         db.drop_collection(cname)
 
-def parse_upload_all_datasets(full=False):
+def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
     # GRCh38_gff
@@ -92,8 +92,7 @@ def parse_upload_all_datasets(full=False):
     print("\n*** ENCODE ***")
     os.chdir('ENCODE')
     from sirius.tools import automate_encode_upload
-    nmax = -1 if full else 5
-    automate_encode_upload.auto_parse_upload(nmax=nmax)
+    automate_encode_upload.auto_parse_upload()
     os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
@@ -172,14 +171,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
     parser.add_argument('-k', '--keep_tmp', action='store_true', help='Keep gene_data_tmp folder.')
-    parser.add_argument('--full', action='store_true', help='Unlock the limit for ENCODE data.')
     args = parser.parse_args()
     if args.starting_step <= 1:
         download_genome_data()
     if args.starting_step <= 2:
         drop_all_data()
     if args.starting_step <= 3:
-        parse_upload_all_datasets(full=args.full)
+        parse_upload_all_datasets()
     if args.starting_step <= 4:
         build_mongo_index()
     if args.starting_step <= 5 and not args.keep_tmp:

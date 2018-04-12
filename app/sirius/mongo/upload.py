@@ -29,7 +29,7 @@ def update_insert_many(dbCollection, nodes, update=True):
         try:
             dbCollection.insert_many(insert_nodes)
         except Exception as bwe:
-            print(bwe.details)
+            print('Error: ', bwe.details)
     for node in update_nodes:
         filt = {'_id': node.pop('_id')}
         update = {'$push': {'source': node.pop('source')}}
@@ -42,7 +42,7 @@ def update_insert_many(dbCollection, nodes, update=True):
         try:
             dbCollection.update_one(filt, update, upsert=True)
         except Exception as bwe:
-            print(bwe.details)
+            print('Error: ', bwe.details)
     print("%s finished. Updated: %d  Inserted: %d" % (dbCollection.name, len(update_nodes), len(insert_nodes)))
 
 

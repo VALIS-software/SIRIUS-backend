@@ -62,7 +62,7 @@ spec:
   - metadata:
       name: mongo-persistent-storage
       annotations:
-        volume.beta.kubernetes.io/storage-class: "slow"
+        volume.beta.kubernetes.io/storage-class: "fast"
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

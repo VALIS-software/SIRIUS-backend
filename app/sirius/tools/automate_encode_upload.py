@@ -19,14 +19,18 @@ def request_search():
         json.dump(response_json_dict, outfile, indent=2)
     return response_json_dict
 
-def download_parse_upload_data(response_json_dict, nmax=5):
+def download_parse_upload_data(response_json_dict, start=0, end=None):
     all_data_dicts = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])
-    # limit the number of files
-    if nmax > 0:
-        all_data_dicts = all_data_dicts[:nmax]
+    n_total = len(all_data_dicts)
+    print(f"\n\n@@@ Search results in {n_total} datasets, parsing {start} to {end} in this run.")
+    print("-"*40)
+    if end == None:
+        end = n_total
+    all_data_dicts = all_data_dicts[start:end]
     for idata, data_dict in enumerate(all_data_dicts):
         accession = data_dict['accession']
-        print("%6d: data from accession %s" % (idata, accession))
+        print("\n\n@@@%6d: accession %s" % (idata+start, accession))
+        print("-"*40)
         description = data_dict['description']
         biosample = data_dict['biosample_term_name']
         targets = []
@@ -95,13 +99,17 @@ def insert_encode_dataSource(metadata):
     ds = DATA_SOURCE_ENCODE
     InfoNodes.insert_one({'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds})
 
-def auto_parse_upload(nmax=5):
+def auto_parse_upload(start=0, end=None):
     search_dict = request_search()
-    download_parse_upload_data(search_dict, nmax=nmax)
+    download_parse_upload_data(search_dict, start=start, end=end)
     insert_encode_dataSource({'searchUrl': SEARCHURL})
 
 def main():
-    auto_parse_upload()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--start', type=int, help="starting index of dataset")
+    parser.add_argument('-e', '--end', type=int, help="ending index of dataset (exclusive)"
+    auto_parse_upload(start=args.start, end=args.end)
 
 if __name__ == '__main__':
     main()
