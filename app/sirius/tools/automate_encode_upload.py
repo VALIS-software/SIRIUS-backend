@@ -108,7 +108,8 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--start', type=int, help="starting index of dataset")
-    parser.add_argument('-e', '--end', type=int, help="ending index of dataset (exclusive)"
+    parser.add_argument('-e', '--end', type=int, help="ending index of dataset (exclusive)")
+    args = parser.parse_args()
     auto_parse_upload(start=args.start, end=args.end)
 
 if __name__ == '__main__':
