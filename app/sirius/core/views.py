@@ -473,7 +473,7 @@ def query_basic():
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
-    basic_projection = ['_id', 'source', 'type', 'name', 'info.description']
+    basic_projection = ['_id', 'source', 'type', 'name', 'chromid', 'start', 'end', 'info.description']
     qt = QueryTree(query)
     results = list(qt.find(projection=basic_projection))
     return results
