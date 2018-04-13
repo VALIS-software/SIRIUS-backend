@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, subprocess
+import os, subprocess, time
 import json
 import requests
 from sirius.parsers.BEDParser import BEDParser_ENCODE
@@ -9,11 +9,27 @@ from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 ENCODEURL = 'https://www.encodeproject.org'
 HEADERS = {'accept': 'application/json'}
-SEARCHURL = b'https://www.encodeproject.org/search/?type=Annotation&encyclopedia_version=4&files.file_type=bed+bed3%2B&assembly=hg19&organism.scientific_name=Homo+sapiens&limit=all'
+SEARCHURL = 'https://www.encodeproject.org/search/?type=Annotation&encyclopedia_version=4&files.file_type=bed+bed3%2B&assembly=hg19&organism.scientific_name=Homo+sapiens&limit=all'
 
+def retry_get(url, headers, max_retries=20, timeout=10):
+    retry_on_exceptions = (
+         requests.exceptions.Timeout,
+         requests.exceptions.ConnectionError,
+         requests.exceptions.HTTPError
+    )
+    for i in range(max_retries):
+        try:
+            result = requests.get(url, headers=headers)
+            return result
+        except retry_on_exceptions:
+            time.sleep(timeout)
+            print(f"Connection failed, retrying {i}th time ...")
+            continue
+    else:
+        raise RuntimeError("Network error!")
 
 def request_search():
-    response = requests.get(SEARCHURL, headers=HEADERS)
+    response = retry_get(SEARCHURL, headers=HEADERS)
     response_json_dict = response.json()
     with open('search_results.json','w') as outfile:
         json.dump(response_json_dict, outfile, indent=2)
@@ -57,7 +73,7 @@ def download_parse_upload_data(response_json_dict, start=0, end=None):
         os.chdir('..')
 
 def download_annotation_bed(accession):
-    response = requests.get(f'{ENCODEURL}/annotations/{accession}', headers=HEADERS)
+    response = retry_get(f'{ENCODEURL}/annotations/{accession}', headers=HEADERS)
     response_json_dict = response.json()
     with open('annotations.json','w') as outfile:
         json.dump(response_json_dict, outfile, indent=2)
