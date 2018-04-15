@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys
-import json
+import os, sys, json, gzip
 from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME
 
@@ -38,7 +37,11 @@ class GFFParser(Parser):
         #         }
         metadata = {'filename': self.filename}
         features = []
-        for line in open(self.filename):
+        if os.path.splitext(self.filename)[1] == '.gz':
+            filehandle = gzip.open(self.filename, 'rt')
+        else:
+            filehandle = open(self.filename)
+        for line in filehandle:
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#' or line[1] == '!':
@@ -52,6 +55,7 @@ class GFFParser(Parser):
                 features.append(d)
                 if self.verbose and len(features) % 100000 == 0:
                     print("%d data parsed" % len(features), end='\r')
+        filehandle.close()
         if self.verbose:
             print("Parsing GFF data finished.")
         self.metadata.update(metadata)
@@ -63,7 +67,11 @@ class GFFParser(Parser):
         features = []
         i_chunk = 0
         out_filenames = []
-        for line in open(self.filename):
+        if os.path.splitext(self.filename)[1] == '.gz':
+            filehandle = gzip.open(self.filename, 'rt')
+        else:
+            filehandle = open(self.filename)
+        for line in filehandle:
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#' or line[1] == '!':
@@ -84,6 +92,7 @@ class GFFParser(Parser):
                     print("%s parsed and saved" % filename)
                     features = []
                     i_chunk += 1
+        filehandle.close()
         # add the lask chunk
         if len(features) > 0:
             filename = file_prefix + "_%04d.json" % i_chunk

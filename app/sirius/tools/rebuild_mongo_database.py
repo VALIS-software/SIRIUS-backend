@@ -25,8 +25,6 @@ def download_genome_data():
     os.mkdir('GRCh38_gff')
     os.chdir('GRCh38_gff')
     subprocess.check_call('wget '+GRCH38_URL, shell=True)
-    print("Decompressing")
-    subprocess.check_call('gzip -d %s' % (os.path.basename(GRCH38_URL)), shell=True)
     os.chdir('..')
     # GWAS
     print("Downloading GWAS data in gwas folder")
@@ -45,12 +43,14 @@ def download_genome_data():
     os.mkdir("ClinVar")
     os.chdir("ClinVar")
     subprocess.check_call('wget '+CLINVAR_URL, shell=True)
-    print("Decompressing")
-    subprocess.check_call('gzip -d clinvar_20180128.vcf.gz', shell=True)
     os.chdir('..')
     # ENCODE
-    print("ENCODE data downloading will be handled later.")
+    print("Downloading ENCODE data files into ENCODE folder")
     os.mkdir("ENCODE")
+    os.chdir("ENCODE")
+    from sirius.tools import automate_encode_upload
+    automate_encode_upload.download_search_files()
+    os.chdir('..')
     # Finish
     print("All downloads finished")
     os.chdir('..')
@@ -81,18 +81,17 @@ def parse_upload_all_datasets():
     os.chdir('eQTL')
     parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
     parse_upload_data(parser, EQTL_URL)
-    os.chdir('..')
-    # ClinVar
+    os.chdir('..')# ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
-    parser = VCFParser_ClinVar('clinvar_20180128.vcf', verbose=True)
+    parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
     parse_upload_data(parser, CLINVAR_URL)
     os.chdir('..')
     # ENCODE
     print("\n*** ENCODE ***")
     os.chdir('ENCODE')
     from sirius.tools import automate_encode_upload
-    automate_encode_upload.auto_parse_upload()
+    automate_encode_upload.parse_upload_files()
     os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
@@ -100,7 +99,7 @@ def parse_upload_all_datasets():
 
 
 def parse_upload_gff_chunk():
-    filename = os.path.basename(GRCH38_URL)[:-3]
+    filename = os.path.basename(GRCH38_URL)
     parser = GFFParser(filename, verbose=True)
     chunk_fnames = parser.parse_save_data_in_chunks()
     # parse and upload data in chunks to reduce memory usage

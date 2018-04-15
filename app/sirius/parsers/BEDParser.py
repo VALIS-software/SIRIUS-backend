@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import os, json, gzip
 from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
 from sirius.realdata.synonyms import Synonyms
@@ -11,12 +11,17 @@ class BEDParser(Parser):
         bed_labels = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'itemRgb', 'blockCount', 'blockSizes', 'blockStarts']
         chr_name_id = dict(('chr'+s, i) for s,i in chromo_idxs.items())
         intervals = []
-        for line in open(self.filename):
+        if os.path.splitext(self.filename)[1] == '.gz':
+            filehandle = gzip.open(self.filename, 'rt')
+        else:
+            filehandle = open(self.filename)
+        for line in filehandle:
             ls = line.strip().split('\t') # remove '\n'
             if ls[0] in chr_name_id:
                 intervals.append(dict([*zip(bed_labels, ls)]))
                 if self.verbose and len(intervals) % 100000 == 0:
                     print("%d data parsed" % len(intervals), end='\r')
+        filehandle.close()
         if self.verbose:
             print("Parsing BED data finished.")
         self.data['intervals'] = intervals

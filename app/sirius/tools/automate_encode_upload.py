@@ -26,26 +26,33 @@ def retry_get(url, headers, max_retries=20, timeout=10):
             print(f"Connection failed, retrying {i}th time ...")
             continue
     else:
-        raise RuntimeError("Network error!")
+        raise RuntimeError(f"Network error! Exit after {max_retries} retries.")
 
 def request_search():
-    response = retry_get(SEARCHURL, headers=HEADERS)
-    response_json_dict = response.json()
-    with open('search_results.json','w') as outfile:
-        json.dump(response_json_dict, outfile, indent=2)
-    return response_json_dict
+    result_fname = "sorted_response_graph.json"
+    if os.path.isfile(result_fname):
+        print(f"Loading search results from {result_fname}")
+        with open(result_fname,'r') as jsonfile:
+            sorted_response_graph = json.load(jsonfile)
+    else:
+        response = retry_get(SEARCHURL, headers=HEADERS)
+        response_json_dict = response.json()
+        sorted_response_graph = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])
+        with open(result_fname,'w') as outfile:
+            json.dump(sorted_response_graph, outfile, indent=2)
+            print(f"Search results saved to {result_fname}")
+    return sorted_response_graph
 
-def download_parse_upload_data(response_json_dict, start=0, end=None):
-    all_data_dicts = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])
-    n_total = len(all_data_dicts)
-    print(f"\n\n@@@ Search results in {n_total} datasets, parsing {start} to {end} in this run.")
+def download_search_files(start=0, end=5):
+    sorted_response_graph = request_search()
+    n_total = len(sorted_response_graph)
+    print(f"\n\n@@@ Search results have {n_total} datasets, downloading {start} to {end}.")
     print("-"*40)
-    if end == None:
-        end = n_total
-    all_data_dicts = all_data_dicts[start:end]
+    all_data_dicts = sorted_response_graph[start:end]
     for idata, data_dict in enumerate(all_data_dicts):
+        data_idx = idata + start
         accession = data_dict['accession']
-        print("\n\n@@@%6d: accession %s" % (idata+start, accession))
+        print("\n\n@@@ Downloading %6d: accession %s" % (data_idx, accession))
         print("-"*40)
         description = data_dict['description']
         biosample = data_dict['biosample_term_name']
@@ -53,7 +60,7 @@ def download_parse_upload_data(response_json_dict, start=0, end=None):
         if 'targets' in data_dict:
             for d in data_dict['targets']:
                 targets.append(d['label'])
-        afolder = 'tmp_' + accession
+        afolder = '%05d_' % data_idx + accession
         if not os.path.exists(afolder):
             os.mkdir(afolder)
         os.chdir(afolder)
@@ -65,12 +72,35 @@ def download_parse_upload_data(response_json_dict, start=0, end=None):
             'biosample': biosample,
             'targets': targets,
             'assembly': file_info['assembly'],
-            'sourceurl': file_info['sourceurl']
+            'sourceurl': file_info['sourceurl'],
+            'filename': filename
         }
-        parse_upload_bed(filename, metadata)
-        # we remove this file to save disk space
-        os.remove(filename)
+        with open('metadata.json','w') as outfile:
+            json.dump(metadata, outfile, indent=2)
         os.chdir('..')
+
+def parse_upload_files(start=0, end=5):
+    sorted_response_graph = request_search()
+    n_total = len(sorted_response_graph)
+    print(f"\n\n@@@ Search results have {n_total} datasets, parsing and uploading {start} to {end}.")
+    print("-"*40)
+    all_data_dicts = sorted_response_graph[start:end]
+    for idata, data_dict in enumerate(all_data_dicts):
+        data_idx = idata + start
+        accession = data_dict['accession']
+        print("\n\n@@@ Parsing %6d: accession %s" % (data_idx, accession))
+        print("-"*40)
+        afolder = '%05d_' % data_idx + accession
+        if not os.path.exists(afolder):
+            raise RuntimeError(f"{afolder} does not exist, call download first.")
+        os.chdir(afolder)
+        with open('metadata.json') as jsonfile:
+            metadata = json.load(jsonfile)
+        print("metadata.json loaded")
+        parse_upload_bed(metadata)
+        os.chdir('..')
+    # we insert one InfoNode for dataSource
+    insert_encode_dataSource()
 
 def download_annotation_bed(accession):
     response = retry_get(f'{ENCODEURL}/annotations/{accession}', headers=HEADERS)
@@ -85,21 +115,21 @@ def download_annotation_bed(accession):
     url = bed_urls[0]
     print(f'Found file {url}, downloading...')
     sourceurl = ENCODEURL + url
-    filename = download_decompress_gz(sourceurl)
+    filename = download_gz(sourceurl)
     print("\nDownload finished")
     return {'filename': filename, 'sourceurl': sourceurl, 'assembly': response_json_dict['assembly'][0]}
 
 
-def download_decompress_gz(fileurl):
+def download_gz(fileurl):
     filename = os.path.basename(fileurl)
-    name, ext = os.path.splitext(filename)
-    assert ext == '.gz', 'File should have .gz extension'
-    if not os.path.isfile(name):
+    if not os.path.isfile(filename):
         subprocess.check_call('wget ' + fileurl, shell=True)
-        subprocess.check_call('gzip -d ' + filename, shell=True)
-    return name
+    else:
+        print(f"File {filename} already exists, skip downloading")
+    return filename
 
-def parse_upload_bed(filename, metadata):
+def parse_upload_bed(metadata):
+    filename = metadata['filename']
     parser = BEDParser_ENCODE(filename, verbose=True)
     parser.parse()
     parser.metadata.update(metadata)
@@ -110,21 +140,20 @@ def parse_upload_bed(filename, metadata):
     update_insert_many(InfoNodes, info_nodes, update=False)
     update_insert_many(Edges, edges, update=False)
 
-def insert_encode_dataSource(metadata):
+def insert_encode_dataSource():
     from sirius.realdata.constants import DATA_SOURCE_ENCODE
     ds = DATA_SOURCE_ENCODE
-    InfoNodes.insert_one({'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds})
+    update_insert_many(InfoNodes, [{'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds, 'info':{'searchURL': SEARCHURL}}])
 
-def auto_parse_upload(start=0, end=None):
-    search_dict = request_search()
-    download_parse_upload_data(search_dict, start=start, end=end)
-    insert_encode_dataSource({'searchUrl': SEARCHURL})
+def auto_parse_upload(start=0, end=5):
+    download_search_files(start=start, end=end)
+    parse_upload_files(start=start, end=end)
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--start', type=int, help="starting index of dataset")
-    parser.add_argument('-e', '--end', type=int, help="ending index of dataset (exclusive)")
+    parser.add_argument('-s', '--start', default=0, type=int, help="starting index of dataset")
+    parser.add_argument('-e', '--end', default=5, type=int, help="ending index of dataset (exclusive)")
     args = parser.parse_args()
     auto_parse_upload(start=args.start, end=args.end)
 

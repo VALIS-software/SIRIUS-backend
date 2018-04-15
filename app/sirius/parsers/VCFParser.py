@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re
+import re, os, gzip
 from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_CLINVAR
 
@@ -56,7 +56,11 @@ class VCFParser(Parser):
         self.variants = []
         # for splitting the metadata info line
         pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
-        for line in open(self.filename):
+        if os.path.splitext(self.filename)[1] == '.gz':
+            filehandle = gzip.open(self.filename, 'rt')
+        else:
+            filehandle = open(self.filename)
+        for line in filehandle:
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#':
@@ -83,6 +87,7 @@ class VCFParser(Parser):
                 self.variants.append(d)
                 if self.verbose and len(self.variants) % 100000 == 0:
                     print("%d data parsed" % len(self.variants), end='\r')
+        filehandle.close()
 
     def parse_one_line_data(self, line):
         ls = line.strip().split('\t')
