@@ -143,7 +143,9 @@ def parse_upload_bed(metadata):
 def insert_encode_dataSource():
     from sirius.realdata.constants import DATA_SOURCE_ENCODE
     ds = DATA_SOURCE_ENCODE
-    update_insert_many(InfoNodes, [{'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds, 'info':{'searchURL': SEARCHURL}}])
+    # prevent duplicate
+    if not InfoNodes.find_one({'_id': 'I'+ds}):
+        update_insert_many(InfoNodes, [{'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds, 'info':{'searchURL': SEARCHURL}}])
 
 def auto_parse_upload(start=0, end=5):
     download_search_files(start=start, end=end)
