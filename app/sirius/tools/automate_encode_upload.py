@@ -37,7 +37,20 @@ def request_search():
     else:
         response = retry_get(SEARCHURL, headers=HEADERS)
         response_json_dict = response.json()
-        sorted_response_graph = sorted(response_json_dict['@graph'], key=lambda d: d['accession'])
+        response_graph = []
+        for d in response_json_dict['@graph']:
+            try:
+                data_dict = {
+                    'accession': d['accession'],
+                    'description': d['description'],
+                    'biosample': d['biosample_term_name']
+                }
+                if 'targets' in d:
+                    data_dict['targets'] = [td['label'] for td in d['targets']]
+                response_graph.append(data_dict)
+            except KeyError as err:
+                print(f"Skipping accession {d['accession']} because of KeyError {err}")
+        sorted_response_graph = sorted(response_graph, key=lambda d: d['accession'])
         with open(result_fname,'w') as outfile:
             json.dump(sorted_response_graph, outfile, indent=2)
             print(f"Search results saved to {result_fname}")
@@ -54,27 +67,18 @@ def download_search_files(start=0, end=5):
         accession = data_dict['accession']
         print("\n\n@@@ Downloading %6d: accession %s" % (data_idx, accession))
         print("-"*40)
-        description = data_dict['description']
-        biosample = data_dict['biosample_term_name']
-        targets = []
-        if 'targets' in data_dict:
-            for d in data_dict['targets']:
-                targets.append(d['label'])
         afolder = '%05d_' % data_idx + accession
         if not os.path.exists(afolder):
             os.mkdir(afolder)
         os.chdir(afolder)
         file_info = download_annotation_bed(accession)
         filename = file_info['filename']
-        metadata = {
-            'accession': accession,
-            'description': description,
-            'biosample': biosample,
-            'targets': targets,
+        metadata = data_dict.copy()
+        metadata.update({
             'assembly': file_info['assembly'],
             'sourceurl': file_info['sourceurl'],
             'filename': filename
-        }
+        })
         with open('metadata.json','w') as outfile:
             json.dump(metadata, outfile, indent=2)
         os.chdir('..')
