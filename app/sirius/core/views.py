@@ -199,17 +199,27 @@ from sirius.mockData.mock_util import getMockData, get_mock_track_data
 @app.route("/tracks")
 def tracks():
     """Return a list of all track_ids"""
-    MOCK_DATA = getMockData()
-    return json.dumps(list(MOCK_DATA.keys()))
+    # load the sequence datasets from mongo:
+    qt = QueryTree({
+        "type": QUERY_TYPE_INFO,
+        "filters": { "type" : "sequence"},
+        "toEdges": []    
+    })
+    result_itr = map(lambda x : { "name": x["name"], "id": x["_id"] } , list(qt.find()))
+    results = []
+    for result in result_itr:
+        results.append(result)
+    return json.dumps(results)
 
 @app.route("/tracks/<string:track_id>")
 def track(track_id):
-    MOCK_DATA = getMockData()
     """Return the track metadata"""
-    if track_id in MOCK_DATA:
-        return json.dumps(MOCK_DATA[track_id])
-    else:
-        abort(404, "Track not found")
+    qt = QueryTree({
+        "type": QUERY_TYPE_INFO,
+        "filters": { "_id" : track_id},
+        "toEdges": []    
+    })
+    return json.dumps(qt.find()[0])
 
 @app.route("/tracks/<string:track_id>/<int:start_bp>/<int:end_bp>")
 def get_track_data(track_id, start_bp, end_bp):
@@ -221,8 +231,6 @@ def get_track_data(track_id, start_bp, end_bp):
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
     return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
-
-
 
 # This part is still mock
 #**************************

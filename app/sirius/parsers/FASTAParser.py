@@ -4,16 +4,23 @@ from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS
 from Bio import SeqIO
 import math
+import gzip
+import os
+
+# the exponent for each resolution step
+DOWNSAMPLE_EXPONENT = 16
 
 class FASTAParser(Parser):
 
-    def load_to_tile_db(seq_record, tileServerId, resolution_step, min_resolution):
+    def load_to_tile_db(self, seq_record, tileServerId, resolution_step, min_resolution):
         scale = len(seq_record) / min_resolution
         tile_count = math.ceil(math.log(scale) / math.log(resolution_step))
 
-        resolutions = [resolution_step**i for i in xrange(0, tile_count + 1)]
+        resolutions = [resolution_step**i for i in range(0, tile_count + 1)]
         
         # create tiles for each resolution
+        for resolution in resolutions:
+            curr = tileServerId + "_" + str(resolution)
 
         return resolutions
         
@@ -21,7 +28,7 @@ class FASTAParser(Parser):
     def parse(self):
         """ Parse the FASTA format using BioPython"""
         chrIdx = 0
-        fname = "GRCh38_latest_genomic.fna"
+        fname = self.filename
         info_node = {
             "_id": "IsequenceHomoSapienGRCh38",
             "type" : "sequence",
@@ -30,7 +37,12 @@ class FASTAParser(Parser):
             "info": {}
         }
         chromosomes = []
-        for seq_record in SeqIO.parse(fname, "fasta"):
+        if os.path.splitext(self.filename)[1] == '.gz':
+            filehandle = gzip.open(self.filename, 'rt')
+        else:
+            filehandle = open(self.filename)
+
+        for seq_record in SeqIO.parse(filehandle, "fasta"):
             if (len(seq_record) > 20000000):
                 if chrIdx == 22:
                     chrName = "chrX"
@@ -38,9 +50,8 @@ class FASTAParser(Parser):
                     chrName = "chrY"
                 else:
                     chrName = "chr" + str(chrIdx + 1)
-                # TODO: create tileDB file from raw sequence data
                 tileServerId = fname + "_" + str(chrIdx)
-                resolutions = self.load_to_tile_db(seq_record, tileServerId, 16)
+                resolutions = self.load_to_tile_db(seq_record, tileServerId, DOWNSAMPLE_EXPONENT, 10000)
                 chrInfo = {
                     "length" : len(seq_record),
                     "tileServerId": tileServerId,
@@ -51,6 +62,7 @@ class FASTAParser(Parser):
                 chromosomes.append(chrInfo)
                 chrIdx += 1
         info_node["info"]["chromosomes"] = chromosomes
+        print(info_node)
         self.info_nodes = [info_node]
 
 

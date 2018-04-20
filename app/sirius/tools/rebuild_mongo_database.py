@@ -79,7 +79,7 @@ def parse_upload_all_datasets():
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
-    parser = FASTAParser(os.path.basename(GRCH38_URL), verbose=True)
+    parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
     parse_upload_data(parser, GRCH38_FASTA_URL)
     os.chdir('..')
     return
@@ -182,21 +182,16 @@ def main():
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
     parser.add_argument('-k', '--keep_tmp', action='store_true', help='Keep gene_data_tmp folder.')
     args = parser.parse_args()
-    download_genome_data()
-    parse_upload_all_datasets()
-    raw_input("Continue?")
-
-
-    # if args.starting_step <= 1:
-    #     download_genome_data()
-    # if args.starting_step <= 2:
-    #     drop_all_data()
-    # if args.starting_step <= 3:
-    #     parse_upload_all_datasets()
-    # if args.starting_step <= 4:
-    #     build_mongo_index()
-    # if args.starting_step <= 5 and not args.keep_tmp:
-    #     clean_up()
+    if args.starting_step <= 1:
+        download_genome_data()
+    if args.starting_step <= 2:
+        drop_all_data()
+    if args.starting_step <= 3:
+        parse_upload_all_datasets()
+    if args.starting_step <= 4:
+        build_mongo_index()
+    if args.starting_step <= 5 and not args.keep_tmp:
+        clean_up()
 
 if __name__ == "__main__":
     main()
