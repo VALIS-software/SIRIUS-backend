@@ -1,8 +1,6 @@
 # Use an official Python runtime as a parent image
 FROM tiangolo/uwsgi-nginx-flask:python3.6
 
-
-
 # setup google cloud
 WORKDIR /opt
 RUN apt-get update
@@ -15,6 +13,8 @@ RUN google-cloud-sdk/install.sh --usage-reporting=true --path-update=true --bash
 RUN mkdir .ssh
 ENV PATH /opt/google-cloud-sdk/bin:$PATH
 
+# install bedtools
+RUN apt-get install bedtools
 
 # Set the working directory
 WORKDIR /app
