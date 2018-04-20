@@ -76,6 +76,8 @@ class BEDParser_ENCODE(BEDParser):
             d = interval.copy()
             color = tuple(int(c) for c in d.pop('itemRgb').split(','))
             tp = ENCODE_COLOR_TYPES[color]
+            if tp == 'Inactive' or tp == 'Unclassified':
+                continue
             all_types.add(tp) # keep track of the types for this data file
             name = d.pop('name')
             chromid = chr_name_id[d.pop('chrom')]
