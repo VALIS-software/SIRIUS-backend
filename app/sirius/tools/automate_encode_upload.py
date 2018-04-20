@@ -43,7 +43,8 @@ def request_search():
                 data_dict = {
                     'accession': d['accession'],
                     'description': d['description'],
-                    'biosample': d['biosample_term_name']
+                    'biosample': d['biosample_term_name'],
+                    'targets': []
                 }
                 if 'targets' in d:
                     data_dict['targets'] = [td['label'] for td in d['targets']]
