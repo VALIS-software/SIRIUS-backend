@@ -4,11 +4,13 @@ import os, shutil, subprocess
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many
 from sirius.parsers.GFFParser import GFFParser
+from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
+GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/full'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
@@ -20,6 +22,13 @@ def download_genome_data():
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
+    # GRCh38_fasta
+    print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
+    os.mkdir('GRCh38_fasta')
+    os.chdir('GRCh38_fasta')
+    subprocess.check_call('wget '+GRCH38_FASTA_URL, shell=True)
+    os.chdir('..')
+    return
     # GRCh38_gff
     print("Downloading GRCh38 annotation data in GRCh38_gff folder")
     os.mkdir('GRCh38_gff')
@@ -56,7 +65,9 @@ def download_genome_data():
     os.chdir('..')
 
 def drop_all_data():
-    " Drop all collections from database "
+    " Drop all collections from database and delete all TileDB files"
+    # fetch all the InfoNodes for organisms:
+    # iterate through the chromosomes for each organism and delete each TileDB file:
     print("\n\n#2. Deleting existing data.")
     for cname in db.list_collection_names():
         print("Dropping %s" % cname)
@@ -65,6 +76,13 @@ def drop_all_data():
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
+    # GRCh38_fasta
+    print("\n*** GRCh38_fasta ***")
+    os.chdir('GRCh38_fasta')
+    parser = FASTAParser(os.path.basename(GRCH38_URL), verbose=True)
+    parse_upload_data(parser, GRCH38_FASTA_URL)
+    os.chdir('..')
+    return
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
     os.chdir('GRCh38_gff')
@@ -96,7 +114,6 @@ def parse_upload_all_datasets():
     # Finished
     print("All parsing and uploading finished!")
     os.chdir('..')
-
 
 def parse_upload_gff_chunk():
     filename = os.path.basename(GRCH38_URL)
@@ -165,16 +182,21 @@ def main():
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
     parser.add_argument('-k', '--keep_tmp', action='store_true', help='Keep gene_data_tmp folder.')
     args = parser.parse_args()
-    if args.starting_step <= 1:
-        download_genome_data()
-    if args.starting_step <= 2:
-        drop_all_data()
-    if args.starting_step <= 3:
-        parse_upload_all_datasets()
-    if args.starting_step <= 4:
-        build_mongo_index()
-    if args.starting_step <= 5 and not args.keep_tmp:
-        clean_up()
+    download_genome_data()
+    parse_upload_all_datasets()
+    raw_input("Continue?")
+
+
+    # if args.starting_step <= 1:
+    #     download_genome_data()
+    # if args.starting_step <= 2:
+    #     drop_all_data()
+    # if args.starting_step <= 3:
+    #     parse_upload_all_datasets()
+    # if args.starting_step <= 4:
+    #     build_mongo_index()
+    # if args.starting_step <= 5 and not args.keep_tmp:
+    #     clean_up()
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
 Flask
 flask_cors
 scipy
+biopython
 numpy
 pymongo
 google-cloud-storage
