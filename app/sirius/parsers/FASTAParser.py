@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS, TILE_DB_PATH
 from Bio import SeqIO
 import math
 import gzip
@@ -11,8 +11,6 @@ import tiledb
 
 # the exponent for each resolution step
 DOWNSAMPLE_EXPONENT = 16
-
-TILE_DB_PATH = "/tiledb"
 
 class FASTAParser(Parser):
 

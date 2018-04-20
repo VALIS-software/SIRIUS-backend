@@ -8,6 +8,7 @@ from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
+from sirius.realdata.constants import TILE_DB_PATH
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
@@ -72,6 +73,9 @@ def drop_all_data():
     for cname in db.list_collection_names():
         print("Dropping %s" % cname)
         db.drop_collection(cname)
+
+    # drop the tileDB directory
+    shutil.rmtree(TILE_DB_PATH)
 
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")

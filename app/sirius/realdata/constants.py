@@ -1,6 +1,9 @@
 CHROMO_NAMES = [ str(i) for i in list(range(1,23)) ] + ['X','Y']
 CHROMO_IDXS = dict([(name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
 
+
+TILE_DB_PATH = "/tiledb"
+
 QUERY_TYPE_GENOME = 'GenomeNode'
 QUERY_TYPE_INFO = 'InfoNode'
 QUERY_TYPE_EDGE = 'EdgeNode'
