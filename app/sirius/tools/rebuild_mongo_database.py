@@ -137,6 +137,8 @@ def build_mongo_index():
     for idx in ['source', 'assembly', 'type', 'chromid', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
+    print("Creating compound index for type and info.biosample")
+    GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
     print("InfoNodes")
     for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types']:
         print("Creating index %s" % idx)
