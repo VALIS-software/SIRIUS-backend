@@ -59,7 +59,7 @@ class FASTAParser(Parser):
             self.generate_downsampled_g_bands(tileServerId, resolution)
         return DOWNSAMPLE_RESOLUTIONS
 
-    def parse(self):
+    def parse(self, chromosome_limit=-1):
         """ Parse the raw sequence using BioPython, store data to tileDB and generate InfoNodes"""
         chrIdx = 0
         fname = self.filename
@@ -95,6 +95,8 @@ class FASTAParser(Parser):
                 }
                 chromosomes.append(chrInfo)
                 chrIdx += 1
+                if chrIdx >= chromosome_limit and chromosome_limit > 0:
+                    break
         info_node["info"]["chromosomes"] = chromosomes
         self.info_nodes = [info_node]
 

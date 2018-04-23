@@ -84,7 +84,7 @@ def parse_upload_all_datasets():
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
     parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-    parse_upload_data(parser, GRCH38_FASTA_URL)
+    parse_upload_data(parser, GRCH38_FASTA_URL, 1)
     os.chdir('..')
     return
     # GRCh38_gff
@@ -136,8 +136,8 @@ def parse_upload_gff_chunk():
     update_insert_many(InfoNodes, info_nodes)
     print("InfoNodes uploaded")
 
-def parse_upload_data(parser, url):
-    parser.parse()
+def parse_upload_data(parser, url, *args):
+    parser.parse(args)
     parser.metadata['sourceurl'] = url
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     update_insert_many(GenomeNodes, genome_nodes)
