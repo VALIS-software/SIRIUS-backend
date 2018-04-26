@@ -33,7 +33,7 @@ def update_valis_webfront():
     target_path = os.path.join(this_file_folder, "../valis-dist")
     # check if the target folder already exists
     if os.path.isdir(target_path):
-        print("%s already exists, returning...")
+        print("%s already exists, returning..." % target_path)
         return
     shutil.move(tmp_path, target_path)
     print("valis-dist folder was replaced. All step finished!")
