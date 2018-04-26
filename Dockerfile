@@ -66,19 +66,19 @@ RUN wget -P /tiledb https://github.com/TileDB-Inc/TileDB/archive/${version}.tar.
     && ../bootstrap --prefix=/usr/local --enable=${enable} \
     && make \
     && make examples \
-    && make install
+    && sudo make install
 
 # Install Python bindings
 RUN wget -P /tmp https://bootstrap.pypa.io/get-pip.py \
-    && python3 /tmp/get-pip.py \
+    && sudo python3 /tmp/get-pip.py \
     && rm /tmp/get-pip.py \
     && cd /tiledb \
     && pip download tiledb==${pyversion} \
     && tar xzf /tiledb/tiledb-${pyversion}.tar.gz -C /tiledb \
     && rm /tiledb/tiledb-${pyversion}.tar.gz \
     && cd /tiledb/tiledb-${pyversion} \
-    && pip install -r requirements_dev.txt \
-    && pip install .
+    && sudo pip install -r requirements_dev.txt \
+    && sudo pip install .
 
 ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 
