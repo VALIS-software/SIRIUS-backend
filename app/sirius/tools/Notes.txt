@@ -1,0 +1,18 @@
+Steps for building a full database.
+
+1. rebuild_mongo_database.py will automatically download, parse, and upload several data sets to the MongoDB.
+   To make it relatively light-weight, only the first 5 of 1067 ENCODE datasets are downloaded by default.
+   Also, the dbSNP dataset containing 37 M SNPs is not downloaded by default.
+   This will allow keeping the size of MongoDB < 10GB after this step.
+
+2. To complete the downloading of all ENCODE datasets, one can use this command:
+   ./automate_encode_upload.py -s 5 -e 1067
+   This will download all the rest of the ENCODE datasets, then parse and upload them one by one.
+   This step will add 1000 M GenomeNodes for intervals to MongoDB, and will take several hours to finish.
+
+3. To add the dbSNP dataset, one can use this command:
+   ./automate_dbSNP_upload.py
+   This will add 37.3 M GenomeNodes for SNPs in the database.
+
+Finishing all 3 steps will end up with a MongoDB taking 100GB or more.
+

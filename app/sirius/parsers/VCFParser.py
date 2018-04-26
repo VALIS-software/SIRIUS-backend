@@ -2,7 +2,7 @@
 
 import re, os, gzip
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_CLINVAR
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
 
 def str_to_type(s):
     s = s.strip().lower()
@@ -109,6 +109,64 @@ class VCFParser(Parser):
         d['INFO'] = dinfo
         return d
 
+    def parse_chunk(self, size=1000000):
+        """
+        Parse the file line by line and stop when accumulated {size} number of variants data.
+        This function is similar to self.parse(), but will be able to limit memory usage.
+        Calling this function will not overwrite self.metadata, but will clean and overwrite self.variants
+        Return True when the parsing reached the end of file, else return False
+        """
+        # open the file and keep the filehandle
+        if not hasattr(self, 'filehandle') or self.filehandle.closed:
+            if os.path.splitext(self.filename)[1] == '.gz':
+                self.filehandle = gzip.open(self.filename, 'rt')
+            else:
+                self.filehandle = open(self.filename)
+        # initiate metadata dict
+        if 'INFO' not in self.metadata:
+            self.metadata['INFO'] = dict()
+        # reset variants
+        self.variants = []
+        # for splitting the metadata info line
+        pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
+        for line in self.filehandle:
+            line = line.strip() # remove '\n'
+            if line[0] == '#':
+                if line[1] == '#':
+                    ls = line[2:].split('=', 1)
+                    if len(ls) == 2:
+                        if ls[0] == 'INFO':
+                            fmtstr = ls[1].strip()
+                            if fmtstr[0] == '<' and fmtstr[-1] == '>':
+                                keyvalues = pattern.split(fmtstr[1:-1])
+                                fmtdict = dict(kv.split('=',1) for kv in keyvalues)
+                                name = fmtdict["ID"]
+                                descpt = fmtdict["Description"]
+                                # remove the \" in Description
+                                if descpt[0] == '\"' and descpt[-1] == '\"':
+                                    descpt = descpt[1:-1]
+                                self.metadata['INFO'][name] = {'Type': fmtdict['Type'], "Description": descpt}
+                        else:
+                            self.metadata[ls[0]] = ls[1]
+                else:
+                    # title line
+                    self.labels = line[1:].split()
+            elif line:
+                d = self.parse_one_line_data(line)
+                self.variants.append(d)
+                if self.verbose and len(self.variants) % 100000 == 0:
+                    print("%d data parsed" % len(self.variants), end='\r')
+                if len(self.variants) == size:
+                    if self.verbose:
+                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                    break
+        else:
+            # close the filehandle if the parsing is finished
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            self.filehandle.close()
+            return True
+        return False
 
 class VCFParser_ClinVar(VCFParser):
     def get_mongo_nodes(self):
@@ -269,12 +327,13 @@ class VCFParser_dbSNP(VCFParser):
                     '_id': variant_id,
                     'assembly': assembly,
                     'chromid': chromid,
+                    'type': 'SNP',
                     'start': pos,
                     'end': pos,
                     'length': 1,
                     'source': DATA_SOURCE_DBSNP,
                     'name': name,
-                    'info': d['info'].copy()
+                    'info': d['INFO'].copy()
                 }
                 gnode['info'].update({
                     "variant_ref": d["REF"],
