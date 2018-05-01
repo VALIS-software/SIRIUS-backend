@@ -8,42 +8,20 @@ import gzip
 import os
 import numpy as np
 import tiledb
+import time
 import collections
 
 class FASTAParser(Parser):
-    def generate_downsampled_g_bands(tileServerId, step):
-        """ Downsample the data by counting the percentage of GC content within a [step] sized interval
-            See: https://en.wikipedia.org/wiki/G_banding
-        """
-        ctx = tiledb.Ctx()
-        db = tiledb.DenseArray.load(ctx, tileServerId)
-        sz = len(db)
-        cnt = math.ceil(sz/float(step))
-        newctx = tiledb.Ctx()
-        d1 = tiledb.Dim(ctx, "locus", domain=(0, cnt - 1), tile=math.ceil(cnt/1000.0), dtype="uint64")
-        domain = tiledb.Domain(ctx, d1)
-        gcContent = tiledb.Attr(ctx, "gc", compressor=('lz4', -1), dtype='float32')
-        tileDB_arr = tiledb.DenseArray(ctx, tileServerId + "_" + str(step),
-                  domain=domain,
-                  attrs=[gcContent],
-                  cell_order='row-major',
-                  tile_order='row-major')
-        gcData = []
-        for i in range(0, cnt):
-            counts = collections.Counter(np.array(db[i * step : (i + 1) * step]['value']))
-            # store the GC content
-            percentage = float((counts[b'G'] + counts[b'C'] + counts[b'c'] + counts[b'g'])) / float(step)
-            gcData.append(percentage)
-        tileDB_arr[:] = np.array(gcData, dtype='float32')
-
     def load_to_tile_db(self, seq_record, tileServerId):
         """ Loads the sequence data into TileDB, generates downsampled tiles 
         """
+        start = time.time()
         if not os.path.exists(TILE_DB_PATH):
             os.makedirs(TILE_DB_PATH)
         os.chdir(TILE_DB_PATH)
         ctx = tiledb.Ctx()
-        d1 = tiledb.Dim(ctx, "locus", domain=(0, len(seq_record) - 1), tile=1000000, dtype="uint64")
+        sz = len(seq_record)
+        d1 = tiledb.Dim(ctx, "locus", domain=(0, sz - 1), tile=1000000, dtype="uint64")
         domain = tiledb.Domain(ctx, d1)
         base = tiledb.Attr(ctx, "value", compressor=('lz4', -1), dtype='S1')
         tileDB_arr = tiledb.DenseArray(ctx, tileServerId,
@@ -52,9 +30,43 @@ class FASTAParser(Parser):
                   cell_order='row-major',
                   tile_order='row-major')
 
+
         tileDB_arr[:] = np.array(seq_record.seq, 'S1')
+
+        stride_lengths = map(lambda x : math.ceil(sz/float(x)), TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS)
+        stride_data = {}
+        stride_counts = {}
+        
+        for stride in stride_lengths:
+            stride_data[stride] = []
+            stride_counts[stride] = 0
+        for i, char in enumerate(seq_record.seq):
+            isgc = char == 'g' or char == 'G' or char == 'c' or char == 'C'
+            for stride in stride_lengths:
+                if (i + 1) % stride == 0:
+                    stride_data[stride].append(float(stride_counts[stride]) / stride)
+                    stride_counts[stride] = 0
+                
+                if isgc:
+                    stride_counts[stride] += 1
+
         for resolution in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
-            self.generate_downsampled_g_bands(tileServerId, resolution)
+            ctx = tiledb.Ctx()
+            db = tiledb.DenseArray.load(ctx, tileServerId)
+            sz = len(db)
+            stride_length = math.ceil(sz/float(resolution))
+            newctx = tiledb.Ctx()
+            d1 = tiledb.Dim(ctx, "locus", domain=(0, stride_length - 1), tile=math.ceil(stride_length/1000.0), dtype="uint64")
+            domain = tiledb.Domain(ctx, d1)
+            gcContent = tiledb.Attr(ctx, "gc", compressor=('lz4', -1), dtype='float32')
+            downsampled_arr = tiledb.DenseArray(ctx, tileServerId + "_" + str(resolution),
+                      domain=domain,
+                      attrs=[gcContent],
+                      cell_order='row-major',
+                      tile_order='row-major')
+            print("Wrote downsampled array: % d" % resolution)
+            downsampled_arr[:] = np.array(stride_counts[stride_length], dtype='float32')
+
         return TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
 
     def parse(self, chromosome_limit=-1):
@@ -69,12 +81,14 @@ class FASTAParser(Parser):
             "info": {}
         }
         chromosomes = []
+        print("Parsing " + self.filename)
         if os.path.splitext(self.filename)[1] == '.gz':
             filehandle = gzip.open(self.filename, 'rt')
         else:
             filehandle = open(self.filename)
 
         for seq_record in SeqIO.parse(filehandle, "fasta"):
+            print("Parsing contig " + seq_record.id)
             if (len(seq_record) > 20000000):
                 if chrIdx == 22:
                     chrName = "chrX"
@@ -91,6 +105,8 @@ class FASTAParser(Parser):
                     "name": chrName,
                     "chrIdx": chrIdx
                 }
+                print("Parsed chromosome")
+                print(chrInfo)
                 chromosomes.append(chrInfo)
                 chrIdx += 1
                 if chrIdx >= chromosome_limit and chromosome_limit > 0:
