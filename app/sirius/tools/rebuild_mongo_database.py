@@ -137,7 +137,7 @@ def parse_upload_gff_chunk():
     print("InfoNodes uploaded")
 
 def parse_upload_data(parser, url, *args):
-    parser.parse(args)
+    parser.parse(*args)
     parser.metadata['sourceurl'] = url
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     update_insert_many(GenomeNodes, genome_nodes)

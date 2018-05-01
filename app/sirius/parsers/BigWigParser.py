@@ -2,7 +2,7 @@
 
 from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
-from Bio import SeqIO
+import pyBigWig
 import math
 import gzip
 import os
@@ -11,7 +11,7 @@ import tiledb
 import time
 import collections
 
-class FASTAParser(Parser):
+class BigWigParser(Parser):
     def load_to_tile_db(self, seq_record, tileServerId):
         """ Loads the sequence data into TileDB, generates downsampled tiles 
         """
@@ -19,14 +19,24 @@ class FASTAParser(Parser):
         if not os.path.exists(TILE_DB_PATH):
             os.makedirs(TILE_DB_PATH)
         os.chdir(TILE_DB_PATH)
-
-
+        ctx = tiledb.Ctx()
         sz = len(seq_record)
+        d1 = tiledb.Dim(ctx, "locus", domain=(0, sz - 1), tile=1000000, dtype="uint64")
+        domain = tiledb.Domain(ctx, d1)
+        base = tiledb.Attr(ctx, "value", compressor=('lz4', -1), dtype='S1')
+        tileDB_arr = tiledb.DenseArray(ctx, tileServerId,
+                  domain=domain,
+                  attrs=[base],
+                  cell_order='row-major',
+                  tile_order='row-major')
+
+
+        tileDB_arr[:] = np.array(seq_record.seq, 'S1')
+
         stride_lengths = map(lambda x : math.ceil(sz/float(x)), TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS)
         stride_data = {}
         stride_counts = {}
         
-        # Compute GC content
         for stride in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
             stride_data[stride] = []
             stride_counts[stride] = 0
@@ -39,12 +49,13 @@ class FASTAParser(Parser):
                 if isgc:
                     stride_counts[stride] += 1
 
-        # Write G-Band data
         for stride in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
             ctx = tiledb.Ctx()
-            num_buckets = len(stride_data[stride])
+            db = tiledb.DenseArray.load(ctx, tileServerId)
+            sz = len(db)
+            stride_length = math.ceil(sz/float(stride))
             newctx = tiledb.Ctx()
-            d1 = tiledb.Dim(ctx, "locus", domain=(0, num_buckets - 1), tile=math.ceil(num_buckets/1000.0), dtype="uint64")
+            d1 = tiledb.Dim(ctx, "locus", domain=(0, stride_length), tile=math.ceil(stride_length/1000.0), dtype="uint64")
             domain = tiledb.Domain(ctx, d1)
             gcContent = tiledb.Attr(ctx, "gc", compressor=('lz4', -1), dtype='float32')
             downsampled_arr = tiledb.DenseArray(ctx, tileServerId + "_" + str(stride),
@@ -52,22 +63,9 @@ class FASTAParser(Parser):
                       attrs=[gcContent],
                       cell_order='row-major',
                       tile_order='row-major')
-            downsampled_arr[:] = np.array(stride_data[stride], dtype='float32')
             print("Wrote downsampled array: % d" % stride)
+            downsampled_arr[:] = np.array(stride_data[stride], dtype='float32')
 
-        # Write source sequence data
-        ctx = tiledb.Ctx()
-        d1 = tiledb.Dim(ctx, "locus", domain=(0, sz - 1), tile=1000000, dtype="uint64")
-        domain = tiledb.Domain(ctx, d1)
-        base = tiledb.Attr(ctx, "value", compressor=('lz4', -1), dtype='S1')
-
-        tileDB_arr = tiledb.DenseArray(ctx, tileServerId,
-                  domain=domain,
-                  attrs=[base],
-                  cell_order='row-major',
-                  tile_order='row-major')
-        print("Writing final array")
-        tileDB_arr[:] = np.array(seq_record.seq, 'S1')
         return TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
 
     def parse(self, chromosome_limit=-1):
@@ -83,11 +81,8 @@ class FASTAParser(Parser):
         }
         chromosomes = []
         print("Parsing " + self.filename)
-        if os.path.splitext(self.filename)[1] == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-
+        
+        bw = pyBigWig.open(self.filename)
         for seq_record in SeqIO.parse(filehandle, "fasta"):
             print("Parsing contig " + seq_record.id)
             if (len(seq_record) > 20000000):
