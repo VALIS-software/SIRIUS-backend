@@ -54,13 +54,13 @@ class GWASParser(Parser):
 
         References
         ----------
-        https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+        https://www.ebi.ac.uk/gwas/docs/fileheaders#_file_headers_for_catalog_version_1_0
 
         Examples
         --------
         Initialize and parse the file:
 
-        >>> parser = GWASParser('GRCH38.latest.gff')
+        >>> parser = GWASParser('GWAS.tsv')
         >>> parser.parse()
 
         The parsed data are stored in self.data, which contains self.metadata and self.studies:
@@ -141,7 +141,7 @@ class GWASParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = GWASParser('GRCH38.latest.gff')
+        >>> parser = GWASParser('GWAS.tsv')
         >>> parser.parse()
 
         Get the Mongo nodes:

@@ -20,7 +20,7 @@ class GWASParserTest(TimedTestCase):
         """ Test GWASParser.parse() """
         parser = GWASParser(self.testfile)
         parser.parse()
-        self.assertIn('studies', parser.data, 'GFFParser should give self.data["studies"] after parsing')
+        self.assertIn('studies', parser.data, 'GWASParser should give self.data["studies"] after parsing')
         self.assertEqual(len(parser.studies), 98, 'Parsing test_GWAS.tsv should give 98 studies.')
         for study in parser.studies:
             for key in ('DISEASE/TRAIT', 'CHR_ID', 'CHR_POS', 'SNPS', 'P-VALUE'):
@@ -31,15 +31,15 @@ class GWASParserTest(TimedTestCase):
         parser = GWASParser(self.testfile)
         parser.parse()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
-        self.assertEqual(len(genome_nodes), 87, 'Parsing test.gff should give 87 GenomeNodes')
+        self.assertEqual(len(genome_nodes), 87, 'Parsing test_GWAS.tsv should give 87 GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
             for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
-        self.assertEqual(len(info_nodes), 35, 'Parsing test.gff should give 35 InfoNodes')
-        self.assertEqual(info_nodes[0]['type'], 'dataSource', 'Parising test.gff should give 1 InfoNode with type dataSource')
-        self.assertEqual(len(edges), 98, 'Parsing test.gff should give 98 Edges')
+        self.assertEqual(len(info_nodes), 35, 'Parsing test_GWAS.tsv should give 35 InfoNodes')
+        self.assertEqual(info_nodes[0]['type'], 'dataSource', 'Parising test_GWAS.tsv should give 1 InfoNode with type dataSource')
+        self.assertEqual(len(edges), 98, 'Parsing test_GWAS.tsv should give 98 Edges')
 
 if __name__ == "__main__":
     unittest.main()
