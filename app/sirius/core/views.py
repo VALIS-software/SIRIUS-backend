@@ -7,7 +7,12 @@ from functools import lru_cache
 import time
 from sirius.main import app
 from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
+<<<<<<< HEAD
 from sirius.realdata.constants import CHROMO_IDXS
+=======
+from sirius.realdata.trackdata import get_fasta_data
+from sirius.realdata.constants import chromo_idxs, chromo_names
+>>>>>>> 67f51b7... get dockerfile to build end-to-end, add basic track fetch code
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import get_aggregation_segments
 
@@ -221,8 +226,8 @@ def track(track_id):
     })
     return json.dumps(qt.find()[0])
 
-@app.route("/tracks/<string:track_id>/<int:start_bp>/<int:end_bp>")
-def get_track_data(track_id, start_bp, end_bp):
+@app.route("/tracks/<string:track_id>/<string:chromosome>/<int:start_bp>/<int:end_bp>")
+def get_track_data(track_id, chromosome, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
     start_bp = int(start_bp)
     end_bp = int(end_bp)
@@ -230,7 +235,7 @@ def get_track_data(track_id, start_bp, end_bp):
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
+    return get_fasta_data(track_id, chromosome, start_bp, end_bp, track_data_type, track_height_px, sampling_rate)
 
 # This part is still mock
 #**************************

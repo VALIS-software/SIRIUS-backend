@@ -84,9 +84,9 @@ def parse_upload_all_datasets():
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
     parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-    parse_upload_data(parser, GRCH38_FASTA_URL, 1)
+    # only upload 1 chromosome for now
+    parse_upload_data(parser, GRCH38_FASTA_URL, 1) 
     os.chdir('..')
-    return
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
     os.chdir('GRCh38_gff')

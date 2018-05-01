@@ -3,6 +3,8 @@ CHROMO_IDXS = dict([(name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
 
 
 TILE_DB_PATH = "/tiledb"
+TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
+
 
 QUERY_TYPE_GENOME = 'GenomeNode'
 QUERY_TYPE_INFO = 'InfoNode'

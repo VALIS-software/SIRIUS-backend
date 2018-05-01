@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS, TILE_DB_PATH
+from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
 from Bio import SeqIO
 import math
 import gzip
@@ -9,8 +9,6 @@ import os
 import numpy as np
 import tiledb
 import collections
-
-DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
 
 class FASTAParser(Parser):
     def generate_downsampled_g_bands(tileServerId, step):
@@ -55,9 +53,9 @@ class FASTAParser(Parser):
                   tile_order='row-major')
 
         tileDB_arr[:] = np.array(seq_record.seq, 'S1')
-        for resolution in DOWNSAMPLE_RESOLUTIONS:
+        for resolution in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
             self.generate_downsampled_g_bands(tileServerId, resolution)
-        return DOWNSAMPLE_RESOLUTIONS
+        return TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
 
     def parse(self, chromosome_limit=-1):
         """ Parse the raw sequence using BioPython, store data to tileDB and generate InfoNodes"""

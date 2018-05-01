@@ -24,8 +24,6 @@ ENV STATIC_PATH /app/sirius/valis-dist/static
 ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
 
-
-
 # Setup home environment
 
 RUN apt-get update && apt-get install -y \
@@ -81,6 +79,8 @@ RUN wget -P /tmp https://bootstrap.pypa.io/get-pip.py \
     && sudo pip install .
 
 ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+
+USER root
 
 # Run app.py when the container launches
 WORKDIR /app/sirius
