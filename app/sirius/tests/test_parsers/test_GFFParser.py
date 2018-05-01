@@ -11,7 +11,7 @@ class GFFParserTest(TimedTestCase):
         self.testfile = os.path.join(this_file_folder, 'files', 'test.gff')
 
     def test_init(self):
-        """ Test GFF Parser Initializer """
+        """ Test GFF Parser.__init__() """
         parser = GFFParser(self.testfile)
         self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
         self.assertEqual(parser.ext, '.gff', 'Parser should have self.ext set to extension of file.')

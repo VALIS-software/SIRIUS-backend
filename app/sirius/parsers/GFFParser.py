@@ -7,6 +7,9 @@ from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME
 class GFFParser(Parser):
     """
     Parser for the GFF3 data format.
+
+    Notes
+    -----
     The parsing of the file is generally done in 2 steps.
     First, calling the self.parse() method will open the input file, read each line, and put parsed data into self.data.
     The method self.save_json() from parent Parser class can be used to save self.data into a file with json format.
@@ -16,7 +19,7 @@ class GFFParser(Parser):
 
     References
     ----------
-        https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+    https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
 
     Examples
     --------
@@ -200,6 +203,13 @@ class GFFParser(Parser):
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
+
+        Returns
+        -------
+        mongonodes: tuple
+            The return tuple is (genome_nodes, info_nodes, edges)
+            Each of the three is a list of multiple dictionaries, which contains the parsed data.
+            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----
