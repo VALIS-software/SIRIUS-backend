@@ -90,12 +90,13 @@ def get_gnome_query_results(query):
         results[chr_id].append(genome_data)
     return list(map(sorted, results))
 
-def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query):
+def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query, verbose=True):
     t0 = time.time()
     gnome_query_results = get_gnome_query_results(HashableDict(query))
     total_query_count = sum(len(g) for g in gnome_query_results)
     t1 = time.time()
-    print("%d gnome_query_results; %.3f seconds; query %s" % (total_query_count, t1-t0, query), get_gnome_query_results.cache_info())
+    if verbose:
+        print("%d gnome_query_results; %.3f seconds; query %s" % (total_query_count, t1-t0, query), get_gnome_query_results.cache_info())
     # get annotation information for computing abs location
     try:
         annotation = loaded_annotations[query['filters']['assembly']]
@@ -131,7 +132,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
                     break
     count_in_range = sum(len(g) for g in all_gnome_in_range)
     t2 = time.time()
-    print("Intersect filter: %d results; %.3f seconds" % (count_in_range, t2 - t1))
+    if verbose:
+        print("Intersect filter: %d results; %.3f seconds" % (count_in_range, t2 - t1))
     aggregation_thresh = 5000
     ret = []
     if sampling_rate > aggregation_thresh: # turn on aggregation!
@@ -140,7 +142,8 @@ def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_h
     else:
         for gnome_in_range in all_gnome_in_range:
             ret += get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_px)
-    print("Data aggregation: assembly %s, %.3f seconds" % (annotation.name, time.time() - t2))
+    if verbose:
+        print("Data aggregation: assembly %s, %.3f seconds" % (annotation.name, time.time() - t2))
     return json.dumps({
         "startBp" : start_bp,
         "endBp" : end_bp,

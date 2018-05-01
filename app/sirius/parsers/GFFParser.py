@@ -153,7 +153,8 @@ class GFFParser(Parser):
                     with open(filename, 'w') as out:
                         json.dump(chunk_data, out, indent=2)
                     out_filenames.append(filename)
-                    print("%s parsed and saved" % filename)
+                    if self.verbose:
+                        print("%s parsed and saved" % filename)
                     features = []
                     i_chunk += 1
         filehandle.close()
@@ -164,7 +165,8 @@ class GFFParser(Parser):
             with open(filename, 'w') as out:
                 json.dump(chunk_data, out, indent=2)
             out_filenames.append(filename)
-            print("%s parsed and saved" % filename)
+            if self.verbose:
+                print("%s parsed and saved" % filename)
         return out_filenames
 
     def parse_one_line_data(self, line):
