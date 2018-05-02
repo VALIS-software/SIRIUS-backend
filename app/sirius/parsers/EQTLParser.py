@@ -53,7 +53,7 @@ class EQTLParser(Parser):
 
     Examples
     --------
-    Initiate a GWASParser:
+    Initiate a EQTLParser:
 
     >>> parser = EQTLParser("gwas.tsv")
 
