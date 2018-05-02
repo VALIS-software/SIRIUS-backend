@@ -1,5 +1,5 @@
 import json
-from sirius.realdata.constants import chromo_idxs, chromo_names
+from sirius.realdata.constants import CHROMO_IDXS
 from sirius.mongo import GenomeNodes
 
 class Annotation(object):
@@ -73,6 +73,6 @@ class Annotation(object):
 
     def location_to_bp(self, chromid, bp_in_ch):
         if isinstance(chromid, str):
-            chromid = chromo_idxs[chromid]
+            chromid = CHROMO_IDXS[chromid]
         prev_end = self.chromo_end_bps[chromid-1] if chromid > 0 else 0
         return prev_end + bp_in_ch

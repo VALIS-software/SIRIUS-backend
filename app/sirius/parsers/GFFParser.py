@@ -1,10 +1,83 @@
-#!/usr/bin/env python
-
-import os, sys, json, gzip
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GENOME
 
 class GFFParser(Parser):
+    """
+    Parser for the GFF3 data format.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    parse_chunk
+    parse_one_line_data
+    get_mongo_nodes
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+
+    Notes
+    -----
+    The parsing of the file is generally done in 2 steps.
+    First, calling the self.parse() method will open the input file, read each line, and put parsed data into self.data.
+    The method self.save_json() from parent Parser class can be used to save self.data into a file with json format.
+    Second, to generate the internal data structure for MongoDB, we further parse the self.data into three types of Mongo nodes.
+    These are GenomeNodes, InfoNodes and Edges.
+    After getting these nodes, we can directly upload them to our MongoDB.
+
+    References
+    ----------
+    https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+
+    Examples
+    --------
+    Initiate a GFFParser:
+
+    >>> parser = GFFParser("GRCh38.latest.gff")
+
+    Parse the file:
+
+    >>> parser.parse()
+
+    Save the parsed data to a json file
+
+    >>> parser.save_json('data.json')
+
+    Get the Mongo nodes
+
+    >>> mongo_nodes = parser.get_mongo_nodes()
+
+    Save the Mongo nodes to a file
+
+    >>> parser.save_mongo_nodes('output.mongonodes')
+
+    """
+
+
     @property
     def features(self):
         return self.data['features']
@@ -14,99 +87,152 @@ class GFFParser(Parser):
         self.data['features'] = value
 
     def parse(self):
-        """ Parse the GFF3 data format. Ref: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md """
-        # Example: {
-        #           "seqid": "NC_000001.11",
-        #           "source": "BestRefSeq",
-        #           "type": "gene",
-        #           "start": 11874,
-        #           "end": 14409,
-        #           "score": ".",
-        #           "strand": "+",
-        #           "phase": ".",
-        #           "attributes": {
-        #             "ID": "gene0",
-        #             "Dbxref": "GeneID:100287102,HGNC:HGNC:37102",
-        #             "Name": "DDX11L1",
-        #             "description": "DEAD/H-box helicase 11 like 1",
-        #             "gbkey": "Gene",
-        #             "gene": "DDX11L1",
-        #             "gene_biotype": "misc_RNA",
-        #             "pseudo": "true"
-        #           }
-        #         }
-        metadata = {'filename': self.filename}
-        features = []
-        if os.path.splitext(self.filename)[1] == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
-            line = line.strip() # remove '\n'
-            if line[0] == '#':
-                if line[1] == '#' or line[1] == '!':
-                    ls = line[2:].split(maxsplit=1)
-                    if len(ls) == 2:
-                        metadata[ls[0]] = ls[1]
-                    elif len(ls) == 1:
-                        metadata[ls[0]] = None
-            elif line:
-                d = self.parse_one_line_data(line)
-                features.append(d)
-                if self.verbose and len(features) % 100000 == 0:
-                    print("%d data parsed" % len(features), end='\r')
-        filehandle.close()
-        if self.verbose:
-            print("Parsing GFF data finished.")
-        self.metadata.update(metadata)
-        self.data['features'] = features
+        """
+        Parse the GFF3 data format.
 
-    def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
-        """ Specializd function to parse and safe data in chunks to reduce memory usage """
-        metadata = {'filename': self.filename}
-        features = []
-        i_chunk = 0
-        out_filenames = []
-        if os.path.splitext(self.filename)[1] == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
+        Notes
+        -----
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
+        2. The comment line starting with a "##" or a "#!" will be parsed as metadata.
+        3. After parsing, self.data['features'] will be a list of dictionaries containing the data.
+
+        References
+        ----------
+        https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+
+        Examples
+        --------
+        Initialize and parse the file:
+
+        >>> parser = GFFParser('GRCH38.latest.gff')
+        >>> parser.parse()
+
+        The parsed data are stored in self.data, which contains self.metadata and self.features:
+
+        >>> print(parser.features[0])
+        {
+            "seqid": "NC_000001.11",
+            "source": "BestRefSeq",
+            "type": "gene",
+            "start": 11874,
+            "end": 14409,
+            "score": ".",
+            "strand": "+",
+            "phase": ".",
+            "attributes": {
+                "ID": "gene0",
+                "Dbxref": "GeneID:100287102,HGNC:HGNC:37102",
+                "Name": "DDX11L1",
+                "description": "DEAD/H-box helicase 11 like 1",
+                "gbkey": "Gene",
+                "gene": "DDX11L1",
+                "gene_biotype": "misc_RNA",
+                "pseudo": "true"
+            }
+        }
+
+        """
+        # restart the reading of the file from the beginning
+        self.filehandle.seek(0)
+        assert self.parse_chunk(size=-1) == True, '.parse_chunk() did not finish parsing the entire file.'
+
+    def parse_chunk(self, size=100000):
+        """
+        Parse the file line by line and stop when accumulated {size} number of features data.
+        This method is useful when parsing very large data files, because it will have a limited memory usage.
+
+        Parameters
+        ----------
+        size: int, optional
+            The size of data to parse. Default size is 100000.
+
+        Returns
+        -------
+        finished: bool
+            Return True if the parsing hits the end of file, otherwise False.
+
+        Notes
+        -----
+        1. This method uses self.filehandle and start reading from the current position in file.
+        2. Recursivedly calling this method will continue to read the same file, return False when accumulated {size} number of data.
+        3. If the end of file is reached, this method will return True.
+        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.features with the newly parsed data.
+
+        Examples
+        --------
+        Initialize parser:
+
+        >>> parser = GFFParser('GRCH38.latest.gff')
+
+        Parse the file and stop at 10 features.
+
+        >>> parser.parse_chunk(size=10)
+
+        The self.features list should now contain 10 data.
+
+        >>> print(len(parser.features)
+        10
+
+        This is usually done in a recurrsive manner:
+
+        >>> while True:
+        >>>     finished = parser.parse_chunk(size=10)
+        >>>     MongoNodes = parser.get_mongo_nodes()
+        >>>     (do sth, like upload_mongo_nodes)
+        >>>     if finished == True:
+        >>>         break
+
+        Pass the argument size = -1 will cause this method to read until the end of the file:
+
+        >>> finished = parser.parse_chunk(size=-1)
+        >>> print(finished)
+        True
+
+        """
+        self.features = []
+        for line in self.filehandle:
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#' or line[1] == '!':
                     ls = line[2:].split(maxsplit=1)
                     if len(ls) == 2:
-                        metadata[ls[0]] = ls[1]
+                        self.metadata[ls[0]] = ls[1]
                     elif len(ls) == 1:
-                        metadata[ls[0]] = None
+                        self.metadata[ls[0]] = None
             elif line:
                 d = self.parse_one_line_data(line)
-                features.append(d)
-                if len(features) == chunk_size:
-                    filename = file_prefix + "_%04d.json" % i_chunk
-                    chunk_data = {'metadata': metadata, 'features': features}
-                    with open(filename, 'w') as out:
-                        json.dump(chunk_data, out, indent=2)
-                    out_filenames.append(filename)
-                    print("%s parsed and saved" % filename)
-                    features = []
-                    i_chunk += 1
-        filehandle.close()
-        # add the lask chunk
-        if len(features) > 0:
-            filename = file_prefix + "_%04d.json" % i_chunk
-            chunk_data = {'metadata': metadata, 'features': features}
-            with open(filename, 'w') as out:
-                json.dump(chunk_data, out, indent=2)
-            out_filenames.append(filename)
-            print("%s parsed and saved" % filename)
-        return out_filenames
+                self.features.append(d)
+                if self.verbose and len(self.features) % 100000 == 0:
+                    print("%d data parsed" % len(self.features), end='\r')
+                if len(self.features) == size:
+                    if self.verbose:
+                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                    break
+        else:
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            return True
+        return False
 
     def parse_one_line_data(self, line):
-        d = dict()
+        """
+        Parse one line if the gff file into a dictionary.
+        This method is usually called by self.parse() internally.
+
+        Parameters
+        ----------
+        line: string
+            The line of the file, which should be "\t" splitted and have 9 fields.
+
+        Returns
+        -------
+        d: dictionary
+            The dictionary contains the data for this line.
+
+        """
         ls = line.split('\t')
         assert len(ls) == 9, "Error parsing this line:\n%s with %s split" % (line, len(ls))
+        d = dict()
         d['seqid'], d['source'], d['type'] = ls[0:3]
         d['start'], d['end'] = int(ls[3]), int(ls[4])
         d['score'], d['strand'], d['phase'] = ls[5:8]
@@ -117,35 +243,94 @@ class GFFParser(Parser):
         return d
 
     def get_mongo_nodes(self):
-        # Example:
-        # {
-        #   "assembly": "GRCh38",
-        #   "source": "GRCh38_gff",
-        #   "type": "gene",
-        #   "chromid": 1,
-        #   "info": {
-        #     "seqid": "NC_000001.11",
-        #     "source": "BestRefSeq",
-        #     "score": ".",
-        #     "strand": "+",
-        #     "phase": ".",
-        #     "ID": "gene0",
-        #     "description": "DEAD/H-box helicase 11 like 1",
-        #     "gbkey": "Gene",
-        #     "gene": "DDX11L1",
-        #     "gene_biotype": "misc_RNA",
-        #     "pseudo": "true",
-        #     "GeneID": "100287102",
-        #     "HGNC": "HGNC:37102"
-        #   },
-        #   "name": "DDX11L1"
-        #   "start": 11874,
-        #   "end": 14409,
-        #   "_id": "Ggeneid_100287102",
-        #   "length": 2536
-        # }
-        if hasattr(self, 'mongonodes'): return self.mongonodes
-        genome_nodes, info_nodes, edge_nodes = [], [], []
+        """
+        Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
+
+        Returns
+        -------
+        mongonodes: tuple
+            The return tuple is (genome_nodes, info_nodes, edges)
+            Each of the three is a list of multiple dictionaries, which contains the parsed data.
+
+        Notes
+        -----
+        1. This method should be called after self.parse(), because this method will read from self.metadata and self.features,
+        which are contents of self.data
+        2. The parsing of the gff file should be sequential, because the data entries only have `seqid` but not `chromid`.
+        The chromid which stands for chromosome id, needs to be determined by the {type: region} entries.
+        Those entries will have data like {"attributes.chromosome": "1"}.
+        3. The unique _id for genes will be generated like {"_id": "Ggeneid_100287102"}, which used the GeneID.
+        Duplicate entries with the same GeneID may be encountered, and they will be ignored for now.
+
+        Examples
+        --------
+        Initialize and parse the file:
+
+        >>> parser = GFFParser('GRCH38.latest.gff')
+        >>> parser.parse()
+
+        Get the Mongo nodes:
+
+        >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+
+        An example of the genome_nodes would be like:
+
+        >>> print(genome_nodes[0])
+        {
+            "assembly": "GRCh38",
+            "source": "GRCh38_gff",
+            "type": "region",
+            "chromid": 1,
+            "start": 1,
+            "end": 248956422,
+            "length": 248956422,
+            "name": "1",
+            "info": {
+                "ID": "id0",
+                "chromosome": "1",
+                "gbkey": "Src",
+                "genome": "chromosome",
+                "mol_type": "genomic DNA",
+                "source": "RefSeq",
+                "score": ".",
+                "strand": "+",
+                "phase": ".",
+                "taxon": "9606"
+            },
+            "_id": "Gregion_217b4de5549598efcb64a4897f85044a7606d9018443a688f120788ebc020bc5"
+        },
+
+        Here the ['info'] dictionary contains optional data, and everything else is mandatory for the GenomeNode.
+
+        The info_nodes will have only one element for the dataSource:
+
+        >>> print(into_nodes[0])
+        {
+            "_id": "IGRCh38_gff",
+            "type": "dataSource",
+            "name": "GRCh38_gff",
+            "source": "GRCh38_gff",
+            "info": {
+                "filename": "test.gff",
+                "gff-version": "3",
+                "gff-spec-version": "1.21",
+                "processor": "NCBI annotwriter",
+                "genome-build": "GRCh38.p10",
+                "genome-build-accession": "NCBI_Assembly:GCF_000001405.36",
+                "annotation-date": None,
+                "annotation-source": None,
+                "sequence-region": "NC_000001.11 1 248956422",
+                "species": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606"
+            }
+        }
+
+        The edges should be empty:
+
+        >>> print(edges)
+        []
+
+        """
+        genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = {"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "name": DATA_SOURCE_GENOME, "source": DATA_SOURCE_GENOME}
         info_node['info'] = self.metadata.copy()
@@ -165,7 +350,7 @@ class GFFParser(Parser):
             if ft == 'region':
                 if 'chromosome' in d['attributes']:
                     try:
-                        self.seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
+                        self.seqid_loc[d['seqid']] = CHROMO_IDXS[d['attributes']['chromosome']]
                     except:
                         self.seqid_loc[d['seqid']] = None
             # create gnode document with basic information
@@ -208,5 +393,4 @@ class GFFParser(Parser):
                 print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
         if self.verbose:
             print("Parsing GFF into mongo nodes finished.")
-        self.mongonodes = (genome_nodes, info_nodes, edge_nodes)
-        return self.mongonodes
+        return genome_nodes, info_nodes, edges
