@@ -1,16 +1,77 @@
-#!/usr/bin/env python
-
 from sirius.parsers.Parser import Parser
 from sirius.realdata.constants import DATA_SOURCE_EQTL
 
 class EQTLParser(Parser):
-    """ Parser for the eQTL .txt file format
+    """
+    Parser for the eQTL file format
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    get_mongo_nodes
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
+
+    Notes
+    -----
+    1. The eQTL .txt files are tab-separated, with data listed as lines.
+    2. The first line of the file contains the labels of the columns.
+    3. After parsing, self.eqtls will be a list of eqtl entries, each parsed from one line of data.
+    4. The eQTL data file does not contain any metadata.
+    5. The exSNP and exGENEID columns are required.
 
     References
     ----------
     http://www.exsnp.org/eQTL
 
+    Examples
+    --------
+    Initiate a GWASParser:
 
+    >>> parser = EQTLParser("gwas.tsv")
+
+    Parse the file:
+
+    >>> parser.parse()
+
+    Save the parsed data to a json file
+
+    >>> parser.save_json('data.json')
+
+    Get the Mongo nodes
+
+    >>> mongo_nodes = parser.get_mongo_nodes()
+
+    Save the Mongo nodes to a file
+
+    >>> parser.save_mongo_nodes('output.mongonodes')
 
     """
 
@@ -29,11 +90,12 @@ class EQTLParser(Parser):
 
         Notes
         -----
-        1. The eQTL .txt files are tab-separated, with data listed as lines.
-        2. The first line of the file contains the labels of the columns.
-        3. After parsing, self.eqtls will be a list of eqtl entries, each parsed from one line of data.
-        4. The eQTL data file does not contain any metadata.
-        5. The exSNP and exGENEID columns are required.
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
+        2. The eQTL .txt files are tab-separated, with data listed as lines.
+        3. The first line of the file contains the labels of the columns.
+        4. After parsing, self.eqtls will be a list of eqtl entries, each parsed from one line of data.
+        5. The eQTL data file does not contain any metadata.
+        6. The exSNP and exGENEID columns are required for later parsing into Mongo nodes.
 
         References
         ----------
@@ -64,17 +126,18 @@ class EQTLParser(Parser):
         }
 
         """
+        # start from the beginning for reading
+        self.filehandle.seek(0)
         self.eqtls = []
-        with open(self.filename) as infile:
-            title = infile.readline().strip()
-            labels = title.split('\t')
-            for line in infile:
-                line = line.strip() # remove '\n'
-                if line:
-                    d = dict(zip(labels, line.split('\t')))
-                    self.eqtls.append(d)
-                    if self.verbose and len(self.eqtls) % 100000 == 0:
-                        print("%d data parsed" % len(self.eqtls), end='\r')
+        title = self.filehandle.readline().strip()
+        labels = title.split('\t')
+        for line in self.filehandle:
+            line = line.strip() # remove '\n'
+            if line:
+                d = dict(zip(labels, line.split('\t')))
+                self.eqtls.append(d)
+                if self.verbose and len(self.eqtls) % 100000 == 0:
+                    print("%d data parsed" % len(self.eqtls), end='\r')
 
     def get_mongo_nodes(self):
         """

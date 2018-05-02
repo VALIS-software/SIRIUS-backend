@@ -1,13 +1,43 @@
-#!/usr/bin/env python
-
-import os, json, gzip
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
 from sirius.realdata.synonyms import Synonyms
 
 class BEDParser(Parser):
     """
     Parser for the .bed data formats.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
 
     Notes
     -----
@@ -55,7 +85,7 @@ class BEDParser(Parser):
 
         Notes
         -----
-        1. This method will open self.filename as .gz file if file ext is '.gz', otherwise as text file.
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
         2. The bed file contains no metadata.
         3. The bed file contains no comment line.
         4. Each line in the bed file have between 3 and 12 columns. The column labels are fixed to
@@ -89,20 +119,16 @@ class BEDParser(Parser):
         }
 
         """
+        self.filehandle.seek(0)
         bed_labels = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'itemRgb', 'blockCount', 'blockSizes', 'blockStarts']
-        chr_name_id = dict(('chr'+s, i) for s,i in chromo_idxs.items())
+        chr_name_id = dict(('chr'+s, i) for s,i in CHROMO_IDXS.items())
         intervals = []
-        if os.path.splitext(self.filename)[1] == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
+        for line in self.filehandle:
             ls = line.strip().split('\t') # remove '\n'
             if ls[0] in chr_name_id:
                 intervals.append(dict([*zip(bed_labels, ls)]))
                 if self.verbose and len(intervals) % 100000 == 0:
                     print("%d data parsed" % len(intervals), end='\r')
-        filehandle.close()
         if self.verbose:
             print("Parsing BED data finished.")
         self.data['intervals'] = intervals
@@ -203,14 +229,14 @@ class BEDParser_ENCODE(BEDParser):
         []
 
         """
-        # these four should be set by downloading script for ENCODE data
+        # these metadata should be set by downloading script for ENCODE data
         biosample = self.metadata['biosample']
         accession = self.metadata['accession']
         description = self.metadata['description']
         targets = self.metadata['targets']
         self.metadata['assembly'] = Synonyms[self.metadata['assembly']]
         # dict for converting chr in bed file to chromid
-        chr_name_id = dict(('chr'+s, i) for s,i in chromo_idxs.items())
+        chr_name_id = dict(('chr'+s, i) for s,i in CHROMO_IDXS.items())
         # start parsing
         genome_nodes, info_nodes, edges = [], [], []
         # add data as GenomeNodes
@@ -236,7 +262,7 @@ class BEDParser_ENCODE(BEDParser):
                 'end':end,
                 'length': end-start+1,
             }
-            gnode['info'] = d.copy()
+            gnode['info'] = d
             gnode['info'].update({
                 'biosample': biosample,
                 'accession': accession,

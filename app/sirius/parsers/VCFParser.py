@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-
-import re, os, gzip
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+import re
 
 def str_to_type(s):
     """ Utility function to convert a type name to the actual type """
@@ -18,7 +16,42 @@ def str_to_type(s):
 
 class VCFParser(Parser):
     """
-    Parser for the .vcf data formats.
+    Parser for the VCF data formats.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    parse_chunk
+    parse_one_line_data
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
 
     Notes
     -----
@@ -48,14 +81,6 @@ class VCFParser(Parser):
 
     >>> parser.save_json('data.json')
 
-    Get the Mongo nodes
-
-    >>> mongo_nodes = parser.get_mongo_nodes()
-
-    Save the Mongo nodes to a file
-
-    >>> parser.save_mongo_nodes('output.mongonodes')
-
     """
 
     @property
@@ -74,7 +99,7 @@ class VCFParser(Parser):
 
         Notes
         -----
-        1. This method will open self.filename as .gz file if file ext is '.gz', otherwise as text file.
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
         2. The comment lines starting with "##" will be parsed as metadata.
         3. The comment line starting with a single "#" will be parsed as the label line.
         4. The metadata["INFO"] will store the type of each info keys, these types will be used when parsing the INFO block. The flags will be parsed as {"XX": True}
@@ -119,15 +144,71 @@ class VCFParser(Parser):
         }
 
         """
-        self.metadata['INFO'] = dict()
+        # restart the reading of the file from the beginning
+        self.filehandle.seek(0)
+        assert self.parse_chunk(size=-1) == True, '.parse_chunk() did not finish parsing the entire file.'
+
+    def parse_chunk(self, size=1000000):
+        """
+        Parse the file line by line and stop when accumulated {size} number of variants data.
+        This method is useful when parsing very large data files, because it will have a limited memory usage.
+
+        Parameters
+        ----------
+        size: int, optional
+            The size of each chunk to parse. Default size is 1,000,000.
+
+        Returns
+        -------
+        finished: bool
+            Return True if the parsing hits the end of file, otherwise False.
+
+        Notes
+        -----
+        1. This method uses self.filehandle and start reading from the current position in file.
+        2. Recursivedly calling this method will continue to read the same file, return False when accumulated {size} number of data.
+        3. If the end of file is reached, this method will return True.
+        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.variants with the newly parsed data.
+
+        Examples
+        --------
+        Initialize parser:
+
+        >>> parser = VCFParser('ClinVar.vcf.gz')
+
+        Parse the file and stop at 10 variants.
+
+        >>> parser.parse_chunk(size=10)
+
+        The self.variants list should now contain 10 data.
+
+        >>> print(len(parser.variants)
+        10
+
+        This is usually done in a recurrsive manner:
+
+        >>> while True:
+        >>>     finished = parser.parse_chunk(size=10)
+        >>>     MongoNodes = parser.get_mongo_nodes()
+        >>>     (do sth, like upload_mongo_nodes)
+        >>>     if finished == True:
+        >>>         break
+
+        Pass the argument size = -1 will cause this method to read until the end of the file:
+
+        >>> finished = parser.parse_chunk(size=-1)
+        >>> print(finished)
+        True
+
+        """
+        # initiate metadata dict
+        if 'INFO' not in self.metadata:
+            self.metadata['INFO'] = dict()
+        # reset variants
         self.variants = []
         # for splitting the metadata info line
         pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
-        if os.path.splitext(self.filename)[1] == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
+        for line in self.filehandle:
             line = line.strip() # remove '\n'
             if line[0] == '#':
                 if line[1] == '#':
@@ -154,7 +235,15 @@ class VCFParser(Parser):
                 self.variants.append(d)
                 if self.verbose and len(self.variants) % 100000 == 0:
                     print("%d data parsed" % len(self.variants), end='\r')
-        filehandle.close()
+                if len(self.variants) == size:
+                    if self.verbose:
+                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                    break
+        else:
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            return True
+        return False
 
     def parse_one_line_data(self, line):
         """
@@ -196,106 +285,71 @@ class VCFParser(Parser):
         d['INFO'] = dinfo
         return d
 
-    def parse_chunk(self, size=1000000):
-        """
-        Parse the file line by line and stop when accumulated {size} number of variants data.
-        This method is useful when parsing very large data files, because it will have a limited memory usage.
-
-        Parameters
-        ----------
-        size: int, optional
-            The size of each chunk to parse. Default size is 1,000,000.
-
-        Returns
-        -------
-        finished: bool
-            Return True if the parsing hits the end of file, otherwise False.
-
-        Notes
-        -----
-        1. At the first time, calling method will open self.filename as .gz file if file extension is ".gz", otherwise as a text file.
-        2. After opening, the filehandle is stored in self.filehandle for later use.
-        3. Recursivedly calling this method will use the save filehandle, thus continue to read the same file, until parsing finishes.
-        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.variants with the newly parsed data.
-
-        Examples
-        --------
-        Initialize parser:
-
-        >>> parser = GFFParser('ClinVar.vcf.gz')
-
-        Parse the file and stop at 10 variants.
-
-        >>> parser.parse_chunk(size=10)
-
-        The self.variants list should now contain 10 data.
-
-        >>> print(len(parser.variants)
-        10
-
-        This is usually done in a recurrsive manner:
-
-        >>> while True:
-        >>>     finished = parser.parse_chunk(size=10)
-        >>>     MongoNodes = parser.get_mongo_nodes()
-        >>>     (do sth, like upload_mongo_nodes)
-        >>>     if finished == True:
-        >>>         break
-
-        """
-        # open the file and keep the filehandle
-        if not hasattr(self, 'filehandle') or self.filehandle.closed:
-            if os.path.splitext(self.filename)[1] == '.gz':
-                self.filehandle = gzip.open(self.filename, 'rt')
-            else:
-                self.filehandle = open(self.filename)
-        # initiate metadata dict
-        if 'INFO' not in self.metadata:
-            self.metadata['INFO'] = dict()
-        # reset variants
-        self.variants = []
-        # for splitting the metadata info line
-        pattern = re.compile(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''')
-        for line in self.filehandle:
-            line = line.strip() # remove '\n'
-            if line[0] == '#':
-                if line[1] == '#':
-                    ls = line[2:].split('=', 1)
-                    if len(ls) == 2:
-                        if ls[0] == 'INFO':
-                            fmtstr = ls[1].strip()
-                            if fmtstr[0] == '<' and fmtstr[-1] == '>':
-                                keyvalues = pattern.split(fmtstr[1:-1])
-                                fmtdict = dict(kv.split('=',1) for kv in keyvalues)
-                                name = fmtdict["ID"]
-                                descpt = fmtdict["Description"]
-                                # remove the \" in Description
-                                if descpt[0] == '\"' and descpt[-1] == '\"':
-                                    descpt = descpt[1:-1]
-                                self.metadata['INFO'][name] = {'Type': fmtdict['Type'], "Description": descpt}
-                        else:
-                            self.metadata[ls[0]] = ls[1]
-                else:
-                    # title line
-                    self.labels = line[1:].split()
-            elif line:
-                d = self.parse_one_line_data(line)
-                self.variants.append(d)
-                if self.verbose and len(self.variants) % 100000 == 0:
-                    print("%d data parsed" % len(self.variants), end='\r')
-                if len(self.variants) == size:
-                    if self.verbose:
-                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
-                    break
-        else:
-            # close the filehandle if the parsing is finished
-            if self.verbose:
-                print(f"Parsing the entire file {self.filename} finished.")
-            self.filehandle.close()
-            return True
-        return False
 
 class VCFParser_ClinVar(VCFParser):
+    """
+    VCFParser_ClinVar is a subclass of VCFParser class
+    It is specifically designed to convert the ClinVar data into MongoDB documents.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    get_mongo_nodes
+    * inherited from parent class *
+    parse
+    parse_chunk
+    parse_one_line_data
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
+
+    Examples
+    --------
+    Initiate a VCFParser_ClinVar:
+
+    >>> parser = VCFParser_ClinVar("clinvar.vcf")
+
+    Parse the file:
+
+    >>> parser.parse()
+
+    Save the parsed data to a json file
+
+    >>> parser.save_json('data.json')
+
+    Get the Mongo nodes
+
+    >>> mongo_nodes = parser.get_mongo_nodes()
+
+    Save the Mongo nodes to a file
+
+    >>> parser.save_mongo_nodes('output.mongonodes')
+
+    """
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
@@ -446,8 +500,8 @@ class VCFParser_ClinVar(VCFParser):
             assembly = 'GRCh38'
         for d in self.variants:
             # we will abandon this entry if the CHROM is not recognized
-            if d['CHROM'] not in chromo_idxs: continue
-            chromid = chromo_idxs[d['CHROM']]
+            if d['CHROM'] not in CHROMO_IDXS: continue
+            chromid = CHROMO_IDXS[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 rs = str(d["INFO"]["RS"])
@@ -494,8 +548,7 @@ class VCFParser_ClinVar(VCFParser):
             trait_names = d['INFO']['CLNDN'].split('|')
             trait_CLNDISDBs = d['INFO']['CLNDISDB'].split('|')
             if len(trait_names) != len(trait_CLNDISDBs):
-                print(d)
-                print("Number of traits in in CLNDN and CLNDISDB not consistent! Skipping.")
+                print(f"Number of traits in in CLNDN and CLNDISDB not consistent! Skipping this data {d}")
                 continue
             for trait_name, trait_disdb in zip(trait_names, trait_CLNDISDBs):
                 trait_desp = trait_name.replace("_"," ")
@@ -543,6 +596,69 @@ class VCFParser_ClinVar(VCFParser):
 
 
 class VCFParser_dbSNP(VCFParser):
+    """
+    VCFParser_dbSNP is a subclass of VCFParser class
+    It is specifically designed to convert the dbSNP data into MongoDB documents.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    get_mongo_nodes
+    * inherited from parent class *
+    parse
+    parse_chunk
+    parse_one_line_data
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
+
+    Examples
+    --------
+    Initiate a VCFParser_dbSNP:
+
+    >>> parser = VCFParser_dbSNP("clinvar.vcf")
+
+    Parse the file:
+
+    >>> parser.parse()
+
+    Save the parsed data to a json file
+
+    >>> parser.save_json('data.json')
+
+    Get the Mongo nodes
+
+    >>> mongo_nodes = parser.get_mongo_nodes()
+
+    Save the Mongo nodes to a file
+
+    >>> parser.save_mongo_nodes('output.mongonodes')
+
+    """
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
@@ -662,19 +778,19 @@ class VCFParser_dbSNP(VCFParser):
             assembly = self.metadata['reference'].split('.',1)[0]
         else:
             assembly = 'GRCh38'
-        for d in self.variants:
+        for variant in self.variants:
+            d = variant.copy()
             # we will abandon this entry if the CHROM is not recognized
-            if d['CHROM'] not in chromo_idxs: continue
-            chromid = chromo_idxs[d['CHROM']]
+            if d['CHROM'] not in CHROMO_IDXS: continue
+            chromid = CHROMO_IDXS[d['CHROM']]
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
-                rs = str(d["INFO"]["RS"])
+                rs = str(d["INFO"].pop("RS"))
                 variant_id = "Gsnp_rs" + rs
                 variant_type = "SNP"
                 name = 'RS' + rs
             else:
-                print(d)
-                print("Warning, RS number not found, skipping")
+                print(f"Warning, RS number not found, skipping this data {d}")
                 continue
             pos = int(d['POS'])
             if variant_id not in known_vid:
@@ -689,7 +805,7 @@ class VCFParser_dbSNP(VCFParser):
                     'length': 1,
                     'source': DATA_SOURCE_DBSNP,
                     'name': name,
-                    'info': d['INFO'].copy()
+                    'info': d['INFO']
                 }
                 gnode['info'].update({
                     "variant_ref": d["REF"],

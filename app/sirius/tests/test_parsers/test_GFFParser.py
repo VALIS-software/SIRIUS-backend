@@ -1,4 +1,4 @@
-import os, shutil
+import os
 import unittest
 from sirius.tests.TimedTestCase import TimedTestCase
 from sirius.parsers.GFFParser import GFFParser
@@ -26,15 +26,12 @@ class GFFParserTest(TimedTestCase):
             for key in ('seqid', 'type', 'start', 'end', 'attributes'):
                 self.assertIn(key, feature, f'All features should contain key {key}')
 
-    def test_parse_save_data_in_chunks(self):
+    def test_parse_chunk(self):
         """ Test GFFParser.parse_save_data_in_chunks() """
         parser = GFFParser(self.testfile)
-        os.mkdir('test.tmp')
-        os.chdir('test.tmp')
-        parser.parse_save_data_in_chunks(file_prefix='dataChunk', chunk_size=10)
-        self.assertEqual(len([f for f in os.listdir('.') if f.startswith('dataChunk')]), 6, 'Parsing test.gff into chunks of 10 should give 6 chunk files')
-        os.chdir('..')
-        shutil.rmtree('test.tmp')
+        size = 10
+        parser.parse_chunk(size)
+        self.assertEqual(len(parser.features), size, f'Parsing to a chunk of {size} should give {size} features.')
 
     def test_mongo_nodes(self):
         """ Test GFFParser.get_mongo_nodes() """

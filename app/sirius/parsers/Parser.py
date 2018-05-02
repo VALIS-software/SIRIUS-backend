@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-import os, json, hashlib
+import os, json, hashlib, gzip
 
 class Parser(object):
     """
@@ -10,7 +8,7 @@ class Parser(object):
     ----------
     filename: string
         The name of the file to be parsed.
-    verbose: bool, optional
+    verbose: boolean, optional
         The flag that enables printing verbose information during parsing.
         Default is False.
 
@@ -24,6 +22,10 @@ class Parser(object):
         The internal object hold the parsed data.
     metadata: dictionary
         Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
 
     Methods
     -------
@@ -37,8 +39,9 @@ class Parser(object):
 
     Notes
     -----
-    The parent Parser class defines several useful shared methods for all kind of parsers.
-    For a specific parser as a subclass, the parse() and get_mongo_nodes() should be defined.
+    1. The parent Parser class defines several useful shared methods for all kind of parsers.
+    2. The filehandle is openned in the constructor and closed in the destructor.
+    3. For a specific parser as a subclass, the parse() and get_mongo_nodes() should be defined.
 
     Examples
     --------
@@ -64,12 +67,20 @@ class Parser(object):
         self.data['metadata'] = value
 
     def __init__(self, filename, verbose=False):
+        """ Initializer of Parser class """
         self.filename = filename
         self.verbose = verbose
         _, self.ext = os.path.splitext(os.path.basename(filename))
         self.data = {'metadata': {'filename': filename}}
+        # open the filehandle here for easier control of the reading process
+        self.filehandle = gzip.open(filename, 'rt') if self.ext == '.gz' else open(filename)
+
+    def __del__(self):
+        """ Destructor """
+        self.filehandle.close()
 
     def parse(self):
+        """ Parsing the file, should be implemented in subclasses """
         raise NotImplementedError
 
     def jsondata(self):
@@ -105,6 +116,7 @@ class Parser(object):
         self.data = json.load(filename)
 
     def get_mongo_nodes(self):
+        """ Getting MongoDB documents after parsing, should be implemented in subclasses """
         raise NotImplementedError
 
     def save_mongo_nodes(self, filename=None):

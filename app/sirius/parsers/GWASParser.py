@@ -1,16 +1,49 @@
-#!/usr/bin/env python
-
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GWAS
 
 class GWASParser(Parser):
-    """ Parser for the GWAS .tsv file format
+    """
+    Parser for the GWAS .tsv file format
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    get_mongo_nodes
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
+    hash
 
     Notes
     -----
-    The .tsv contain tab-separated values in lines.
-    We assume the first line of the file contains the labels, and the number of labels should match the number of values in each line.
-    No comment lines are expected.
+    1. The .tsv contain tab-separated values in lines.
+    2. We assume the first line of the file contains the labels, and the number of labels should match the number of values in each line.
+    3. No comment lines are expected.
 
     References
     ----------
@@ -51,6 +84,13 @@ class GWASParser(Parser):
     def parse(self):
         """
         Parse the GWAS tsv data format.
+
+        Notes
+        -----
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
+        2. The .tsv contain tab-separated values in lines.
+        3. We assume the first line of the file contains the labels, and the number of labels should match the number of values in each line.
+        4. No comment lines are expected.
 
         References
         ----------
@@ -104,14 +144,17 @@ class GWASParser(Parser):
         }
 
         """
+        # start from the beginning for reading
+        self.filehandle.seek(0)
         self.studies = []
-        with open(self.filename) as f:
-            labels = f.readline()[:-1].split('\t')
-            for line in f:
-                ls = line[:-1].split('\t')
-                self.studies.append(dict(zip(labels, ls)))
-                if self.verbose and len(self.studies) % 100000 == 0:
-                    print("%d data parsed" % len(self.studies), end='\r')
+        # read the first line as labels
+        labels = self.filehandle.readline()[:-1].split('\t')
+        # read the rest of the lines as data
+        for line in self.filehandle:
+            ls = line[:-1].split('\t')
+            self.studies.append(dict(zip(labels, ls)))
+            if self.verbose and len(self.studies) % 100000 == 0:
+                print("%d data parsed" % len(self.studies), end='\r')
 
     def get_mongo_nodes(self):
         """
@@ -273,11 +316,11 @@ class GWASParser(Parser):
                 rs = snp_id.strip().lower()
                 if rs[:2] != 'rs': continue # we skip some non standard IDs for now
                 rs = rs[2:]
-                if CHR_IDs[i] not in chromo_idxs:
+                if CHR_IDs[i] not in CHROMO_IDXS:
                     print("Skipped because CHR_ID %s not known" % CHR_IDs[i])
                     continue
                 else:
-                    chromid = chromo_idxs[CHR_IDs[i]]
+                    chromid = CHROMO_IDXS[CHR_IDs[i]]
                 rs_id = 'Gsnp_rs' + rs
                 this_snp_ids.append(rs_id)
                 name = 'RS' + rs

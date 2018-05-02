@@ -7,7 +7,7 @@ from functools import lru_cache
 import time
 from sirius.main import app
 from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
-from sirius.realdata.constants import chromo_idxs, chromo_names
+from sirius.realdata.constants import CHROMO_IDXS
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import get_aggregation_segments
 
@@ -78,7 +78,7 @@ def get_gnome_query_results(query):
     except:
         annotation = loaded_annotations['GRCh38']
     # we split the results into each of the 24 chromosomes
-    results = [[] for _ in range(len(chromo_idxs)+1)]
+    results = [[] for _ in range(len(CHROMO_IDXS)+1)]
     for gnode in qt.find(projection=['_id', 'chromid','start','length','name']):
         chr_id = gnode['chromid']
         if chr_id == None: continue # Genome with unknown locations are ignored for now

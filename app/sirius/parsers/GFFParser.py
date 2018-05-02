@@ -1,12 +1,44 @@
-#!/usr/bin/env python
-
-import os, sys, json, gzip
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GENOME
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GENOME
 
 class GFFParser(Parser):
     """
     Parser for the GFF3 data format.
+
+    Parameters
+    ----------
+    filename: string
+        The name of the file to be parsed.
+    verbose: boolean, optional
+        The flag that enables printing verbose information during parsing.
+        Default is False.
+
+    Attributes
+    ----------
+    filename: string
+        The filename which `Parser` was initialized.
+    ext: string
+        The extension of the file the `Parser` was initialized.
+    data: dictionary
+        The internal object hold the parsed data.
+    metadata: dictionary
+        Points to self.data['metadata'], initilized as metadata = {'filename': filename}
+    filehandle: _io.TextIOWrapper
+        The filehanlde openned for self.filename.
+    verbose: boolean
+        The flag that enables printing verbose information during parsing.
+
+    Methods
+    -------
+    parse
+    parse_chunk
+    parse_one_line_data
+    get_mongo_nodes
+    * inherited from parent class *
+    jsondata
+    save_json
+    load_json
+    save_mongo_nodes
 
     Notes
     -----
@@ -60,8 +92,7 @@ class GFFParser(Parser):
 
         Notes
         -----
-        1. This method will open self.filename as .gz compressed files if the self.filename has the extension of .gz,
-        otherwise will open self.filename as text file for reading.
+        1. This method will move the openned self.filehandle to beginning of file, then read from it.
         2. The comment line starting with a "##" or a "#!" will be parsed as metadata.
         3. After parsing, self.data['features'] will be a list of dictionaries containing the data.
 
@@ -101,28 +132,9 @@ class GFFParser(Parser):
         }
 
         """
-        self.features = []
-        if self.ext == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
-            line = line.strip() # remove '\n'
-            if line[0] == '#':
-                if line[1] == '#' or line[1] == '!':
-                    ls = line[2:].split(maxsplit=1)
-                    if len(ls) == 2:
-                        self.metadata[ls[0]] = ls[1]
-                    elif len(ls) == 1:
-                        self.metadata[ls[0]] = None
-            elif line:
-                d = self.parse_one_line_data(line)
-                self.features.append(d)
-                if self.verbose and len(self.features) % 100000 == 0:
-                    print("%d data parsed" % len(self.features), end='\r')
-        filehandle.close()
-        if self.verbose:
-            print("Parsing GFF data finished.")
+        # restart the reading of the file from the beginning
+        self.filehandle.seek(0)
+        assert self.parse_chunk(size=-1) == True, '.parse_chunk() did not finish parsing the entire file.'
 
     def parse_chunk(self, size=100000):
         """
@@ -141,10 +153,10 @@ class GFFParser(Parser):
 
         Notes
         -----
-        1. At the first time, calling method will open self.filename as .gz file if file extension is ".gz", otherwise as a text file.
-        2. After opening, the filehandle is stored in self.filehandle for later use.
-        3. Recursivedly calling this method will use the save filehandle, thus continue to read the same file, until parsing finishes.
-        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.variants with the newly parsed data.
+        1. This method uses self.filehandle and start reading from the current position in file.
+        2. Recursivedly calling this method will continue to read the same file, return False when accumulated {size} number of data.
+        3. If the end of file is reached, this method will return True.
+        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.features with the newly parsed data.
 
         Examples
         --------
@@ -170,13 +182,13 @@ class GFFParser(Parser):
         >>>     if finished == True:
         >>>         break
 
+        Pass the argument size = -1 will cause this method to read until the end of the file:
+
+        >>> finished = parser.parse_chunk(size=-1)
+        >>> print(finished)
+        True
+
         """
-        # open the file and keep the filehandle
-        if not hasattr(self, 'filehandle') or self.filehandle.closed:
-            if os.path.splitext(self.filename)[1] == '.gz':
-                self.filehandle = gzip.open(self.filename, 'rt')
-            else:
-                self.filehandle = open(self.filename)
         self.features = []
         for line in self.filehandle:
             line = line.strip() # remove '\n'
@@ -197,56 +209,10 @@ class GFFParser(Parser):
                         print(f"Parsing file {self.filename} finished for chunk of size {size}" )
                     break
         else:
-            # close the filehandle if the parsing is finished
             if self.verbose:
                 print(f"Parsing the entire file {self.filename} finished.")
-            self.filehandle.close()
             return True
         return False
-
-    def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
-        """ Specializd function to parse and safe data in chunks to reduce memory usage """
-        metadata = {'filename': self.filename}
-        features = []
-        i_chunk = 0
-        out_filenames = []
-        if self.ext == '.gz':
-            filehandle = gzip.open(self.filename, 'rt')
-        else:
-            filehandle = open(self.filename)
-        for line in filehandle:
-            line = line.strip() # remove '\n'
-            if line[0] == '#':
-                if line[1] == '#' or line[1] == '!':
-                    ls = line[2:].split(maxsplit=1)
-                    if len(ls) == 2:
-                        metadata[ls[0]] = ls[1]
-                    elif len(ls) == 1:
-                        metadata[ls[0]] = None
-            elif line:
-                d = self.parse_one_line_data(line)
-                features.append(d)
-                if len(features) == chunk_size:
-                    filename = file_prefix + "_%04d.json" % i_chunk
-                    chunk_data = {'metadata': metadata, 'features': features}
-                    with open(filename, 'w') as out:
-                        json.dump(chunk_data, out, indent=2)
-                    out_filenames.append(filename)
-                    if self.verbose:
-                        print("%s parsed and saved" % filename)
-                    features = []
-                    i_chunk += 1
-        filehandle.close()
-        # add the lask chunk
-        if len(features) > 0:
-            filename = file_prefix + "_%04d.json" % i_chunk
-            chunk_data = {'metadata': metadata, 'features': features}
-            with open(filename, 'w') as out:
-                json.dump(chunk_data, out, indent=2)
-            out_filenames.append(filename)
-            if self.verbose:
-                print("%s parsed and saved" % filename)
-        return out_filenames
 
     def parse_one_line_data(self, line):
         """
@@ -384,7 +350,7 @@ class GFFParser(Parser):
             if ft == 'region':
                 if 'chromosome' in d['attributes']:
                     try:
-                        self.seqid_loc[d['seqid']] = chromo_idxs[d['attributes']['chromosome']]
+                        self.seqid_loc[d['seqid']] = CHROMO_IDXS[d['attributes']['chromosome']]
                     except:
                         self.seqid_loc[d['seqid']] = None
             # create gnode document with basic information
