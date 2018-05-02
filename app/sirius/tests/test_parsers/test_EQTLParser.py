@@ -24,7 +24,7 @@ class EQTLParserTest(TimedTestCase):
         self.assertEqual(len(parser.eqtls), 99, 'Parsing test_eQTL.txt should give 98 studies.')
         for eqtl in parser.eqtls:
             for key in ('exSNP', 'exGENEID'):
-                self.assertIn(key, eqtl, f'All studies should contain key {key}')
+                self.assertIn(key, eqtl, f'All eQTLs should contain key {key}')
 
     def test_mongo_nodes(self):
         """ Test EQTLParser.get_mongo_nodes() """

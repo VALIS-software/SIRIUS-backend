@@ -60,9 +60,10 @@ class GFFParser(Parser):
 
         Notes
         -----
-        Will open self.filename as .gz compressed files if the self.filename has the extension of .gz,
+        1. This method will open self.filename as .gz compressed files if the self.filename has the extension of .gz,
         otherwise will open self.filename as text file for reading.
-        The comment line starting with a "##" or a "#!" will be parsed as metadata.
+        2. The comment line starting with a "##" or a "#!" will be parsed as metadata.
+        3. After parsing, self.data['features'] will be a list of dictionaries containing the data.
 
         References
         ----------
@@ -77,9 +78,7 @@ class GFFParser(Parser):
 
         The parsed data are stored in self.data, which contains self.metadata and self.features:
 
-        >>> parser.features[0]
-
-        This will be a dictionary like
+        >>> print(parser.features[0])
         {
             "seqid": "NC_000001.11",
             "source": "BestRefSeq",
