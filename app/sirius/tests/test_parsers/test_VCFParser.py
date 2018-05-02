@@ -21,7 +21,7 @@ class VCFParserTest(TimedTestCase):
         parser = VCFParser(self.testfile)
         parser.parse()
         filename = os.path.basename(self.testfile)
-        self.assertIn('variants', parser.data, 'EQTLParser should give self.data["variants"] after parsing')
+        self.assertIn('variants', parser.data, 'VCFParser should give self.data["variants"] after parsing')
         n_variants = 19
         self.assertEqual(len(parser.variants), n_variants, f'Parsing {filename} should give {n_variants} studies.')
         for var in parser.variants:
@@ -29,7 +29,7 @@ class VCFParserTest(TimedTestCase):
                 self.assertIn(key, var, f'All variants should contain key {key}')
 
     def test_mongo_nodes(self):
-        """ Test EQTLParser.get_mongo_nodes() """
+        """ Test VCFParser.get_mongo_nodes() """
         parser = VCFParser(self.testfile)
         with self.assertRaises(NotImplementedError):
             parser.get_mongo_nodes()
