@@ -122,7 +122,6 @@ class GWASParser(Parser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----
@@ -239,7 +238,6 @@ class GWASParser(Parser):
         }
 
         """
-        if hasattr(self, 'mongonodes'): return self.mongonodes
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = {"_id": 'I'+DATA_SOURCE_GWAS, "type": "dataSource", "name": DATA_SOURCE_GWAS, "source": DATA_SOURCE_GWAS}
@@ -327,5 +325,4 @@ class GWASParser(Parser):
                 if edge['_id'] not in known_edge_ids:
                     known_edge_ids.add(edge['_id'])
                     edges.append(edge)
-        self.mongonodes = genome_nodes, info_nodes, edges
-        return self.mongonodes
+        return genome_nodes, info_nodes, edges

@@ -88,7 +88,7 @@ class VCFParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = GFFParser('GRCH38.latest.gff')
+        >>> parser = VCFParser('ClinVar.vcf.gz')
         >>> parser.parse()
 
         The parsed data are stored in self.data, which contains self.metadata and self.variants:
@@ -222,7 +222,7 @@ class VCFParser(Parser):
         --------
         Initialize parser:
 
-        >>> parser = GFFParser('GRCH38.latest.gff')
+        >>> parser = GFFParser('ClinVar.vcf.gz')
 
         Parse the file and stop at 10 variants.
 
@@ -305,7 +305,6 @@ class VCFParser_ClinVar(VCFParser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----
@@ -553,7 +552,6 @@ class VCFParser_dbSNP(VCFParser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----

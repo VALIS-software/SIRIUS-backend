@@ -101,8 +101,7 @@ class GFFParser(Parser):
         }
 
         """
-        metadata = {'filename': self.filename}
-        features = []
+        self.features = []
         if self.ext == '.gz':
             filehandle = gzip.open(self.filename, 'rt')
         else:
@@ -113,19 +112,97 @@ class GFFParser(Parser):
                 if line[1] == '#' or line[1] == '!':
                     ls = line[2:].split(maxsplit=1)
                     if len(ls) == 2:
-                        metadata[ls[0]] = ls[1]
+                        self.metadata[ls[0]] = ls[1]
                     elif len(ls) == 1:
-                        metadata[ls[0]] = None
+                        self.metadata[ls[0]] = None
             elif line:
                 d = self.parse_one_line_data(line)
-                features.append(d)
-                if self.verbose and len(features) % 100000 == 0:
-                    print("%d data parsed" % len(features), end='\r')
+                self.features.append(d)
+                if self.verbose and len(self.features) % 100000 == 0:
+                    print("%d data parsed" % len(self.features), end='\r')
         filehandle.close()
         if self.verbose:
             print("Parsing GFF data finished.")
-        self.metadata.update(metadata)
-        self.data['features'] = features
+
+    def parse_chunk(self, size=100000):
+        """
+        Parse the file line by line and stop when accumulated {size} number of features data.
+        This method is useful when parsing very large data files, because it will have a limited memory usage.
+
+        Parameters
+        ----------
+        size: int, optional
+            The size of data to parse. Default size is 100000.
+
+        Returns
+        -------
+        finished: bool
+            Return True if the parsing hits the end of file, otherwise False.
+
+        Notes
+        -----
+        1. At the first time, calling method will open self.filename as .gz file if file extension is ".gz", otherwise as a text file.
+        2. After opening, the filehandle is stored in self.filehandle for later use.
+        3. Recursivedly calling this method will use the save filehandle, thus continue to read the same file, until parsing finishes.
+        4. Recursivedly calling this method will not overwrite self.metadata, but will clean and overwrite self.variants with the newly parsed data.
+
+        Examples
+        --------
+        Initialize parser:
+
+        >>> parser = GFFParser('GRCH38.latest.gff')
+
+        Parse the file and stop at 10 features.
+
+        >>> parser.parse_chunk(size=10)
+
+        The self.features list should now contain 10 data.
+
+        >>> print(len(parser.features)
+        10
+
+        This is usually done in a recurrsive manner:
+
+        >>> while True:
+        >>>     finished = parser.parse_chunk(size=10)
+        >>>     MongoNodes = parser.get_mongo_nodes()
+        >>>     (do sth, like upload_mongo_nodes)
+        >>>     if finished == True:
+        >>>         break
+
+        """
+        # open the file and keep the filehandle
+        if not hasattr(self, 'filehandle') or self.filehandle.closed:
+            if os.path.splitext(self.filename)[1] == '.gz':
+                self.filehandle = gzip.open(self.filename, 'rt')
+            else:
+                self.filehandle = open(self.filename)
+        self.features = []
+        for line in self.filehandle:
+            line = line.strip() # remove '\n'
+            if line[0] == '#':
+                if line[1] == '#' or line[1] == '!':
+                    ls = line[2:].split(maxsplit=1)
+                    if len(ls) == 2:
+                        self.metadata[ls[0]] = ls[1]
+                    elif len(ls) == 1:
+                        self.metadata[ls[0]] = None
+            elif line:
+                d = self.parse_one_line_data(line)
+                self.features.append(d)
+                if self.verbose and len(self.features) % 100000 == 0:
+                    print("%d data parsed" % len(self.features), end='\r')
+                if len(self.features) == size:
+                    if self.verbose:
+                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                    break
+        else:
+            # close the filehandle if the parsing is finished
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            self.filehandle.close()
+            return True
+        return False
 
     def parse_save_data_in_chunks(self, file_prefix='dataChunk', chunk_size=100000):
         """ Specializd function to parse and safe data in chunks to reduce memory usage """
@@ -208,7 +285,6 @@ class GFFParser(Parser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----
@@ -288,8 +364,7 @@ class GFFParser(Parser):
         []
 
         """
-        if hasattr(self, 'mongonodes'): return self.mongonodes
-        genome_nodes, info_nodes, edge_nodes = [], [], []
+        genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
         info_node = {"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "name": DATA_SOURCE_GENOME, "source": DATA_SOURCE_GENOME}
         info_node['info'] = self.metadata.copy()
@@ -352,5 +427,4 @@ class GFFParser(Parser):
                 print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
         if self.verbose:
             print("Parsing GFF into mongo nodes finished.")
-        self.mongonodes = (genome_nodes, info_nodes, edge_nodes)
-        return self.mongonodes
+        return genome_nodes, info_nodes, edges

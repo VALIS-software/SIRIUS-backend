@@ -118,7 +118,6 @@ class BEDParser_ENCODE(BEDParser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----
@@ -204,7 +203,6 @@ class BEDParser_ENCODE(BEDParser):
         []
 
         """
-        if hasattr(self, 'mongonodes'): return self.mongonodes
         # these four should be set by downloading script for ENCODE data
         biosample = self.metadata['biosample']
         accession = self.metadata['accession']
@@ -257,5 +255,4 @@ class BEDParser_ENCODE(BEDParser):
         info_nodes.append(info_node)
         if self.verbose:
             print("Parsing BED into mongo nodes finished.")
-        self.mongonodes = (genome_nodes, info_nodes, edges)
-        return self.mongonodes
+        return genome_nodes, info_nodes, edges

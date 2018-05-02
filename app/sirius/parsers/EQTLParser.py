@@ -85,7 +85,6 @@ class EQTLParser(Parser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
-            The results of this function will be stored in self.mongonodes for cache.
 
         Notes
         -----

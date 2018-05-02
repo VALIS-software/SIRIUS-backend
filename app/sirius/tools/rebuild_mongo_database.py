@@ -101,24 +101,16 @@ def parse_upload_all_datasets():
 def parse_upload_gff_chunk():
     filename = os.path.basename(GRCH38_URL)
     parser = GFFParser(filename, verbose=True)
-    chunk_fnames = parser.parse_save_data_in_chunks()
-    # parse and upload data in chunks to reduce memory usage
-    prev_parser = None
-    for fname in chunk_fnames:
-        # we still want the original filename for each chunk
-        parser = GFFParser(filename)
-        # the GFF data set are sequencially depending on each other
-        # so we need to inherit some information from previous parser
-        if prev_parser != None:
-            parser.seqid_loc = prev_parser.seqid_loc
-            parser.known_id_set = prev_parser.known_id_set
-        prev_parser = parser
-        with open(fname) as chunkfile:
-            parser.load_json(chunkfile)
-            parser.metadata['sourceurl'] = GRCH38_URL
-            genome_nodes, info_nodes, edge_nodes = parser.get_mongo_nodes()
-            update_insert_many(GenomeNodes, genome_nodes)
-        print("Data from %s uploaded" % fname)
+    parser.metadata['sourceurl'] = GRCH38_URL
+    i_chunk = 0
+    while True:
+        finished = parser.parse_chunk()
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        update_insert_many(GenomeNodes, genome_nodes)
+        print(f"Data of chunk {i_chunk} uploaded")
+        i_chunk += 1
+        if finished == True:
+            break
     # we only upload info_nodes once here because all the chunks has the same single info node for the dataSource.
     update_insert_many(InfoNodes, info_nodes)
     print("InfoNodes uploaded")
