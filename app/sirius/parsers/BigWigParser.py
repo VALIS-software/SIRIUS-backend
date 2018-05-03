@@ -121,17 +121,7 @@ class BigWigParser(Parser):
 
     def parse(self, chromosome_names=None):
         """ Parse the raw sequence using BioPython, store data to tileDB and generate InfoNodes"""
-        chrIdx = 0
         fname = self.filename
-        info_node = {
-            "_id": "IsignalENCFF918ESR",
-            "type" : "signal",
-            "cellType": "heart",
-            "assay": "DNase-seq",
-            "name": "Homo Sapien ",
-            "source": "ENCODE",
-            "info": {}
-        }
         chromosomes = []
         print("Parsing " + self.filename)
 
@@ -139,9 +129,7 @@ class BigWigParser(Parser):
         for chrom in bw.chroms():
             if not chromosome_names or chrom in chromosome_names:
                 self.load_to_tile_db(bw, chrom, self.filename + "_" + chrom)
-        self.info_nodes = [info_node]
-
-
+        
     def get_mongo_nodes(self):
         """ Parse BigWig into InfoNodes for signal """
         #    {
@@ -172,5 +160,14 @@ class BigWigParser(Parser):
         #    }
         if hasattr(self, 'mongonodes'): return self.mongonodes
         
-        self.mongonodes = [], self.info_nodes, []
+        info_node = {
+            "_id": "IsignalENCFF918ESR",
+            "type" : "signal",
+            "cellType": "heart",
+            "assay": "DNase-seq",
+            "name": "Homo Sapien ",
+            "source": "ENCODE",
+            "info": {}
+        }
+        self.mongonodes = [], [info_node], []
         return self.mongonodes

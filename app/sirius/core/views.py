@@ -219,12 +219,7 @@ def tracks():
 @app.route("/tracks/<string:track_id>")
 def track(track_id):
     """Return the track metadata"""
-    qt = QueryTree({
-        "type": QUERY_TYPE_INFO,
-        "filters": { "_id" : track_id},
-        "toEdges": []    
-    })
-    return json.dumps(qt.find()[0])
+    return json.dumps(get_data_with_id(track_id))
 
 @app.route("/tracks/<string:track_id>/<int:chromosomeIdx>/<int:start_bp>/<int:end_bp>")
 def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):

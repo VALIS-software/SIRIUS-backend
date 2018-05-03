@@ -38,6 +38,14 @@ def get_fasta_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, s
       best = i
 
 
+  char_map = {
+    b'n': 0.0,
+    b'a': 0.25,
+    b't': 0.5,
+    b'c': 0.75,
+    b'g': 1.0,
+  }
+
   if best == 0:
     track_data_type = 'basepairs'
     # return raw sequence data:
@@ -47,18 +55,7 @@ def get_fasta_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, s
     start_bp = max([start_bp, 1])
     end_bp = min([end_bp, len(db)])
     chars = db[start_bp - 1 : end_bp - 1]['value']
-    ret = []
-    for char in chars:
-      if char.lower() == b'n':
-        ret.append(0.0)
-      elif char.lower() == b'a':
-        ret.append(0.25)
-      elif char.lower() == b't':
-        ret.append(0.5)
-      elif char.lower() == b'c':
-        ret.append(0.75)
-      else:
-        ret.append(1.0)
+    ret = map(lambda x : char_map[x], chars)
     # convert to float representation
     num_samples = end_bp - start_bp
     dimensions = ['value']
