@@ -226,16 +226,15 @@ def track(track_id):
     })
     return json.dumps(qt.find()[0])
 
-@app.route("/tracks/<string:track_id>/<string:chromosome>/<int:start_bp>/<int:end_bp>")
-def get_track_data(track_id, chromosome, start_bp, end_bp):
+@app.route("/tracks/<string:track_id>/<int:chromosomeIdx>/<int:start_bp>/<int:end_bp>")
+def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
     start_bp = int(start_bp)
     end_bp = int(end_bp)
-    track_data_type = 'signal'
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return get_fasta_data(track_id, chromosome, start_bp, end_bp, track_data_type, track_height_px, sampling_rate)
+    return get_fasta_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, sampling_rate)
 
 # This part is still mock
 #**************************

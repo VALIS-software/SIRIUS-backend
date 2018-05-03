@@ -20,12 +20,11 @@ class FASTAParser(Parser):
             os.makedirs(TILE_DB_PATH)
         os.chdir(TILE_DB_PATH)
 
-
         sz = len(seq_record)
         stride_lengths = map(lambda x : math.ceil(sz/float(x)), TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS)
         stride_data = {}
         stride_counts = {}
-        
+        # TODO: pre-allocate numpy arrays
         # Compute GC content
         for stride in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
             stride_data[stride] = []
@@ -43,7 +42,6 @@ class FASTAParser(Parser):
         for stride in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS:
             ctx = tiledb.Ctx()
             num_buckets = len(stride_data[stride])
-            newctx = tiledb.Ctx()
             d1 = tiledb.Dim(ctx, "locus", domain=(0, num_buckets - 1), tile=math.ceil(num_buckets/1000.0), dtype="uint64")
             domain = tiledb.Domain(ctx, d1)
             gcContent = tiledb.Attr(ctx, "gc", compressor=('lz4', -1), dtype='float32')

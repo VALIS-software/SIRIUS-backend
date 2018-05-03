@@ -5,6 +5,7 @@ from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many
 from sirius.parsers.GFFParser import GFFParser
 from sirius.parsers.FASTAParser import FASTAParser
+from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
@@ -13,6 +14,7 @@ from sirius.realdata.constants import TILE_DB_PATH
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/full'
+ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/ENCFF918ESR.bigWig'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
 EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
@@ -23,13 +25,19 @@ def download_genome_data():
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
+    # ENCODE sample bigwig
+    print("Downloading ENCODE sample to bigwig folder")
+    os.mkdir('ENCODE_bigwig')
+    os.chdir('ENCODE_bigwig')
+    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
+    os.chdir('..')
+    return
     # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
     os.mkdir('GRCh38_fasta')
     os.chdir('GRCh38_fasta')
     subprocess.check_call('wget '+GRCH38_FASTA_URL, shell=True)
     os.chdir('..')
-    return
     # GRCh38_gff
     print("Downloading GRCh38 annotation data in GRCh38_gff folder")
     os.mkdir('GRCh38_gff')
@@ -80,6 +88,13 @@ def drop_all_data():
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
+    # ENCODE_bigwig
+    print("\n*** ENCODE_bigwig ***")
+    os.chdir('ENCODE_bigwig')
+    parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+    # only upload 1 chromosome for now
+    parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
+    return
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
