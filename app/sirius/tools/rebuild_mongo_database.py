@@ -31,7 +31,6 @@ def download_genome_data():
     os.chdir('ENCODE_bigwig')
     subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
     os.chdir('..')
-    return
     # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
     os.mkdir('GRCh38_fasta')
@@ -83,7 +82,8 @@ def drop_all_data():
         db.drop_collection(cname)
 
     # drop the tileDB directory
-    shutil.rmtree(TILE_DB_PATH)
+    if os.path.exists(TILE_DB_PATH):
+        shutil.rmtree(TILE_DB_PATH)
 
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
@@ -94,7 +94,6 @@ def parse_upload_all_datasets():
     parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
     # only upload 1 chromosome for now
     parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
-    return
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
