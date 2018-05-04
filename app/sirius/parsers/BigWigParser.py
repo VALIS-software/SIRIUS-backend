@@ -124,12 +124,31 @@ class BigWigParser(Parser):
         fname = self.filename
         chromosomes = []
         print("Parsing " + self.filename)
-
+        
+        info_node = {
+            "_id": "IsignalENCFF918ESR",
+            "type" : "signal",
+            "cellType": "heart",
+            "assay": "DNase-seq",
+            "name": "Homo Sapien ",
+            "source": "ENCODE",
+            "info": {
+                "chromosomes": []
+            }
+        }
         bw = pyBigWig.open(self.filename)
         for chrom in bw.chroms():
             if not chromosome_names or chrom in chromosome_names:
-                self.load_to_tile_db(bw, chrom, self.filename + "_" + chrom)
-        
+                resolutions = self.load_to_tile_db(bw, chrom, self.filename + "_" + chrom)
+                chrInfo = {
+                    "name": chrom,
+                    "length": bw.chroms(chrom),
+                    "resolutions": resolutions
+                }
+                info_node["chromosomes"].append(chrInfo)
+                print("Parsed chromosome")
+                print(chrInfo)
+        self.info_node = info_node
     def get_mongo_nodes(self):
         """ Parse BigWig into InfoNodes for signal """
         #    {
@@ -159,15 +178,6 @@ class BigWigParser(Parser):
         #      }
         #    }
         if hasattr(self, 'mongonodes'): return self.mongonodes
-        
-        info_node = {
-            "_id": "IsignalENCFF918ESR",
-            "type" : "signal",
-            "cellType": "heart",
-            "assay": "DNase-seq",
-            "name": "Homo Sapien ",
-            "source": "ENCODE",
-            "info": {}
-        }
-        self.mongonodes = [], [info_node], []
+
+        self.mongonodes = [], [self.info_node], []
         return self.mongonodes

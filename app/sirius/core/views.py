@@ -7,12 +7,10 @@ from functools import lru_cache
 import time
 from sirius.main import app
 from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
-<<<<<<< HEAD
+
 from sirius.realdata.constants import CHROMO_IDXS
-=======
-from sirius.realdata.trackdata import get_fasta_data
-from sirius.realdata.constants import chromo_idxs, chromo_names
->>>>>>> 67f51b7... get dockerfile to build end-to-end, add basic track fetch code
+from sirius.realdata.trackdata import read_track_data
+
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import get_aggregation_segments
 
@@ -193,8 +191,6 @@ def get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_
             ret.append(r_data)
     return ret
 
-
-
 #**************************
 #*       /tracks          *
 #**************************
@@ -207,7 +203,7 @@ def tracks():
     # load the sequence datasets from mongo:
     qt = QueryTree({
         "type": QUERY_TYPE_INFO,
-        "filters": { "type" : "sequence"},
+        "filters": { "type" : { "$in": ["sequence", "signal"] } } ,
         "toEdges": []    
     })
     result_itr = map(lambda x : { "name": x["name"], "id": x["_id"] } , list(qt.find()))
@@ -229,7 +225,7 @@ def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return get_fasta_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, sampling_rate)
+    return read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, sampling_rate)
 
 # This part is still mock
 #**************************
