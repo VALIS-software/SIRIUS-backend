@@ -12,6 +12,7 @@ jobs:
 
     steps:
       - checkout
+      - setup_remote_docker
 
       - run:
           name: prep-gcloud
@@ -37,7 +38,9 @@ jobs:
 
       - run:
           name: Run tests inside Docker image
-          command: docker run --net=host us.gcr.io/valis-194104/sirius:dev /app/docker_test.sh
+          command: |
+            kubectl port-forward mongo-0 27017:27017 &
+            docker run --net=host us.gcr.io/valis-194104/sirius:dev /app/docker_test.sh
 
       - run:
           name: Save Docker image layer cache
