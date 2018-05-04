@@ -4,4 +4,6 @@ scipy
 biopython
 numpy
 pymongo
+tiledb
+pyBigWig
 google-cloud-storage
