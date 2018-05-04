@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build-test:
+  build-test-deploy:
     docker:
       - image: yudongdev/gcloud-sdk:sirius
 
@@ -16,15 +16,6 @@ jobs:
       - run:
           name: prep-gcloud
           command: ./.circleci/prep_gcloud.sh
-  build-deploy:
-    docker:
-      - image: yudongdev/gcloud-sdk:sirius
-
-    working_directory: ~/SIRIUS-backend
-
-    steps:
-      - checkout
-      - setup_remote_docker
 
       - restore_cache:
           key: v1-{{ .Branch }}
@@ -45,6 +36,10 @@ jobs:
             docker tag us.gcr.io/valis-194104/sirius:dev app
 
       - run:
+          name: Run tests inside Docker image
+          command: docker run --net=host us.gcr.io/valis-194104/sirius:dev /app/docker_test.sh
+
+      - run:
           name: Save Docker image layer cache
           command: |
             mkdir -p /caches
@@ -58,15 +53,3 @@ jobs:
       - run:
           name: Push Docker image and deploy on kubernetes
           command: ./.circleci/deploy.sh
-
-workflows:
-  version: 2
-  build-deploy:
-    jobs:
-      - build-test
-      - build-deploy:
-          requires:
-            - build-test
-          filters:
-            branches:
-              only: master
