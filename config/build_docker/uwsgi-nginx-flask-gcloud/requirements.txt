@@ -4,6 +4,8 @@ flask_cors
 scipy
 numpy
 pymongo
+tiledb
+pyBigWig
 google-cloud-storage
 pybedtools
 

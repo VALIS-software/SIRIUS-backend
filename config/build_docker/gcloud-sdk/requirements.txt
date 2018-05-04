@@ -1,6 +1,9 @@
 Flask
 flask_cors
 scipy
+biopython
 numpy
 pymongo
+tiledb
+pyBigWig
 google-cloud-storage

@@ -7,7 +7,10 @@ from functools import lru_cache
 import time
 from sirius.main import app
 from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
+
 from sirius.realdata.constants import CHROMO_IDXS
+from sirius.realdata.trackdata import read_track_data
+
 from sirius.core.QueryTree import QueryTree
 from sirius.core.aggregations import get_aggregation_segments
 
@@ -188,8 +191,6 @@ def get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_
             ret.append(r_data)
     return ret
 
-
-
 #**************************
 #*       /tracks          *
 #**************************
@@ -199,30 +200,32 @@ from sirius.mockData.mock_util import getMockData, get_mock_track_data
 @app.route("/tracks")
 def tracks():
     """Return a list of all track_ids"""
-    MOCK_DATA = getMockData()
-    return json.dumps(list(MOCK_DATA.keys()))
+    # load the sequence datasets from mongo:
+    qt = QueryTree({
+        "type": QUERY_TYPE_INFO,
+        "filters": { "type" : { "$in": ["sequence", "signal"] } } ,
+        "toEdges": []    
+    })
+    result_itr = map(lambda x : { "name": x["name"], "id": x["_id"] } , list(qt.find()))
+    results = []
+    for result in result_itr:
+        results.append(result)
+    return json.dumps(results)
 
 @app.route("/tracks/<string:track_id>")
 def track(track_id):
-    MOCK_DATA = getMockData()
     """Return the track metadata"""
-    if track_id in MOCK_DATA:
-        return json.dumps(MOCK_DATA[track_id])
-    else:
-        abort(404, "Track not found")
+    return json.dumps(get_data_with_id(track_id))
 
-@app.route("/tracks/<string:track_id>/<int:start_bp>/<int:end_bp>")
-def get_track_data(track_id, start_bp, end_bp):
+@app.route("/tracks/<string:track_id>/<int:chromosomeIdx>/<int:start_bp>/<int:end_bp>")
+def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
     start_bp = int(start_bp)
     end_bp = int(end_bp)
-    track_data_type = 'signal'
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
-
-
+    return read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, sampling_rate)
 
 # This part is still mock
 #**************************
