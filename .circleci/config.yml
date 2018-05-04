@@ -14,10 +14,6 @@ jobs:
       - checkout
       - setup_remote_docker
 
-      - run:
-          name: prep-gcloud
-          command: ./.circleci/prep_gcloud.sh
-
       - restore_cache:
           key: v1-{{ .Branch }}
           paths:
@@ -39,8 +35,7 @@ jobs:
       - run:
           name: Run tests inside Docker image
           command: |
-            kubectl port-forward mongo-0 27017:27017 &
-            docker run --net=host us.gcr.io/valis-194104/sirius:dev /app/docker_test.sh
+            docker run -e GCLOUD_SERVICE_KEY=$GCLOUD_SERVICE_KEY us.gcr.io/valis-194104/sirius:dev /app/docker_test.sh
 
       - run:
           name: Save Docker image layer cache
@@ -52,6 +47,10 @@ jobs:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - /caches/app.tar
+
+      - run:
+          name: prep-gcloud
+          command: ./app/prep_gcloud.sh
 
       - run:
           name: Push Docker image and deploy on kubernetes
