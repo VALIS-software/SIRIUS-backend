@@ -16,16 +16,6 @@ jobs:
       - run:
           name: prep-gcloud
           command: ./.circleci/prep_gcloud.sh
-
-      - run:
-          name: Run unit tests
-          command: |
-            kubectl port-forward mongo-0 27017:27017 &
-            export PYTHONPATH=~/SIRIUS-backend/app:$PYTHONPATH
-            cd app/sirius/tests
-            python -m unittest discover -q
-            cd ../../..
-
   build-deploy:
     docker:
       - image: yudongdev/gcloud-sdk:sirius
