@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import chromo_idxs, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
+from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS
 from Bio import SeqIO
 import math
 import gzip

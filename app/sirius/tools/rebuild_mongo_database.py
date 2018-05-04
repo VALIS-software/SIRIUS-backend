@@ -94,12 +94,14 @@ def parse_upload_all_datasets():
     parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
     # only upload 1 chromosome for now
     parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
+    os.chdir('..')
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
     parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
     # only upload 1 chromosome for now
     parse_upload_data(parser, GRCH38_FASTA_URL, 1) 
+    os.chdir('..')
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
     os.chdir('GRCh38_gff')
