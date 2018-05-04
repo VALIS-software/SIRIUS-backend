@@ -20,7 +20,7 @@ def read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, 
         "samplingRate": sampling_rate,
         "numSamples": 0,
         "trackHeightPx": track_height_px,
-        "values": None,
+        "values": [],
         "dimensions": [],
         "dataType": 'basepairs'
     })
@@ -50,12 +50,15 @@ def read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, 
     start_bp = max([start_bp, 1])
     end_bp = min([end_bp, len(db)])
     num_samples = end_bp - start_bp
-    ret = db[start_bp - 1 : end_bp - 1]['value']
+    ret =  db[start_bp - 1 : end_bp - 1]['value']
     if isSequence:
       track_data_type = 'basepairs'
-      ret = map(lambda x : char_map[x], ret)
+      ret = [char_map[x.lower()] for x in ret]
+      dimensions = ['value']
     else:
+      ret = [float(x) for x in ret]
       track_data_type = 'value'
+      dimensions = ['value']
   else:
     resolution = resolutions[best]
     # return gband data:
@@ -75,14 +78,36 @@ def read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, 
     ret = []
     datasets = []
     for dim in dimensions:
-      datasets.append(db[int(math.floor(start_bp / resolution)):int(math.floor(end_bp / resolution)) - 1][dim])
-    
-    for i in range(0, num_samples):
-      for dataset in datasets:
-        idx = int((i / len(dataset)) * (len(dataset) - 1))
-        ret.append(float(dataset[idx]))
+      sz = len(db)
+      startIdx = int(math.floor(start_bp / resolution))
+      endIdx = int(math.floor(end_bp / resolution)) - 1
 
-  return json.dumps({
+      # check bounds:
+      if startIdx < 0:
+        startIdx = 0
+
+      if endIdx < 0:
+        endIdx = 0
+
+      if startIdx > sz - 1:
+        startIdx = sz - 1
+
+      if endIdx > sz - 1:
+        endIdx = sz -1
+
+      if endIdx < startIdx:
+        endIdx = startIdx
+      
+      datasets.append(db[startIdx:endIdx][dim])
+    
+    if startIdx != endIdx:
+      for i in range(0, num_samples):
+        for dataset in datasets:
+          idx = int((i / num_samples) * (len(dataset) - 1))
+          ret.append(float(dataset[idx]))
+    else:
+      ret = []
+  response = {
       "chromosomeIdx": chromosomeIdx,
       "startBp" : start_bp,
       "endBp" : end_bp,
@@ -92,4 +117,5 @@ def read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, 
       "values": ret,
       "dimensions": dimensions,
       "dataType": track_data_type
-  })
+  }
+  return json.dumps(response)

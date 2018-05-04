@@ -142,6 +142,7 @@ class BigWigParser(Parser):
                 resolutions = self.load_to_tile_db(bw, chrom, self.filename + "_" + chrom)
                 chrInfo = {
                     "name": chrom,
+                    "tileServerId": fname + "_" + chrom,
                     "length": bw.chroms(chrom),
                     "resolutions": resolutions
                 }
