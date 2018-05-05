@@ -16,6 +16,18 @@ ENV PATH /opt/google-cloud-sdk/bin:$PATH
 # install bedtools
 RUN apt-get install bedtools
 
+# install tiledb
+RUN apt-get install -y sudo
+RUN wget -P tiledb https://github.com/TileDB-Inc/TileDB/archive/1.2.2.tar.gz \
+    && tar xzf tiledb/1.2.2.tar.gz -C tiledb \
+    && rm tiledb/1.2.2.tar.gz \
+    && cd tiledb/TileDB-1.2.2 \
+    && mkdir build && cd build \
+    && ../scripts/install-deps.sh \
+    && ../bootstrap --prefix=/usr/local \
+    && make install
+ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
+
 # Set the working directory
 WORKDIR /app
 
