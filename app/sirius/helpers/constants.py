@@ -1,11 +1,6 @@
 CHROMO_NAMES = [ str(i) for i in list(range(1,23)) ] + ['X','Y']
 CHROMO_IDXS = dict([(name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
 
-
-TILE_DB_PATH = "/tiledb"
-TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
-TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
-
 QUERY_TYPE_GENOME = 'GenomeNode'
 QUERY_TYPE_INFO = 'InfoNode'
 QUERY_TYPE_EDGE = 'EdgeNode'
@@ -33,4 +28,15 @@ ENCODE_COLOR_TYPES = {
     (6,218,147): 'DNase-only',
     (225,225,225): 'Inactive',
     (140,140,140): 'Unclassified'
+}
+
+# The samplingrate threshold for annotation track to return aggregations
+AGGREGATION_THRESH = 5000
+
+TILE_DB_PATH = "/tiledb"
+TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
+TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
+
+SYNONYMS = {
+    'hg19': 'GRCh37'
 }

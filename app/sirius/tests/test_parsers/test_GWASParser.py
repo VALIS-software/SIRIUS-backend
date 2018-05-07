@@ -13,8 +13,9 @@ class GWASParserTest(TimedTestCase):
     def test_init(self):
         """ Test GWASParser.__init__()"""
         parser = GWASParser(self.testfile)
-        self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
-        self.assertEqual(parser.ext, '.tsv', 'Parser should have self.ext set to extension of file.')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'GWASParser should be initialized with self.data["metadata"] = {"filename": filename}')
+        self.assertEqual(parser.ext, '.tsv', 'GWASParser should have self.ext set to extension of file.')
 
     def test_parse(self):
         """ Test GWASParser.parse() """
@@ -34,7 +35,7 @@ class GWASParserTest(TimedTestCase):
         self.assertEqual(len(genome_nodes), 87, 'Parsing test_GWAS.tsv should give 87 GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
-            for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
+            for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
         self.assertEqual(len(info_nodes), 35, 'Parsing test_GWAS.tsv should give 35 InfoNodes')

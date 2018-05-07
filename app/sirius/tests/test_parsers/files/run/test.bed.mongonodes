@@ -1,0 +1,64 @@
+{
+  "genome_nodes": [
+    {
+      "source": "ENCODE",
+      "type": "DNase-only",
+      "name": "EH37E1055273",
+      "contig": "chr1",
+      "start": 10244,
+      "end": 10357,
+      "length": 114,
+      "info": {
+        "score": "0",
+        "strand": ".",
+        "thickStart": "10244",
+        "thickEnd": "10357",
+        "biosample": "#biosample#",
+        "accession": "#accession#",
+        "description": "#description#",
+        "targets": []
+      },
+      "_id": "G_bfa181eb46e5f39606825269b63d65442b21d1bf0d8b114e5423dbeadb9ea88c"
+    },
+    {
+      "source": "ENCODE",
+      "type": "DNase-only",
+      "name": "EH37E1055274",
+      "contig": "chr1",
+      "start": 10433,
+      "end": 10559,
+      "length": 127,
+      "info": {
+        "score": "0",
+        "strand": ".",
+        "thickStart": "10433",
+        "thickEnd": "10559",
+        "biosample": "#biosample#",
+        "accession": "#accession#",
+        "description": "#description#",
+        "targets": []
+      },
+      "_id": "G_0348a1082531e00df76273c20f54fb7e5792b8203bfd4f829087959c7a789704"
+    }
+  ],
+  "info_nodes": [
+    {
+      "_id": "I_#accession#",
+      "type": "ENCODE_accession",
+      "name": "#accession#",
+      "source": "ENCODE",
+      "info": {
+        "filename": "test.bed",
+        "assembly": "hg19",
+        "biosample": "#biosample#",
+        "accession": "#accession#",
+        "description": "#description#",
+        "targets": [],
+        "types": [
+          "DNase-only"
+        ]
+      }
+    }
+  ],
+  "edges": []
+}

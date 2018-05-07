@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 def update_insert_many(dbCollection, nodes, update=True):
     if not nodes: return
     prefix = dbCollection.name[0]
@@ -44,5 +42,3 @@ def update_insert_many(dbCollection, nodes, update=True):
         except Exception as bwe:
             print('Error: ', bwe.details)
     print("%s finished. Updated: %d  Inserted: %d" % (dbCollection.name, len(update_nodes), len(insert_nodes)))
-
-

@@ -1,22 +1,8 @@
-import os, json
-from sirius.core.Annotation import Annotation
-from sirius.realdata.constants import CHROMO_IDXS
-from sirius.mongo import GenomeNodes, InfoNodes, Edges
-
-this_file_folder = os.path.dirname(os.path.realpath(__file__))
-
-# we load from the json file on disk
-def load_annotations():
-    loaded_annotations = dict()
-    with open(os.path.join(this_file_folder, 'realAnnotations.json')) as jsonin:
-        json_data = json.load(jsonin)
-        for aname, adata in json_data.items():
-            loaded_annotations[aname] = Annotation(name=aname, datadict=adata)
-    return loaded_annotations
-
-loaded_annotations = load_annotations()
-
+#----------------------------------------------
+# Load all available types of tracks
+#----------------------------------------------
 def load_mongo_data_information():
+    from sirius.mongo import GenomeNodes, InfoNodes, Edges
     from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ENCODE
     from sirius.realdata.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE
     loaded_dataSources = set(InfoNodes.distinct('source'))
@@ -43,10 +29,41 @@ def load_mongo_data_information():
           'depends': {DATA_SOURCE_ENCODE}
         },
     ]
-    track_info = []
+    track_types_info = []
     for t in track_type_list:
         if any(d in loaded_dataSources for d in t.pop('depends')):
-            track_info.append(t)
-    return track_info
+            track_types_info.append(t)
+    return track_types_info
 
-loaded_track_info = load_mongo_data_information()
+loaded_track_types_info = load_mongo_data_information()
+
+
+#------------------------------
+# Load contig information
+#------------------------------
+def load_contig_information():
+    results = []
+    for data in InfoNodes.find({'type': 'contig'}):
+        contig_info = {
+            'name': data['name'],
+            'length': data['info']['length'],
+            'chromosome': data['info'].get('chromosome', 'Unknown')
+        }
+        results.append(contig_info)
+    return results
+
+loaded_contig_info = load_contig_information()
+loaded_contig_info_dict = dict([(d['name'], d) for d in loaded_contig_info])
+
+#-------------------------------
+# Load data track information
+#-------------------------------
+def load_data_track_information():
+    data_track_info_dict = dict()
+    for data in InfoNodes.find({'type': {'$in':['sequence', 'signal']}}):
+        id_str = data['_id']
+        data_track_info_dict[id_str] = data
+    return data_track_info_dict
+
+loaded_data_track_info_dict = load_data_track_information()
+loaded_data_tracks = [{'id': d['_id'], 'name': d['name']} for d in loaded_data_track_info_dict.values()]

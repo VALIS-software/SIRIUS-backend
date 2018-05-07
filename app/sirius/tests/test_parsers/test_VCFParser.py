@@ -13,8 +13,9 @@ class VCFParserTest(TimedTestCase):
     def test_init(self):
         """ Test VCFParser.__init__()"""
         parser = VCFParser(self.testfile)
-        self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
-        self.assertEqual(parser.ext, '.vcf', 'Parser should have self.ext set to extension of file.')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'VCFParser should be initialized with self.data["metadata"] = {"filename": filename}')
+        self.assertEqual(parser.ext, '.vcf', 'VCFParser should have self.ext set to extension of file.')
 
     def test_parse(self):
         """ Test VCFParser.parse() """
@@ -50,7 +51,7 @@ class VCFParser_ClinVarTest(TimedTestCase):
         self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {filename} should give {n_gnode} GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
-            for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
+            for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
         n_inode = 6
@@ -75,7 +76,7 @@ class VCFParser_dbSNPTest(TimedTestCase):
         self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {filename} should give {n_gnode} GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
-            for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
+            for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
         n_inode = 1

@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "filename": "test.bed",
+    "assembly": "hg19",
+    "biosample": "#biosample#",
+    "accession": "#accession#",
+    "description": "#description#",
+    "targets": []
+  },
+  "intervals": [
+    {
+      "chrom": "chr1",
+      "start": "10244",
+      "end": "10357",
+      "name": "EH37E1055273",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "10244",
+      "thickEnd": "10357",
+      "itemRgb": "6,218,147"
+    },
+    {
+      "chrom": "chr1",
+      "start": "10433",
+      "end": "10559",
+      "name": "EH37E1055274",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "10433",
+      "thickEnd": "10559",
+      "itemRgb": "6,218,147"
+    },
+    {
+      "chrom": "chr20",
+      "start": "110483",
+      "end": "110787",
+      "name": "EH37E1200093",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "110483",
+      "thickEnd": "110787",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chr20",
+      "start": "118375",
+      "end": "118727",
+      "name": "EH37E0583052",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "118375",
+      "thickEnd": "118727",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chr20",
+      "start": "120247",
+      "end": "120589",
+      "name": "EH37E0031745",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "120247",
+      "thickEnd": "120589",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chr3",
+      "start": "75604",
+      "end": "75860",
+      "name": "EH37E0034818",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "75604",
+      "thickEnd": "75860",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chr3",
+      "start": "82141",
+      "end": "82385",
+      "name": "EH37E0034819",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "82141",
+      "thickEnd": "82385",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chr3",
+      "start": "84620",
+      "end": "84813",
+      "name": "EH37E0034820",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "84620",
+      "thickEnd": "84813",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59030516",
+      "end": "59030748",
+      "name": "EH37E1310145",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59030516",
+      "thickEnd": "59030748",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59031464",
+      "end": "59031555",
+      "name": "EH37E1310146",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59031464",
+      "thickEnd": "59031555",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59031670",
+      "end": "59031867",
+      "name": "EH37E1310147",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59031670",
+      "thickEnd": "59031867",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59032062",
+      "end": "59032237",
+      "name": "EH37E1310148",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59032062",
+      "thickEnd": "59032237",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59032463",
+      "end": "59032574",
+      "name": "EH37E1310149",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59032463",
+      "thickEnd": "59032574",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59032608",
+      "end": "59032847",
+      "name": "EH37E1310150",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59032608",
+      "thickEnd": "59032847",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59032871",
+      "end": "59033015",
+      "name": "EH37E1310151",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59032871",
+      "thickEnd": "59033015",
+      "itemRgb": "225,225,225"
+    },
+    {
+      "chrom": "chrY",
+      "start": "59033024",
+      "end": "59033183",
+      "name": "EH37E1310152",
+      "score": "0",
+      "strand": ".",
+      "thickStart": "59033024",
+      "thickEnd": "59033183",
+      "itemRgb": "225,225,225"
+    }
+  ]
+}

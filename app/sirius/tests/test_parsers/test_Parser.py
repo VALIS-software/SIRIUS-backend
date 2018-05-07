@@ -13,7 +13,8 @@ class ParserTest(TimedTestCase):
     def test_init(self):
         """Test Parser Initializer"""
         parser = Parser(self.testfile)
-        self.assertEqual(parser.metadata['filename'], self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
         self.assertEqual(parser.ext, '.gff', 'Parser should have self.ext set to extension of file.')
 
     def test_parse(self):

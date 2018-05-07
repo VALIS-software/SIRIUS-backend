@@ -32,7 +32,7 @@ def main():
         parser.metadata['biosample'] = '#biosample#'
         parser.metadata['accession'] = '#accession#'
         parser.metadata['description'] = '#description#'
-        parser.metadata['targets'] = []
+        parser.metadata['targets'] = ['#Target#']
 
     if args.save:
         parser.save_json()

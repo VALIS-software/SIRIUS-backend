@@ -9,7 +9,7 @@ from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
-from sirius.realdata.constants import TILE_DB_PATH
+from sirius.helpers.constants import TILE_DB_PATH
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
@@ -27,8 +27,8 @@ def download_genome_data():
     os.chdir('gene_data_tmp')
     # ENCODE sample bigwig
     print("Downloading ENCODE sample to bigwig folder")
-    os.mkdir('ENCODE_bigwig')
-    os.chdir('ENCODE_bigwig')
+    os.mkdir('bigwig')
+    os.chdir('bigwig')
     subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
     os.chdir('..')
     # GRCh38_fasta
@@ -90,7 +90,7 @@ def parse_upload_all_datasets():
     os.chdir('gene_data_tmp')
     # ENCODE_bigwig
     print("\n*** ENCODE_bigwig ***")
-    os.chdir('ENCODE_bigwig')
+    os.chdir('bigwig')
     parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
     # only upload 1 chromosome for now
     parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
@@ -100,7 +100,7 @@ def parse_upload_all_datasets():
     os.chdir('GRCh38_fasta')
     parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
     # only upload 1 chromosome for now
-    parse_upload_data(parser, GRCH38_FASTA_URL, 1) 
+    parse_upload_data(parser, GRCH38_FASTA_URL, 1)
     os.chdir('..')
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
@@ -162,7 +162,7 @@ def parse_upload_data(parser, url, *args):
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
-    for idx in ['source', 'assembly', 'type', 'chromid', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
+    for idx in ['source', 'type', 'contig', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
     print("Creating compound index for type and info.biosample")
