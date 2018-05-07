@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GWAS
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_GWAS
 
 class GWASParser(Parser):
     """
@@ -195,20 +195,18 @@ class GWASParser(Parser):
         >>> print(genome_nodes[0])
         {
             "_id": "Gsnp_rs4950928",
-            "assembly": "GRCh38",
             "type": "SNP",
-            "chromid": 1,
+            "contig": "chr1",
             "start": 203186754,
             "end": 203186754,
             "length": 1,
             "source": "GWAS",
             "name": "RS4950928",
             "info": {
-                "ID": "4950928",
                 "description": "SNP 4950928",
                 "mapped_gene": "CHI3L1"
             }
-        }
+        },
 
         The first InfoNode is the dataSource:
 
@@ -293,14 +291,15 @@ class GWASParser(Parser):
             trait_id = 'Itrait_'+self.hash(trait.lower())
             short_name = (''.join(s[0] for s in trait.split())).upper()
             if trait_id not in known_traits:
-                infonode = { '_id': trait_id,
-                             'type': 'trait',
-                             'name': short_name,
-                             'source': DATA_SOURCE_GWAS,
-                             'info': {
-                                 'description': trait
-                             }
-                           }
+                infonode = {
+                    '_id': trait_id,
+                     'type': 'trait',
+                     'name': short_name,
+                     'source': DATA_SOURCE_GWAS,
+                     'info': {
+                         'description': trait
+                     }
+               }
                 info_nodes.append(infonode)
                 known_traits.add(trait_id)
             # there might be multiple snps related, therefore we split them
@@ -320,7 +319,7 @@ class GWASParser(Parser):
                     print("Skipped because CHR_ID %s not known" % CHR_IDs[i])
                     continue
                 else:
-                    chromid = CHROMO_IDXS[CHR_IDs[i]]
+                    contig = 'chr' + CHR_IDs[i]
                 rs_id = 'Gsnp_rs' + rs
                 this_snp_ids.append(rs_id)
                 name = 'RS' + rs
@@ -331,16 +330,14 @@ class GWASParser(Parser):
                     mapped_gene = MAPPED_GENEs[i]
                     gnode = {
                         '_id': rs_id,
-                        'assembly': "GRCh38",
                         'type': 'SNP',
-                        'chromid': chromid,
+                        'contig': contig,
                         'start': pos,
                         'end': pos,
                         'length': 1,
                         'source': DATA_SOURCE_GWAS,
                         'name': name,
                         'info': {
-                            'ID': rs,
                             'description': 'SNP ' + rs
                         }
                     }

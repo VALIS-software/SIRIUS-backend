@@ -1,6 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
-from sirius.realdata.synonyms import Synonyms
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
 
 class BEDParser(Parser):
     """
@@ -149,8 +148,8 @@ class BEDParser_ENCODE(BEDParser):
         -----
         1. This method should be called after self.parse(), because this method will read from self.metadata and self.features,
         which are contents of self.data
-        2. Since the bed files does not contain metadata, 5 keys in the metadata are required to be set before calling this function.
-        These are: "biosample", "accession", "description", "targets", "assembly". All of these information can be obtained by the web api.
+        2. Since the bed files does not contain metadata, some keys in the metadata are required to be set before calling this function.
+        These are: "biosample", "accession", "description", "targets". All of these information can be obtained by the web api.
         3. GenomeNodes generated will be internals, with very basic information like "info.biosample", "info.accession" and "info.targets".
         4. All GenomeNodes should have _id starting with "G", like "G_8e2b44c80d0562..".
         4. The type of the intervals will be one of the below, based on their color codes, defined in sirius.realdata.constants.ENCODE_COLOR_TYPES
@@ -165,6 +164,10 @@ class BEDParser_ENCODE(BEDParser):
         6. One InfoNode will be generated, with type "ENCODE_accession". This infonode stores the mettadata for this accession, which is useful for
         searching distinct values of certain keys.
         7. No edges are created in this parsing.
+
+        To-Do
+        -----
+        The ENCODE dataset is under assembly GRCh37 but our browser is working under GRCh38, a coordinate conversion is needed.
 
         Examples
         --------
@@ -181,11 +184,10 @@ class BEDParser_ENCODE(BEDParser):
 
         >>> print(genome_nodes[0])
         {
-            "assembly": "GRCh37",
             "source": "ENCODE",
             "type": "DNase-only",
             "name": "EH37E1055273",
-            "chromid": 1,
+            "contig": "chr1",
             "start": 10244,
             "end": 10357,
             "length": 114,
@@ -196,10 +198,11 @@ class BEDParser_ENCODE(BEDParser):
                 "thickEnd": "10357",
                 "biosample": "#biosample#",
                 "accession": "#accession#",
-                "targets": []
+                "description": "#description#",
+                "targets": ["#Target#"]
             },
-            "_id": "G_8e2b44c80d0562eaffba0c3ce1586d4fff611222832cf6a1744ada6fd8c28380"
-        }
+            "_id": "G_bfa181eb46e5f39606825269b63d65442b21d1bf0d8b114e5423dbeadb9ea88c"
+        },
 
         The info_nodes will have only one element with type "ENCODE_accession":
         (The data with ## should be set in self.metadata by the user)
@@ -212,7 +215,6 @@ class BEDParser_ENCODE(BEDParser):
             "source": "ENCODE",
             "info": {
                 "filename": "test.bed",
-                "assembly": "GRCh37",
                 "biosample": "#biosample#",
                 "accession": "#accession#",
                 "description": "#description#",
@@ -234,30 +236,28 @@ class BEDParser_ENCODE(BEDParser):
         accession = self.metadata['accession']
         description = self.metadata['description']
         targets = self.metadata['targets']
-        self.metadata['assembly'] = Synonyms[self.metadata['assembly']]
         # dict for converting chr in bed file to chromid
         chr_name_id = dict(('chr'+s, i) for s,i in CHROMO_IDXS.items())
         # start parsing
         genome_nodes, info_nodes, edges = [], [], []
         # add data as GenomeNodes
-        assembly = self.metadata['assembly']
         all_types = set()
         for interval in self.data['intervals']:
             d = interval.copy()
             color = tuple(int(c) for c in d.pop('itemRgb').split(','))
             tp = ENCODE_COLOR_TYPES[color]
+            # We skip the two "not-useful types" for now
             if tp == 'Inactive' or tp == 'Unclassified':
                 continue
             all_types.add(tp) # keep track of the types for this data file
             name = d.pop('name')
-            chromid = chr_name_id[d.pop('chrom')]
+            contig = d.pop('chrom')
             start, end = int(d.pop('start')), int(d.pop('end'))
             gnode = {
-                'assembly': assembly,
                 'source': DATA_SOURCE_ENCODE,
                 'type': tp,
                 'name': name,
-                'chromid': chromid,
+                'contig': contig,
                 'start': start,
                 'end':end,
                 'length': end-start+1,
@@ -277,7 +277,7 @@ class BEDParser_ENCODE(BEDParser):
         info_node = {"_id": 'I_'+accession, "type": "ENCODE_accession", "name": accession, "source": DATA_SOURCE_ENCODE}
         info_node['info'] = self.metadata.copy()
         # store all available types in the InfoNode
-        info_node['info']['types'] = list(all_types)
+        info_node['info']['types'] = sorted(all_types)
         info_nodes.append(info_node)
         if self.verbose:
             print("Parsing BED into mongo nodes finished.")

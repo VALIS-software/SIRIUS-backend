@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import DATA_SOURCE_EQTL
+from sirius.helpers.constants import DATA_SOURCE_EQTL
 
 class EQTLParser(Parser):
     """
@@ -218,10 +218,6 @@ class EQTLParser(Parser):
         info_nodes.append(info_node)
         known_edge_ids = set()
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
-        if 'reference' in self.metadata:
-            assembly = self.metadata['reference']
-        else:
-            assembly = 'GRCh38'
         for d in self.eqtls:
             # create EdgeNode
             from_id = 'Gsnp_rs'+d['exSNP']

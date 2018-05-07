@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS
 import pyBigWig
 import math
 import gzip
@@ -13,7 +13,7 @@ import collections
 
 class BigWigParser(Parser):
     def load_to_tile_db(self, bigwigRecord, chromosomeName, tileServerId):
-        """ Loads the sequence data into TileDB, generates downsampled tiles 
+        """ Loads the sequence data into TileDB, generates downsampled tiles
         """
         start = time.time()
         if not os.path.exists(TILE_DB_PATH):
@@ -41,7 +41,7 @@ class BigWigParser(Parser):
             values =  bigwigRecord.values(chromosomeName, start, end)
             mainBigWigDB[start:end] = np.array(values, 'float32')
         print("Finished writing data to TileDB")
-        
+
 
         # create downsampled arrays:
         stride_lengths = map(lambda x : math.ceil(sz/float(x)), TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS)
@@ -51,7 +51,7 @@ class BigWigParser(Parser):
         stride_sums = {}
         stride_mins = {}
         stride_maxes = {}
-        
+
         for stride in TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS:
             stride_data_avgs[stride] = []
             stride_data_mins[stride] = []
@@ -124,7 +124,7 @@ class BigWigParser(Parser):
         fname = self.filename
         chromosomes = []
         print("Parsing " + self.filename)
-        
+
         info_node = {
             "_id": "IsignalENCFF918ESR",
             "type" : "signal",
@@ -167,14 +167,14 @@ class BigWigParser(Parser):
         #               "tileServerId": "chr1",
         #               "name" : "chr1",
         #               "index" : 0,
-        #            } 
+        #            }
         #            ...
         #            {
         #               "length": 5803000,
         #               "tileServerId": "chrX",
         #               "name" : "chrX",
         #               "index" : 22,
-        #            } 
+        #            }
         #         ]
         #      }
         #    }
