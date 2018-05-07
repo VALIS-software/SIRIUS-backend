@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 echo "Running SIRIUS tests inside Docker container"
 
 /app/prep_gcloud.sh
