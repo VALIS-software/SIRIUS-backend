@@ -1,9 +1,11 @@
-import json
+import time, json
 import numpy as np
 from collections import defaultdict
 from scipy.spatial.distance import pdist
 from scipy.cluster import hierarchy
+from functools import lru_cache
 
+from sirius.core.QueryTree import QueryTree
 from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
 
@@ -14,34 +16,37 @@ def get_annotation_query_results(query):
     contig_genome_data = defaultdict(list)
     for gnode in qt.find(projection=['_id', 'contig', 'start', 'end', 'name']):
         genome_data = (gnode['start'], gnode['end'], gnode['_id'], gnode['name'])
-        contig_genome_data[contig].append(genome_data)
+        contig_genome_data[gnode['contig']].append(genome_data)
     # save the 1-D array of starting loation
     contig_start_bps = dict()
     # sort the results based on the start
-    for contig, genome_data_list in result.items():
+    for contig, genome_data_list in contig_genome_data.items():
         genome_data_list.sort()
         contig_start_bps[contig] = np.array([d[0] for d in genome_data_list])
     return contig_genome_data, contig_start_bps
 
-def get_annotation_query(annotation_id, contig, start, end, sampling_rate, track_height_px, query, verbose=True):
+def get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query, verbose=True):
     t0 = time.time()
-    contig_genome_data, contig_start_bps = get_annotation_query_results(HashableDict(query)).get(contig, [])
+    query_genome_data, query_start_bps = get_annotation_query_results(HashableDict(query))
+    contig_genome_data = query_genome_data[contig]
+    contig_start_bps = query_start_bps[contig]
     total_query_count = len(contig_genome_data)
     t1 = time.time()
     if verbose:
         print(f"{total_query_count} gnome_query_results; {t1-t0:.3f} seconds \n Query: {query} \n {get_gnome_query_results.cache_info()}")
     # find the data in range
-    start_idx, end_idx = np.searchsorted(contig_start_bps, [start, end])
+    start_idx, end_idx = np.searchsorted(contig_start_bps, [start_bp, end_bp])
     genome_data_in_range = contig_genome_data[start_idx:end_idx]
     count_in_range = len(genome_data_in_range)
     t2 = time.time()
     if verbose:
         print(f"Found {count_in_range} data in range; {t2-t1:.3f} seconds")
-    if sampling_rate > AGGREGATION_THRESH: # turn on aggregation!
+    aggregation_on = sampling_rate > AGGREGATION_THRESH
+    if aggregation_on: # turn on aggregation!
         pos_in_range = contig_start_bps[start_idx:end_idx]
-        ret = get_aggregation_segments(pos_in_range, annotation, sampling_rate, track_height_px)
+        ret = get_aggregation_segments(pos_in_range, sampling_rate, track_height_px)
     else:
-        ret = get_genome_segments(genome_data_in_range, annotation, sampling_rate, track_height_px)
+        ret = get_genome_segments(genome_data_in_range, sampling_rate, track_height_px)
     t3 = time.time()
     if verbose:
         print("Data aggregation; {t3-t2:.3f} seconds")
@@ -53,10 +58,10 @@ def get_annotation_query(annotation_id, contig, start, end, sampling_rate, track
         "annotationId": annotation_id,
         "values": ret,
         "countInRange": count_in_range,
-        "aggregation": sampling_rate > AGGREGATION_THRESH
+        "aggregation": aggregation_on
     })
 
-def get_genome_segments(genome_data_list, annotation, sampling_rate, track_height_px):
+def get_genome_segments(genome_data_list, sampling_rate, track_height_px):
     ret = []
     ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
     last_end, last_y = -float('inf'), 0
@@ -90,7 +95,7 @@ def get_genome_segments(genome_data_list, annotation, sampling_rate, track_heigh
             ret.append(r_data)
     return ret
 
-def get_aggregation_segments(coords, annotation, sampling_rate, track_height_px):
+def get_aggregation_segments(coords, sampling_rate, track_height_px):
     """ Optimized clustering algorithm that handles arbitrary size of data, with a certain resolution """
     ndata = len(coords)
     if ndata == 0: return []
@@ -116,9 +121,10 @@ def get_aggregation_segments(coords, annotation, sampling_rate, track_height_px)
     ret = []
     c_begin = 0
     for c_end in cluster_ends:
-        startBp = coords[c_begin]
-        endBp = coords[c_end]
-        c_size = c_end - c_begin + 1
+        cluster_coords = coords[c_begin:c_end]
+        startBp = int(cluster_coords[0])
+        endBp = int(cluster_coords[-1])
+        c_size = len(cluster_coords)
         label = str(c_size)
         color_level = max(min(c_size / 100, 1.0), 0.2) # between (0.2~1.0)
         color = [0.15, 0.55, 1.0, color_level]

@@ -3,7 +3,7 @@
 
 import time
 from sirius.analysis.Bed import Bed
-from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
+from sirius.helpers.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 print("Analysis starts")
 t0 = time.time()

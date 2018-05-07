@@ -7,17 +7,18 @@ from sirius.helpers.loaddata import load_mongo_data_information, load_contig_inf
 
 class HelpersTest(TimedTestCase):
     def test_helpers_constants(self):
-        from sirius.helpers.constants import *
+        """ Test import helpers.constants """
+        from sirius.helpers import constants
 
     def test_track_types_info(self):
         """ Test helpers.loaddata.load_mongo_data_information() """
         for info in load_mongo_data_information():
-            assert all((key in loaded_track_info) for key in ('track_type', 'title', 'description'))
+            assert all((key in info) for key in ('track_type', 'title', 'description'))
 
     def test_contig_info(self):
         """ Test helpers.loaddata.loaded_track_info """
         for info in load_contig_information():
-            assert all((key in loaded_track_info) for key in ('name', 'length', 'chromosome'))
+            assert all((key in info) for key in ('name', 'length', 'chromosome'))
 
     def test_data_track_info(self):
         """ Test helpers.loaddata.load_data_track_information """

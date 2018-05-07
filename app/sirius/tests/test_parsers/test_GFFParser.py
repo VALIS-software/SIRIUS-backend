@@ -39,7 +39,8 @@ class GFFParserTest(TimedTestCase):
         parser = GFFParser(self.testfile)
         parser.parse()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
-        self.assertEqual(len(genome_nodes), 59, 'Parsing test.gff should give 59 GenomeNodes')
+        n_gnode = 58
+        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing test.gff should give {n_gnode} GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
             for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):

@@ -6,6 +6,7 @@
 
 from flask import abort, request, send_from_directory
 import time
+from functools import lru_cache
 
 from sirius.main import app
 from sirius.core.QueryTree import QueryTree

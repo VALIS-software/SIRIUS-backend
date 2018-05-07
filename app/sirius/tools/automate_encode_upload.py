@@ -146,7 +146,7 @@ def parse_upload_bed(metadata):
     update_insert_many(Edges, edges, update=False)
 
 def insert_encode_dataSource():
-    from sirius.realdata.constants import DATA_SOURCE_ENCODE
+    from sirius.helpers.constants import DATA_SOURCE_ENCODE
     ds = DATA_SOURCE_ENCODE
     # prevent duplicate
     if not InfoNodes.find_one({'_id': 'I'+ds}):

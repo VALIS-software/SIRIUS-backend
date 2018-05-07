@@ -17,7 +17,7 @@ class CoreTest(TimedTestCase):
     def test_core_views(self):
         """ Test core.annotationtrack.get_annotation_query() """
         query = {'type':'GenomeNode', "filters":{"type":'gene'}}
-        result = get_annotation_query('aid', 'chr1', 1000000, 100000, 96, query, verbose=False)
+        result = get_annotation_query('aid', 'chr1', 1, 1000000, 100000, 96, query, verbose=False)
         d = json.loads(result)
         self.assertGreater(d['countInRange'], 50, 'Number of genes in Chr1 1-1M should be greater than 50')
 

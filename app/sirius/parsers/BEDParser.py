@@ -152,7 +152,7 @@ class BEDParser_ENCODE(BEDParser):
         These are: "biosample", "accession", "description", "targets". All of these information can be obtained by the web api.
         3. GenomeNodes generated will be internals, with very basic information like "info.biosample", "info.accession" and "info.targets".
         4. All GenomeNodes should have _id starting with "G", like "G_8e2b44c80d0562..".
-        4. The type of the intervals will be one of the below, based on their color codes, defined in sirius.realdata.constants.ENCODE_COLOR_TYPES
+        4. The type of the intervals will be one of the below, based on their color codes, defined in sirius.helpers.constants.ENCODE_COLOR_TYPES
             (255,0,0): 'Promoter-like',
             (255,205,0): 'Enhancer-like',
             (0,176,240): 'CTCF-only',

@@ -367,10 +367,11 @@ class GFFParser(Parser):
             d = feature.copy()
             ft = d.pop('type')
             seqid = d.pop('seqid')
-            if ft == 'region':
+            if ft == 'region' and seqid not in self.seqid_contig:
                 # the regions will be parsed into info nodes
                 if d.pop('start') != 1:
-                    raise RuntimeError(f"region should have start:1\n{d}")
+                    print(f"Warning: skipping region that start != 1\n{feature}")
+                    continue
                 chromid = d['attributes'].get('chromosome', None)
                 # We use names like chr1 to normalize the contig of normal seqids like NC_000001.10
                 chrom_name = ('chr'+chromid) if chromid != None else 'Unknown'

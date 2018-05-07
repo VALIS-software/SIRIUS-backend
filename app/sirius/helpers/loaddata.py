@@ -1,10 +1,11 @@
+from sirius.mongo import GenomeNodes, InfoNodes, Edges
+from sirius.helpers.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ENCODE
+from sirius.helpers.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE
+
 #----------------------------------------------
 # Load all available types of tracks
 #----------------------------------------------
 def load_mongo_data_information():
-    from sirius.mongo import GenomeNodes, InfoNodes, Edges
-    from sirius.realdata.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_EQTL, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ENCODE
-    from sirius.realdata.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE
     loaded_dataSources = set(InfoNodes.distinct('source'))
     # the description is hard coded here, could be replaced by querying InfoNodes of type dataSource later
     track_type_list = [

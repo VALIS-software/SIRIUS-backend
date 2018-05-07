@@ -2,7 +2,7 @@
 
 import os, sys
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
+from sirius.helpers.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 class QueryNode:
     def __init__(self, pool=None, qfilter=dict(), edges=None, edge_rule=None, limit=0, verbose=False):
