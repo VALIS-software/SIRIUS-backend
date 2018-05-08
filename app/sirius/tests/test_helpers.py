@@ -25,5 +25,10 @@ class HelpersTest(TimedTestCase):
         for info in load_data_track_information():
             assert info['type'] in ('sequence', 'signal')
 
+    def test_tiledb_helper(self):
+        """ Test helpers.tiledb """
+        from sirius.helpers.tiledb import tilehelper
+        l = tilehelper.ls()
+
 if __name__ == "__main__":
     unittest.main()
