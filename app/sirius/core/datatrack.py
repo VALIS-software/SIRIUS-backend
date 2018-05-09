@@ -2,7 +2,6 @@ import os, json, math
 import tiledb
 
 from sirius.mongo import InfoNodes
-from sirius.helpers.constants import TILE_DB_PATH
 from sirius.helpers.loaddata import loaded_data_track_info_dict
 
 def read_track_data(track_id, contig, start_bp, end_bp, track_height_px, sampling_rate):

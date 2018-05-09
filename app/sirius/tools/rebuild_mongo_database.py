@@ -111,18 +111,18 @@ def parse_upload_all_datasets():
     print("\n*** GWAS ***")
     os.chdir('gwas')
     parser = GWASParser('gwas.tsv', verbose=True)
-    parse_upload_data(parser, GWAS_URL)
+    parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
     # eQTL
     print("\n*** eQTL ***")
     os.chdir('eQTL')
     parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
-    parse_upload_data(parser, EQTL_URL)
+    parse_upload_data(parser, {"sourceurl": EQTL_URL})
     os.chdir('..')# ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
     parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
-    parse_upload_data(parser, CLINVAR_URL)
+    parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
     os.chdir('..')
     # ENCODE
     print("\n*** ENCODE ***")
@@ -152,9 +152,9 @@ def parse_upload_gff_chunk():
     update_insert_many(InfoNodes, [info_nodes[0]])
     print("InfoNodes uploaded")
 
-def parse_upload_data(parser, url, *args):
-    parser.parse(*args)
-    parser.metadata['sourceurl'] = url
+def parse_upload_data(parser, metadata={}):
+    parser.parse()
+    parser.metadata.update(metadata)
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     update_insert_many(GenomeNodes, genome_nodes)
     update_insert_many(InfoNodes, info_nodes)

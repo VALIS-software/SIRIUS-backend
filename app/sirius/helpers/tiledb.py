@@ -12,14 +12,16 @@ class TileHelper(object):
     config["vfs.s3.use_virtual_addressing"] = "true"
     ctx = tiledb.Ctx(config)
 
-    def __init__(self, backend="local", tile_size=1000000):
-        if backend == 'local':
-            self.root = '/pd/tiledb/'
+    def __init__(self, backend=None, tile_size=1000000):
+        if backend == None:
+            self.root = os.environ.get('TILEDB_ROOT', './')
+            if not os.path.isdir(self.root):
+                try:
+                    os.makedirs(self.root)
+                except:
+                    print(f"Warning: TileHelper not able to create {self.root} for backend {backend}")
         elif backend == 's3':
             self.root = 's3://sirius-tiledb/'
-        else:
-            raise NotImplementedError("backend can be 's3' or 'local'")
-        self.backend = backend
         self.tile_size = tile_size
 
     def create_dense_array(self, arrayID, data):
@@ -32,7 +34,7 @@ class TileHelper(object):
             tile_dims.append(tiledim)
         domain = tiledb.Domain(self.ctx, *tile_dims)
         #print(domain.dump())
-        attr = tiledb.Attr(self.ctx, "value", dtype=data.dtype)
+        attr = tiledb.Attr(self.ctx, "value", compressor=('lz4',-1), dtype=data.dtype)
         tile_array_id = self.root + arrayID
         dense_array = tiledb.DenseArray(self.ctx, tile_array_id, domain=domain, attrs=[attr])
         dense_array[:] = data
@@ -49,7 +51,7 @@ class TileHelper(object):
     def ls(self):
         paths = []
         tiledb.ls(self.ctx, self.root, lambda p,l: paths.append(p))
-        if self.backend == "s3":
+        if self.root.startswith("s3://"):
             results = [ p[len(self.root):-1] for p in paths ]
         else:
             results = [ os.path.basename(p) for p in paths ]
