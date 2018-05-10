@@ -14,7 +14,7 @@ from sirius.core.utilities import get_data_with_id, HashableDict
 from sirius.helpers.loaddata import loaded_contig_info, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
-from sirius.core.datatrack import get_sequence_data, get_signal_data
+from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 #**************************
@@ -110,14 +110,29 @@ def track_info():
 
 
 
-
+# This endpoint servers the old version of front end
 #**************************
 #*     /annotations       *
 #**************************
+@app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
+def get_annotation_data(annotation_id, start_bp, end_bp):
+    sampling_rate = int(request.args.get('sampling_rate', default=1))
+    track_height_px = int(request.args.get('track_height_px', default=0))
+    query = request.get_json()
+    # hard code contig
+    contig = 'chr1'
+    if query:
+        # let us show some real data!!
+        result = get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
+    elif annotation_id == "GRCh38":
+        # this was the default track
+        query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
+        result = get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
+    return result
 
 
-@app.route("/annotations/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
-def get_annotation_data(annotation_id, contig, start_bp, end_bp):
+@app.route("/annotationtrack/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
+def get_annotationtrack_data(annotation_id, contig, start_bp, end_bp):
     """
     Endpoint for rendering the selections in DataBrowser side panel.
 
@@ -131,8 +146,6 @@ def get_annotation_data(annotation_id, contig, start_bp, end_bp):
     The annotation_id is not used at all, but simply returned in the json.
 
     """
-    start_bp = int(start_bp)
-    end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     track_height_px = int(request.args.get('track_height_px', default=0))
     query = request.get_json()
@@ -152,7 +165,7 @@ from sirius.mockData.mock_util import getMockData, get_mock_track_data
 def tracks():
     """Return a list of all track_ids"""
     MOCK_DATA = getMockData()
-    return json.dumps(list(MOCK_DATA.keys()))
+    return json.dumps(list(MOCK_DATA.values()))
 
 @app.route("/tracks/<string:track_id>")
 def track(track_id):
@@ -163,15 +176,13 @@ def track(track_id):
     else:
         abort(404, "Track not found")
 
-@app.route("/tracks/<string:track_id>/<int:chromosomeIdx>/<int:start_bp>/<int:end_bp>")
-def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
+@app.route("/tracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
+def get_track_data(track_id, contig, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
-    start_bp = int(start_bp)
-    end_bp = int(end_bp)
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
+    return old_api_track_data(track_id, contig, start_bp, end_bp, track_height_px, sampling_rate)
 
 # This is the new endpoint that will replace /tracks to return real data
 #**************************
@@ -203,18 +214,22 @@ def datatrack_info_by_id(track_id):
         The InfoNode that contains the metadata for track_id.
 
     """
-    return json.dumps(loaded_data_track_info_dict.get(track_id, None))
+    info = loaded_data_track_info_dict.get(track_id, None)
+    if info == None:
+        return abort(404, f'track {track_id} not found')
+    track_info = {
+        'id': info['_id'],
+        'type': info['type']
+    }
+    return json.dumps(track_info)
 
 @app.route("/datatracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
 def datatrack_get_data(track_id, contig, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
-    # convert the inputs to correct type
-    start_bp = int(start_bp)
-    end_bp = int(end_bp)
     if start_bp > end_bp:
         return abort(404, 'start_bp > end_bp not allowed')
     sampling_rate = int(request.args.get('sampling_rate', default=1))
-    if track_id == 'Isequence':
+    if track_id == 'sequence':
         return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
     else:
         aggregations = request.args.get('aggregations', default='raw').split(',')

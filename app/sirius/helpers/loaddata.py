@@ -64,13 +64,13 @@ def load_data_track_information():
     data_track_info_dict = dict()
     for data in InfoNodes.find({'type': {'$in':['sequence', 'signal']}}):
         data_track_info = {
-            'id': data['_id'],
+            # we take out the 'I' in front of the InfoNode _id
+            'id': data['_id'][1:],
             'name': data['name'],
             'type': data['type'],
             'source': data['source'],
             'contig_info': dict([ (contig['contig'], contig) for contig in data['info']['contigs'] ])
         }
-
         loaded_data_tracks.append(data_track_info)
     return loaded_data_tracks
 

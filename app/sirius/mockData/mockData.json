@@ -1,27 +1,21 @@
 {
-	"GM12878-DNase": {
-		"trackId": "GM12878-DNase",
-		"startBp": 1,
-		"endBp": 3088269832,
+	"ENCFF918ESR": {
+		"id": "ENCFF918ESR",
+		"name": "DNase-seq of heart",
 		"dataType": "signal"
 	},
-	"K562-DNase": {
-		"trackId": "K562-DNase",
-		"startBp": 1,
-		"endBp": 3088269832,
+	"ENCFF915IWO": {
+		"id": "ENCFF915IWO",
+		"name": "DNase-seq of GM12878",
 		"dataType": "signal"
-
 	},
-	"MCF7-DNase": {
-		"trackId": "MCF7-DNase",
-		"startBp": 1,
-		"endBp": 3088269832,
+	"ENCFF009SCD": {
+		"id": "ENCFF009SCD",
+		"name": "DNase-seq of K562",
 		"dataType": "signal"
 	},
 	"sequence": {
-		"trackId": "sequence",
-		"startBp": 1,
-		"endBp": 3088269832,
-		"dataType": "sequence"
+		"id": "sequence",
+		"name": "sequence"
 	}
 }
