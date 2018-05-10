@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_GWAS, TILE_DB_PATH, TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS
 import pyBigWig
 import math
 import gzip
