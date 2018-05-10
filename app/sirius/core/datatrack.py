@@ -30,18 +30,18 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
     start_bp = max(start_bp-1, 0) # convert to starting index at 0
     end_bp = min(end_bp, contig_info['length'])
     i_start = int(np.floor(start_bp / best_resolution))
-    i_end = int(np.ceil(end_bp / best_resolution))
+    i_end = int(np.ceil(end_bp / best_resolution)) + 1
     # load the data from tiledb
     dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
     t2 = time.time()
     # prepare the return data
-    num_bins = i_end - i_start
+    num_bins = int((end_bp - start_bp) / sampling_rate) + 1
     if sampling_rate == 1:
         # the atgc array is different, so we calc the distribution here
         sampledata = np.zeros([num_bins, 4], dtype=np.float32)
         # put the atgc in place
-        for i in range(1,5):
-            sampledata[:, i] = (dataarray == i)
+        for i in range(4):
+            sampledata[:, i] = (dataarray == i+1)
         # add 'n' as [1/4, 1/4, 1/4, 1/4]
         sampledata += (dataarray == 5)[:, np.newaxis] * 0.25
     elif best_resolution == sampling_rate:
@@ -67,7 +67,7 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
     response += sampledata.tobytes()
     t4 = time.time()
     if verbose:
-        print(f"Info {t1-t0:.2f}s; Loading {t2-t1:2.f}s; resample {t3-t2:.2f}s; format {t4-t3:.2f}s")
+        print(f"Info {t1-t0:.2f}s; Loading {t2-t1:.2f}s; resample {t3-t2:.2f}s; format {t4-t3:.2f}s")
     return response
 
 def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations, verbose=True):
