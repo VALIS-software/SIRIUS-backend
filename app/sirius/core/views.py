@@ -211,6 +211,8 @@ def datatrack_get_data(track_id, contig, start_bp, end_bp):
     # convert the inputs to correct type
     start_bp = int(start_bp)
     end_bp = int(end_bp)
+    if start_bp > end_bp:
+        return abort(404, 'start_bp > end_bp not allowed')
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     if track_id == 'Isequence':
         return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
