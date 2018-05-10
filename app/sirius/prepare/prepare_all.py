@@ -11,7 +11,7 @@ def prepare_all():
         copy_pyensembl_cache.copy_pyensembl_cache()
     except Exception as e:
         print(str(e))
-     try:
+    try:
         copy_tildb.copy_tiledb()
     except Exception as e:
         print(str(e))
