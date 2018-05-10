@@ -84,10 +84,8 @@ class FASTAParser(Parser):
         m_distri += (np.mean(fit_data == 5, axis=-1) * 0.25)[:, np.newaxis] # 'n'
         t2 = time.time()
         if self.verbose:
-            print(f"Created first distribution matrix with stride {stride}; {t2-t1:.2f} s")
+            print(f"stride {stride:<8d} | nBins {n_bins:<9d} | fromStride {1:<8d} | {t2-t1:.2f} s")
         distri_mats = {stride: m_distri}
-        if self.verbose:
-            print("distributino matrices down-sampling started")
         # Note, here we require all the rest of strides to be at least multiples of the first stride
         for stride in TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS[1:]:
             t_start = time.time()
@@ -99,7 +97,7 @@ class FASTAParser(Parser):
             distri_mats[stride] = prev_m[:fit_size].reshape(n_bins, width, 4).mean(axis=1)
             if self.verbose:
                 t = time.time() - t_start
-                print(f"stride = {stride:7d} | nBins = {n_bins:7d} | fromStride {best_prev_stride:7d} | {t:.2f} seconds")
+                print(f"stride {stride:<8d} | nBins {n_bins:<9d} | fromStride {best_prev_stride:<8d} | {t:.2f} s")
             # stop the down-sampling if the sample size is already small enough
             if n_bins < 100: break
         t3 = time.time()

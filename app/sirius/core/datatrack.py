@@ -7,7 +7,8 @@ import pyBigWig
 from sirius.helpers.loaddata import loaded_data_track_info_dict
 from sirius.helpers.tiledb import tilehelper
 
-def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate):
+def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose=True):
+    t0 = time.time()
     # check the inputs
     track_info = loaded_data_track_info_dict.get(track_id, None)
     if track_info == None:
@@ -24,6 +25,7 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate):
         if data['resolution'] <= sampling_rate and data['resolution'] > best_resolution:
             best_resolution = data['resolution']
             best_res_data = data
+    t1 = time.time()
     # compute the best start-end range
     start_bp = max(start_bp-1, 0) # convert to starting index at 0
     end_bp = min(end_bp, contig_info['length'])
@@ -31,11 +33,25 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate):
     i_end = int(np.ceil(end_bp / best_resolution))
     # load the data from tiledb
     dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
-    # re-sample to the nearest neighbor
+    t2 = time.time()
+    # prepare the return data
     num_bins = i_end - i_start
-    sample_bps = np.arange(num_bins) * sampling_rate + start_bp
-    closest_idxs = np.round(sample_bps / best_resolution).astype(int) - i_start
-    sampledata = dataarray[closest_idxs]
+    if sampling_rate == 1:
+        # the atgc array is different, so we calc the distribution here
+        sampledata = np.zeros([num_bins, 4], dtype=np.float32)
+        # put the atgc in place
+        for i in range(1,5):
+            sampledata[:, i] = (dataarray == i)
+        # add 'n' as [1/4, 1/4, 1/4, 1/4]
+        sampledata += (dataarray == 5)[:, np.newaxis] * 0.25
+    elif best_resolution == sampling_rate:
+        sampledata = dataarray
+    else:
+        # re-sample to the nearest neighbor
+        sample_bps = np.arange(num_bins) * sampling_rate + start_bp
+        closest_idxs = np.round(sample_bps / best_resolution).astype(int) - i_start
+        sampledata = dataarray[closest_idxs]
+    t3 = time.time()
     # make the return data
     header = {
         'trackID': track_id,
@@ -49,14 +65,15 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate):
     response = json.dumps(header).encode('utf-8')
     response += b'\x00'
     response += sampledata.tobytes()
+    t4 = time.time()
+    if verbose:
+        print(f"Info {t1-t0:.2f}s; Loading {t2-t1:2.f}s; resample {t3-t2:.2f}s; format {t4-t3:.2f}s")
     return response
 
 def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations, verbose=True):
     t0 = time.time()
     bw = get_remote_bigwig(track_id)
     t1 = time.time()
-    if verbose:
-        print(f"Load remote bigwig {track_id}; {t1-t0:.2f} s")
     if contig not in bw.chroms():
         return 'contig not found'
     data_arrays = []
@@ -74,9 +91,6 @@ def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregati
             return f'aggregation {ag} is not known'
     sampledata = np.vstack(data_arrays).astype(np.float32).T
     t2 = time.time()
-    if verbose:
-        print(f"Parsed and prepared {sampledata.shape} data; {t2-t1:.2f} s")
-        print(sampledata)
     # make the return data
     header = {
         'trackID': track_id,
@@ -90,6 +104,9 @@ def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregati
     response = json.dumps(header).encode('utf-8')
     response += b'\x00'
     response += sampledata.tobytes()
+    t3 = time.time()
+    if verbose:
+        print(f"Load {t1-t0:.2f}s; Parse {t2-t1:.2f}s; Format {t3-t2:.2f}s")
     return response
 
 
