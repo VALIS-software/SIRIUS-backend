@@ -25,7 +25,7 @@ ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
 
 # TileDB
-ENV TILEDB_ROOT /pd/tiledb
+ENV TILEDB_ROOT /cache/tiledb
 
 # Run app.py when the container launches
 WORKDIR /app/sirius
