@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
 import re
 
 def str_to_type(s):
@@ -393,8 +393,7 @@ class VCFParser_ClinVar(VCFParser):
         >>> print(genome_nodes[0])
         {
             "_id": "Gsnp_rs143888043",
-            "assembly": "GRCh38",
-            "chromid": 1,
+            "contig": "chr1",
             "start": 1014042,
             "end": 1014042,
             "length": 1,
@@ -494,14 +493,8 @@ class VCFParser_ClinVar(VCFParser):
             }
         info_nodes.append(info_node)
         known_vid, known_traits, known_edge_ids = set(), set(), set()
-        if 'reference' in self.metadata:
-            assembly = self.metadata['reference']
-        else:
-            assembly = 'GRCh38'
         for d in self.variants:
-            # we will abandon this entry if the CHROM is not recognized
-            if d['CHROM'] not in CHROMO_IDXS: continue
-            chromid = CHROMO_IDXS[d['CHROM']]
+            contig = 'chr' + d['CHROM']
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 rs = str(d["INFO"]["RS"])
@@ -512,7 +505,7 @@ class VCFParser_ClinVar(VCFParser):
                 variant_type = d['INFO']['CLNVC'].lower()
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
-                variant_key_string = '_'.join([variant_type, str(chromid), pos, v_ref, v_alt])
+                variant_key_string = '_'.join([variant_type, contig, pos, v_ref, v_alt])
                 variant_id = 'Gvariant_' + self.hash(variant_key_string)
                 name = ' '.join(s.capitalize() for s in variant_type.split('_'))
             pos = int(d['POS'])
@@ -520,8 +513,7 @@ class VCFParser_ClinVar(VCFParser):
                 known_vid.add(variant_id)
                 gnode = {
                     '_id': variant_id,
-                    'assembly': assembly,
-                    'chromid':chromid,
+                    'contig':contig,
                     'start': pos,
                     'end': pos,
                     'length': 1,
@@ -536,10 +528,9 @@ class VCFParser_ClinVar(VCFParser):
                     'qual': d['QUAL']
                 }
                 for key in ('ALLELEID', 'CLNVCSO', 'GENEINFO', 'MC', 'ORIGIN', 'CLNHGVS'):
-                    try:
-                        gnode['info'][key] = d["INFO"][key]
-                    except:
-                        pass
+                    value = d["INFO"].pop(key, None)
+                    if value != None:
+                        gnode['info'][key] = value
                 genome_nodes.append(gnode)
             # we will abandon this entry if no trait information found
             if 'CLNDN' not in d['INFO'] or 'CLNDISDB' not in d['INFO']: continue
@@ -693,8 +684,7 @@ class VCFParser_dbSNP(VCFParser):
         >>> print(genome_nodes[0])
         {
             "_id": "Gsnp_rs367896724",
-            "assembly": "GRCh38",
-            "chromid": 1,
+            "contig": "chr1",
             "type": "SNP",
             "start": 10177,
             "end": 10177,
@@ -702,7 +692,6 @@ class VCFParser_dbSNP(VCFParser):
             "source": "dbSNP",
             "name": "RS367896724",
             "info": {
-                "RS": 367896724,
                 "RSPOS": 10177,
                 "dbSNPBuildID": 138,
                 "SSR": 0,
@@ -774,15 +763,9 @@ class VCFParser_dbSNP(VCFParser):
         }
         info_nodes.append(info_node)
         known_vid = set()
-        if 'reference' in self.metadata:
-            assembly = self.metadata['reference'].split('.',1)[0]
-        else:
-            assembly = 'GRCh38'
         for variant in self.variants:
             d = variant.copy()
-            # we will abandon this entry if the CHROM is not recognized
-            if d['CHROM'] not in CHROMO_IDXS: continue
-            chromid = CHROMO_IDXS[d['CHROM']]
+            contig = 'chr' + d['CHROM']
             # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 rs = str(d["INFO"].pop("RS"))
@@ -797,8 +780,7 @@ class VCFParser_dbSNP(VCFParser):
                 known_vid.add(variant_id)
                 gnode = {
                     '_id': variant_id,
-                    'assembly': assembly,
-                    'chromid': chromid,
+                    'contig': contig,
                     'type': 'SNP',
                     'start': pos,
                     'end': pos,

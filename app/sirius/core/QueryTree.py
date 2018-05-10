@@ -2,17 +2,7 @@
 
 import os, sys
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
-
-class KeyDict(dict):
-    def __missing__(self, key):
-        return key
-
-
-class NonDict(dict):
-    def __missing__(self, key):
-        return None
-
+from sirius.helpers.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 class QueryNode:
     def __init__(self, pool=None, qfilter=dict(), edges=None, edge_rule=None, limit=0, verbose=False):
@@ -118,9 +108,8 @@ class QueryEdge:
 
 
 class QueryTree:
-    operator_translate = [('>', '$gt'), ('>=', '$gte'), ('<', '$lt'), ('<=', '$lte'), ('=', '$eq'), ('==', '$eq'), ('!=', '$ne')]
-    Query_operators = KeyDict(operator_translate)
-    EdgeRules = {'and': 0, 'or': 1, 'not': 2, None: 0}
+    Query_operators = [('>', '$gt'), ('>=', '$gte'), ('<', '$lt'), ('<=', '$lte'), ('=', '$eq'), ('==', '$eq'), ('!=', '$ne')]
+    EdgeRules = {'and': 0, 'or': 1, 'not': 2}
     def __init__(self, query=dict(), verbose=False):
         self.verbose = verbose
         if query:
@@ -131,19 +120,15 @@ class QueryTree:
 
     def build_recur(self, query):
         if not query: return None
-        query = NonDict(query)
         typ = query['type']
         qfilter = self.build_filter(query['filters'])
-        limit = query['limit'] if 'limit' in query else 100000 # 100000 by default can finish in 1s
+        limit = query.get('limit', 100000) # default limit can finish in 1s
         if typ == QUERY_TYPE_EDGE:
-            nextnode = self.build_recur(query['toNode'])
+            nextnode = self.build_recur(query.get('toNode', None))
             resultNode = QueryEdge(Edges, qfilter, nextnode, limit)
         elif typ == QUERY_TYPE_GENOME or typ == QUERY_TYPE_INFO:
-            edgeRule = self.EdgeRules[query['edgeRule']]
-            if 'toEdges' in query:
-                edges = [self.build_recur(d) for d in query['toEdges']]
-            else:
-                edges = []
+            edgeRule = self.EdgeRules[query.get('edgeRule', 'and')]
+            edges = [self.build_recur(d) for d in query.get('toEdges', [])]
             if typ == QUERY_TYPE_GENOME:
                 resultNode = QueryNode(GenomeNodes, qfilter, edges, edgeRule, limit)
             else:
@@ -157,12 +142,11 @@ class QueryTree:
         """ Parse a filter dictionary to match MongoDB query language """
         if not dfilter: return dict()
         result = dict()
-        text_key = None
         for key, value in dfilter.items():
             if isinstance(value, dict):
                 new_value = dict()
                 for k,v in value.items():
-                    new_k = self.Query_operators[k]
+                    new_k = self.Query_operators.get(k, k)
                     new_v = v
                     new_value[new_k] = new_v
                 result[key] = new_value
@@ -170,11 +154,7 @@ class QueryTree:
                 result['$text'] = {'$search': '\"' + value + '\"'}
             else:
                 result[key] = value
-        if text_key in result:
-            result.pop(text_key)
         return result
 
     def find(self, projection=None):
         return self.head.find(projection=projection)
-
-

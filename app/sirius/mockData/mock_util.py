@@ -231,28 +231,3 @@ def get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_heigh
         })
     else:
         abort(404, "Track not found")
-
-
-
-
-
-# release 76 uses human reference genome GRCh38
-try:
-    from pyensembl import EnsemblRelease
-    ENSEMBL_DATA = EnsemblRelease(76)
-except:
-    print("pyensembl failed to import")
-# Download and index data in cache so we don't have to include it in Docker image
-#print("Downloading ensembl data, this may take a while..")
-#ENSEMBL_DATA.download()
-#print("Indexing ensembl data, this may take a while..")
-#ENSEMBL_DATA.index()
-
-# The above python api for downloading will cause SQLite error:
-# SQLite objects created in a thread can only be used in that same thread
-# We use the subprocess.call to do the downloading instead
-#try:
-#    ENSEMBL_DATA.genes() # I found that this will also trigger the error...
-#except:
-#    print("pyensembl cache not found. Downloading...")
-#    subprocess.call("pyensembl install --release 76 --species homo_sapiens", shell=True)

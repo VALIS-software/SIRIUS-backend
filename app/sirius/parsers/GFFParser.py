@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.realdata.constants import CHROMO_IDXS, DATA_SOURCE_GENOME
+from sirius.helpers.constants import DATA_SOURCE_GENOME
 
 class GFFParser(Parser):
     """
@@ -134,7 +134,7 @@ class GFFParser(Parser):
         """
         # restart the reading of the file from the beginning
         self.filehandle.seek(0)
-        assert self.parse_chunk(size=-1) == True, '.parse_chunk() did not finish parsing the entire file.'
+        assert self.parse_chunk(size=-1) == True, 'self.parse_chunk() did not finish parsing the entire file.'
 
     def parse_chunk(self, size=100000):
         """
@@ -256,9 +256,9 @@ class GFFParser(Parser):
         -----
         1. This method should be called after self.parse(), because this method will read from self.metadata and self.features,
         which are contents of self.data
-        2. The parsing of the gff file should be sequential, because the data entries only have `seqid` but not `chromid`.
-        The chromid which stands for chromosome id, needs to be determined by the {type: region} entries.
-        Those entries will have data like {"attributes.chromosome": "1"}.
+        2. The parsing of the gff file should be sequential, because the contig is determined by the {type: region} entries.
+        If the seqid is standard like "NC_000001.10", the contig will be normalized to chr1
+        Otherwise the contig will be the seqid, like "NT_187636.1"
         3. The unique _id for genes will be generated like {"_id": "Ggeneid_100287102"}, which used the GeneID.
         Duplicate entries with the same GeneID may be encountered, and they will be ignored for now.
 
@@ -277,32 +277,33 @@ class GFFParser(Parser):
 
         >>> print(genome_nodes[0])
         {
-            "assembly": "GRCh38",
             "source": "GRCh38_gff",
-            "type": "region",
-            "chromid": 1,
-            "start": 1,
-            "end": 248956422,
-            "length": 248956422,
-            "name": "1",
+            "type": "gene",
+            "contig": "chr1",
+            "start": 11874,
+            "end": 14409,
+            "length": 2536,
+            "name": "DDX11L1",
             "info": {
-                "ID": "id0",
-                "chromosome": "1",
-                "gbkey": "Src",
-                "genome": "chromosome",
-                "mol_type": "genomic DNA",
-                "source": "RefSeq",
+                "ID": "gene0",
+                "description": "DEAD/H-box helicase 11 like 1",
+                "gbkey": "Gene",
+                "gene": "DDX11L1",
+                "gene_biotype": "misc_RNA",
+                "pseudo": "true",
+                "source": "BestRefSeq",
                 "score": ".",
                 "strand": "+",
                 "phase": ".",
-                "taxon": "9606"
+                "GeneID": "100287102",
+                "HGNC": "HGNC:37102"
             },
-            "_id": "Gregion_217b4de5549598efcb64a4897f85044a7606d9018443a688f120788ebc020bc5"
+            "_id": "Ggeneid_100287102"
         },
 
         Here the ['info'] dictionary contains optional data, and everything else is mandatory for the GenomeNode.
 
-        The info_nodes will have only one element for the dataSource:
+        The first info_node will be the dataSource:
 
         >>> print(into_nodes[0])
         {
@@ -324,6 +325,30 @@ class GFFParser(Parser):
             }
         }
 
+        The rest of the info_nodes are type "contig", which contains the informatino for contigs:
+
+        >>> print(into_nodes[1])
+        {
+            "_id": "Icontigchr1",
+            "type": "contig",
+            "name": "chr1",
+            "source": "GRCh38_gff",
+            "info": {
+                "ID": "id0",
+                "Dbxref": "taxon:9606",
+                "Name": "1",
+                "chromosome": "1",
+                "gbkey": "Src",
+                "genome": "chromosome",
+                "mol_type": "genomic DNA",
+                "length": 248956422,
+                "source": "RefSeq",
+                "score": ".",
+                "strand": "+",
+                "phase": "."
+            }
+        }
+
         The edges should be empty:
 
         >>> print(edges)
@@ -335,62 +360,73 @@ class GFFParser(Parser):
         info_node = {"_id": 'I'+DATA_SOURCE_GENOME, "type": "dataSource", "name": DATA_SOURCE_GENOME, "source": DATA_SOURCE_GENOME}
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
-        # add data as GenomeNodes
-        if 'assembly' in self.metadata:
-            assembly = self.metadata['assembly']
-        else:
-            assembly = 'GRCh38'
-        if not hasattr(self, 'seqid_loc'): self.seqid_loc = dict()
+        # the seqid_contig dictionary is used to store the normalized names of contigs for each seqid
+        if not hasattr(self, 'seqid_contig'): self.seqid_contig = dict()
         if not hasattr(self, 'known_id_set'): self.known_id_set = set()
         for feature in self.data['features']:
             d = feature.copy()
             ft = d.pop('type')
-            # we are skipping the contigs for now, since we don't know where they are
-            if not d['seqid'].startswith("NC_000"): continue
-            if ft == 'region':
-                if 'chromosome' in d['attributes']:
-                    try:
-                        self.seqid_loc[d['seqid']] = CHROMO_IDXS[d['attributes']['chromosome']]
-                    except:
-                        self.seqid_loc[d['seqid']] = None
-            # create gnode document with basic information
-            gnode = {'assembly': assembly, "source": DATA_SOURCE_GENOME, 'type': ft}
-            try:
-                gnode['chromid'] = self.seqid_loc[d.pop('seqid')]
-                gnode['start'] = d.pop('start')
-                gnode['end'] = d.pop('end')
-                gnode['length'] = gnode['end'] - gnode['start'] + 1
-            except KeyError:
-                # we ignore those genes with unknown locations for now
-                continue
-            try:
-                gnode['name'] = d['attributes'].pop('Name')
-            except KeyError:
-                # we use type as name
-                gnode['name'] = ft
-            # add additional information to gnode['info']
-            gnode['info'] = d.pop('attributes')
-            gnode['info'].update(d)
-            # get geneID fron Dbxref, e.g GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102
-            try:
-                dbxref = gnode['info'].pop('Dbxref')
-                for ref in dbxref.split(','):
-                    refname, ref_id = ref.split(':', 1)
-                    gnode['info'][refname] = ref_id
-                    # use GeneID as the ID for this gene
-                    if refname == 'GeneID' and gnode['type'] == 'gene':
-                        gnode['_id'] = 'Ggeneid_' + ref_id
-            except KeyError:
-                pass
-            if '_id' not in gnode:
-                gnode['_id'] = 'G' + ft + '_' + self.hash(str(gnode))
-            if gnode['_id'] in self.known_id_set:
-                print("Warning, gnode with _id %s already exists!" % gnode['_id'])
+            seqid = d.pop('seqid')
+            if ft == 'region' and seqid not in self.seqid_contig:
+                # the regions will be parsed into info nodes
+                if d.pop('start') != 1:
+                    print(f"Warning: skipping region that start != 1\n{feature}")
+                    continue
+                chromid = d['attributes'].get('chromosome', None)
+                # We use names like chr1 to normalize the contig of normal seqids like NC_000001.10
+                chrom_name = ('chr'+chromid) if chromid != None else 'Unknown'
+                if seqid.startswith("NC_000") and chrom_name != 'Unknown':
+                    contig_name = chrom_name
+                else:
+                    contig_name = seqid
+                contig_info_node = {
+                    '_id': 'Icontig' + contig_name,
+                    'type': 'contig',
+                    'name': contig_name,
+                    'source': DATA_SOURCE_GENOME,
+                    'info': d.pop('attributes')
+
+                }
+                contig_info_node['info']['length'] = d.pop('end')
+                contig_info_node['info'].update(d)
+                info_nodes.append(contig_info_node)
+                self.seqid_contig[seqid] = contig_name
             else:
-                self.known_id_set.add(gnode['_id'])
-                genome_nodes.append(gnode)
-            if self.verbose and len(genome_nodes) % 100000 == 0:
-                print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
+                # this seqid should have been seen earlier in this file
+                contig_name = self.seqid_contig[seqid]
+                # create gnode document with basic information
+                start, end = d.pop('start'), d.pop('end')
+                attributes = d.pop('attributes')
+                gnode = {
+                    'source': DATA_SOURCE_GENOME,
+                    'type': ft,
+                    'contig': contig_name,
+                    'start': start,
+                    'end': end,
+                    'length': end - start + 1,
+                    'name': attributes.pop('Name', ft),
+                    'info': attributes
+                }
+                # add additional information to gnode['info']
+                gnode['info'].update(d)
+                # get geneID fron Dbxref, e.g GeneID:100287102,Genbank:NR_046018.2,HGNC:HGNC:37102
+                dbxref = gnode['info'].pop('Dbxref', None)
+                if dbxref != None:
+                    for ref in dbxref.split(','):
+                        refname, ref_id = ref.split(':', 1)
+                        gnode['info'][refname] = ref_id
+                        # use GeneID as the ID for this gene
+                        if refname == 'GeneID' and gnode['type'] == 'gene':
+                            gnode['_id'] = 'Ggeneid_' + ref_id
+                if '_id' not in gnode:
+                    gnode['_id'] = 'G' + ft + '_' + self.hash(str(gnode))
+                if gnode['_id'] in self.known_id_set:
+                    print("Warning, gnode with _id %s already exists!" % gnode['_id'])
+                else:
+                    self.known_id_set.add(gnode['_id'])
+                    genome_nodes.append(gnode)
+                if self.verbose and len(genome_nodes) % 100000 == 0:
+                    print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
         if self.verbose:
             print("Parsing GFF into mongo nodes finished.")
         return genome_nodes, info_nodes, edges

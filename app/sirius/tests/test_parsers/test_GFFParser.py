@@ -13,8 +13,9 @@ class GFFParserTest(TimedTestCase):
     def test_init(self):
         """ Test GFF Parser.__init__() """
         parser = GFFParser(self.testfile)
-        self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
-        self.assertEqual(parser.ext, '.gff', 'Parser should have self.ext set to extension of file.')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
+        self.assertEqual(parser.ext, '.gff', 'GFFParser should have self.ext set to extension of file.')
 
     def test_parse(self):
         """ Test GFFParser.parse() """
@@ -38,14 +39,17 @@ class GFFParserTest(TimedTestCase):
         parser = GFFParser(self.testfile)
         parser.parse()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
-        self.assertEqual(len(genome_nodes), 59, 'Parsing test.gff should give 59 GenomeNodes')
+        n_gnode = 58
+        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing test.gff should give {n_gnode} GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
-            for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
+            for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
-        self.assertEqual(len(info_nodes), 1, 'Parsing test.gff should give 1 InfoNode')
+        n_info = 2
+        self.assertEqual(len(info_nodes), n_info, f'Parsing test.gff should give {n_info} InfoNodes')
         self.assertEqual(info_nodes[0]['type'], 'dataSource', 'Parising test.gff should give 1 InfoNode with type dataSource')
+        self.assertEqual(info_nodes[1]['type'], 'contig', 'Parising test.gff should give 1 InfoNode with type contig')
         self.assertEqual(len(edges), 0, 'Parsing test.gff should give no Edge')
 
 if __name__ == "__main__":

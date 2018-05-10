@@ -68,10 +68,10 @@ class Parser(object):
 
     def __init__(self, filename, verbose=False):
         """ Initializer of Parser class """
-        self.filename = filename
+        self.filename = os.path.basename(filename)
         self.verbose = verbose
-        _, self.ext = os.path.splitext(os.path.basename(filename))
-        self.data = {'metadata': {'filename': filename}}
+        self.ext = os.path.splitext(self.filename)[1]
+        self.data = {'metadata': {'filename': self.filename}}
         # open the filehandle here for easier control of the reading process
         self.filehandle = gzip.open(filename, 'rt') if self.ext == '.gz' else open(filename)
 

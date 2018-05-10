@@ -13,8 +13,9 @@ class EQTLParserTest(TimedTestCase):
     def test_init(self):
         """ Test EQTLParser.__init__()"""
         parser = EQTLParser(self.testfile)
-        self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
-        self.assertEqual(parser.ext, '.txt', 'Parser should have self.ext set to extension of file.')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'EQTLParser should be initialized with self.data["metadata"] = {"filename": filename}')
+        self.assertEqual(parser.ext, '.txt', 'EQTLParser should have self.ext set to extension of file.')
 
     def test_parse(self):
         """ Test EQTLParser.parse() """

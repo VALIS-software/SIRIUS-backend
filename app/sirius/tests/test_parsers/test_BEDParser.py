@@ -13,17 +13,17 @@ class BEDParserTest(TimedTestCase):
     def test_init(self):
         """ Test BEDParser.__init__()"""
         parser = BEDParser(self.testfile)
-        self.assertTrue(parser.metadata['filename'] == self.testfile, 'Parser should be initialized with self.data["metadata"] = {"filename": filename}')
-        self.assertEqual(parser.ext, '.bed', 'Parser should have self.ext set to extension of file.')
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(parser.metadata['filename'], filename, 'BEDParser should be initialized with self.data["metadata"] = {"filename": filename}')
+        self.assertEqual(parser.ext, '.bed', 'BEDParser should have self.ext set to extension of file.')
 
     def test_parse(self):
         """ Test BEDParser.parse() """
         parser = BEDParser(self.testfile)
         parser.parse()
-        filename = os.path.basename(self.testfile)
         self.assertIn('intervals', parser.data, 'BEDParser should give self.data["intervals"] after parsing')
         n_expected = 16
-        self.assertEqual(len(parser.intervals), n_expected, f'Parsing {filename} should give {n_expected} intervals.')
+        self.assertEqual(len(parser.intervals), n_expected, f'Parsing {parser.filename} should give {n_expected} intervals.')
         for var in parser.intervals:
             for key in ('chrom', 'start', 'end'):
                 self.assertIn(key, var, f'All intervals should contain key {key}')
@@ -43,29 +43,27 @@ class BEDParser_ENCODETest(TimedTestCase):
     def test_mongo_nodes(self):
         """ Test BEDParser_ENCODETest.get_mongo_nodes() """
         parser = BEDParser_ENCODE(self.testfile)
-        parser.metadata['assembly'] = 'hg19'
         parser.metadata['biosample'] = '#biosample#'
         parser.metadata['accession'] = '#accession#'
         parser.metadata['description'] = '#description#'
         parser.metadata['targets'] = ['#target#']
         parser.parse()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
-        filename = os.path.basename(self.testfile)
         n_gnode = 2
-        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {filename} should give {n_gnode} GenomeNodes')
+        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {parser.filename} should give {n_gnode} GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
-            for key, typ in (('assembly',str), ('chromid',int), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
+            for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
             for infokey in ('biosample', 'accession', 'targets'):
                 self.assertIn(infokey, gn['info'], f"All GenomeNodes should have key info.{infokey}")
         n_inode = 1
-        self.assertEqual(len(info_nodes), n_inode, f'Parsing {filename} should give {n_inode} InfoNodes')
-        self.assertEqual(info_nodes[0]['type'], 'ENCODE_accession', f'Parising {filename} should give 1 InfoNode with type ENCODE_accession')
+        self.assertEqual(len(info_nodes), n_inode, f'Parsing {parser.filename} should give {n_inode} InfoNodes')
+        self.assertEqual(info_nodes[0]['type'], 'ENCODE_accession', f'Parising {parser.filename} should give 1 InfoNode with type ENCODE_accession')
         self.assertIn('description', info_nodes[0]['info'], f'ENCODE_accession InfoNode should have info.description')
         n_edge = 0
-        self.assertEqual(len(edges), n_edge, f'Parsing {filename} should give {n_edge} Edges')
+        self.assertEqual(len(edges), n_edge, f'Parsing {parser.filename} should give {n_edge} Edges')
 
 
 if __name__ == "__main__":

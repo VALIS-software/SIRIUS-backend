@@ -5,19 +5,21 @@ from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
 from sirius.parsers.BEDParser import BEDParser_ENCODE
+from sirius.parsers.FASTAParser import FASTAParser
 from sirius.mongo.upload import update_insert_many
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument('datatype', choices=['gff', 'gwas', 'eqtl', 'clinvar', 'dbsnp','encode'], help='What data are we parsing?')
+    parser.add_argument('datatype', choices=['gff', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
     args = parser.parse_args()
 
-    ParserClass = {'gff': GFFParser, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar, 'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE}
+    ParserClass = {'gff': GFFParser, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
+                   'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser}
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 
@@ -32,7 +34,7 @@ def main():
         parser.metadata['biosample'] = '#biosample#'
         parser.metadata['accession'] = '#accession#'
         parser.metadata['description'] = '#description#'
-        parser.metadata['targets'] = []
+        parser.metadata['targets'] = ['#Target#']
 
     if args.save:
         parser.save_json()

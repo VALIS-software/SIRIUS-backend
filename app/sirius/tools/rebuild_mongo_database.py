@@ -9,7 +9,7 @@ from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
-from sirius.realdata.constants import TILE_DB_PATH
+from sirius.helpers.constants import TILE_DB_PATH
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
@@ -25,13 +25,13 @@ def download_genome_data():
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
-    # ENCODE sample bigwig
-    print("Downloading ENCODE sample to bigwig folder")
-    os.mkdir('ENCODE_bigwig')
-    os.chdir('ENCODE_bigwig')
-    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
-    os.chdir('..')
-    # GRCh38_fasta
+#    # ENCODE sample bigwig
+#    print("Downloading ENCODE sample to bigwig folder")
+#    os.mkdir('bigwig')
+#    os.chdir('bigwig')
+#    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
+#    os.chdir('..')
+#    # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
     os.mkdir('GRCh38_fasta')
     os.chdir('GRCh38_fasta')
@@ -89,18 +89,17 @@ def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
     # ENCODE_bigwig
-    print("\n*** ENCODE_bigwig ***")
-    os.chdir('ENCODE_bigwig')
-    parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
-    # only upload 1 chromosome for now
-    parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
-    os.chdir('..')
+#    print("\n*** ENCODE_bigwig ***")
+#    os.chdir('bigwig')
+#    parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+#    # only upload 1 chromosome for now
+#    parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
+#    os.chdir('..')
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
     parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-    # only upload 1 chromosome for now
-    parse_upload_data(parser, GRCH38_FASTA_URL, 1) 
+    parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
     os.chdir('..')
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
@@ -111,18 +110,18 @@ def parse_upload_all_datasets():
     print("\n*** GWAS ***")
     os.chdir('gwas')
     parser = GWASParser('gwas.tsv', verbose=True)
-    parse_upload_data(parser, GWAS_URL)
+    parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
     # eQTL
     print("\n*** eQTL ***")
     os.chdir('eQTL')
     parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
-    parse_upload_data(parser, EQTL_URL)
+    parse_upload_data(parser, {"sourceurl": EQTL_URL})
     os.chdir('..')# ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
     parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
-    parse_upload_data(parser, CLINVAR_URL)
+    parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
     os.chdir('..')
     # ENCODE
     print("\n*** ENCODE ***")
@@ -143,17 +142,18 @@ def parse_upload_gff_chunk():
         finished = parser.parse_chunk()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         update_insert_many(GenomeNodes, genome_nodes)
+        update_insert_many(InfoNodes, info_nodes[1:])
         print(f"Data of chunk {i_chunk} uploaded")
         i_chunk += 1
         if finished == True:
             break
-    # we only upload info_nodes once here because all the chunks has the same single info node for the dataSource.
-    update_insert_many(InfoNodes, info_nodes)
+    # we only upload info_nodes[0] once here because all the chunks has the same first info node for the dataSource.
+    update_insert_many(InfoNodes, [info_nodes[0]])
     print("InfoNodes uploaded")
 
-def parse_upload_data(parser, url, *args):
-    parser.parse(*args)
-    parser.metadata['sourceurl'] = url
+def parse_upload_data(parser, metadata={}):
+    parser.parse()
+    parser.metadata.update(metadata)
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     update_insert_many(GenomeNodes, genome_nodes)
     update_insert_many(InfoNodes, info_nodes)
@@ -162,7 +162,7 @@ def parse_upload_data(parser, url, *args):
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
-    for idx in ['source', 'assembly', 'type', 'chromid', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
+    for idx in ['source', 'type', 'contig', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
     print("Creating compound index for type and info.biosample")

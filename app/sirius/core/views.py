@@ -1,24 +1,26 @@
-#!/usr/bin/env python
+#==================================#
+#            views.py              #
+#----------------------------------#
+#  Here sits all the api endpoints #
+#==================================#
 
 from flask import abort, request, send_from_directory
-import random
-import json
+import json, time
 from functools import lru_cache
-import time
+
 from sirius.main import app
-from sirius.realdata.loaddata import loaded_annotations, loaded_track_info
-
-from sirius.realdata.constants import CHROMO_IDXS
-from sirius.realdata.trackdata import read_track_data
-
 from sirius.core.QueryTree import QueryTree
-from sirius.core.aggregations import get_aggregation_segments
+from sirius.core.utilities import get_data_with_id, HashableDict
+from sirius.helpers.loaddata import loaded_contig_info, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
+from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
+from sirius.core.annotationtrack import get_annotation_query
+from sirius.core.datatrack import get_sequence_data, get_signal_data
+from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 #**************************
 #*     static urls        *
 #**************************
-# These could be served by Nginx
-# Provided here for debugging
+# These urls will be served by Nginx if possible
 @app.route('/')
 @app.route('/index')
 def index():
@@ -29,193 +31,137 @@ def send_file(path):
     return app.send_static_file(path)
 
 
+
+#**************************
+#*      /contig_info      *
+#**************************
+
+@app.route("/contig_info")
+def contig_info():
+    """
+    Endpoint for frontend to pre-fetch the available contigs and their dimensions
+
+    Returns
+    -------
+    contig_info_list: list (json)
+        A list of contig information, each being a dictionary
+
+    Examples
+    --------
+
+    >>> print(contig_info())
+    [
+        {
+            'name': 'chr1',
+            'length': '248956422',
+            'chromosome': 'chr1'
+        },
+        {
+            'name': 'NT_187636.1',
+            'length': '248807',
+            'chromosome': '19'
+        }
+    ]
+
+    """
+    return json.dumps(loaded_contig_info)
+
+
+
+#**************************
+#*      /track_info       *
+#**************************
+
+@app.route("/track_info")
+def track_info():
+    """
+    Endpoint for rendering the selections in DataBrowser side panel.
+
+    Returns
+    -------
+    track_info_list: list (json)
+        The list of available track types.
+        In the list, each track_info is a dictionary with three keys: 'track_type', 'title', 'description'
+
+    """
+    mock_track_types_info = [
+        {
+            'track_type': TRACK_TYPE_SEQUENCE,
+            'title': 'Sequence Tracks',
+            'description': 'Raw sequence data'
+        },
+        {
+            'track_type': TRACK_TYPE_FUNCTIONAL,
+            'title': 'Functional Tracks',
+            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more'
+        },
+        {
+            'track_type': TRACK_TYPE_3D,
+            'title': '3D Structure',
+            'description': 'Contact Maps, Chromatin Structure and more'
+        },
+        {
+            'track_type': TRACK_TYPE_NETWORK,
+            'title': 'Network Tracks',
+            'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
+        }
+    ]
+    return json.dumps(mock_track_types_info + loaded_track_types_info)
+
+
+
+
 #**************************
 #*     /annotations       *
 #**************************
 
-from sirius.mockData.mock_util import getMockAnnotations, get_mock_annotation_data
 
-@app.route("/annotations")
-def annotations():
-    MOCK_ANNOTATIONS = getMockAnnotations()
-    return json.dumps(list(MOCK_ANNOTATIONS.keys()) + list(loaded_annotations.keys()))
+@app.route("/annotations/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
+def get_annotation_data(annotation_id, contig, start_bp, end_bp):
+    """
+    Endpoint for rendering the selections in DataBrowser side panel.
 
-@app.route("/annotations/<string:annotation_id>")
-def annotation(annotation_id):
-    MOCK_ANNOTATIONS = getMockAnnotations()
-    """Return the annotation metadata"""
-    if  annotation_id in loaded_annotations:
-        return loaded_annotations[annotation_id].json_data()
-    elif annotation_id in MOCK_ANNOTATIONS:
-        return json.dumps(MOCK_ANNOTATIONS[annotation_id])
-    else:
-        return json.dumps({'annotationId': annotation_id, 'startBp': 1, 'endBp': 3088269832})
+    Returns
+    -------
+    annotation_data: dictionary (json)
+        The return data for the range of annotation track
 
-@app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
-def get_annotation_data(annotation_id, start_bp, end_bp):
+    Notes
+    -----
+    The annotation_id is not used at all, but simply returned in the json.
+
+    """
     start_bp = int(start_bp)
     end_bp = int(end_bp)
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     track_height_px = int(request.args.get('track_height_px', default=0))
     query = request.get_json()
-    if query:
-        # let us show some real data!!
-        result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
-    elif annotation_id == "GRCh38":
-        # this was the default track
-        query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
-        result = get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query)
-    else:
-        result = get_mock_annotation_data(annotation_id, start_bp, end_bp, sampling_rate, track_height_px)
-    return result
+    if not query:
+        return abort(404, 'no query posted')
+    return get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
 
-class HashableDict(dict):
-    def __hash__(self):
-        return hash(json.dumps(self, sort_keys=True))
 
-@lru_cache(maxsize=10000)
-def get_gnome_query_results(query):
-    qt = QueryTree(query)#, verbose=True)
-    try:
-        annotation = loaded_annotations[query['filters']['assembly']]
-    except:
-        annotation = loaded_annotations['GRCh38']
-    # we split the results into each of the 24 chromosomes
-    results = [[] for _ in range(len(CHROMO_IDXS)+1)]
-    for gnode in qt.find(projection=['_id', 'chromid','start','length','name']):
-        chr_id = gnode['chromid']
-        if chr_id == None: continue # Genome with unknown locations are ignored for now
-        abs_start = annotation.location_to_bp(chr_id, gnode['start'])
-        abs_end = abs_start + gnode['length'] - 1
-        fid = gnode['_id']
-        name = gnode['name']
-        genome_data = (abs_start, abs_end, fid, name)
-        results[chr_id].append(genome_data)
-    return list(map(sorted, results))
 
-def get_annotation_query(annotation_id, start_bp, end_bp, sampling_rate, track_height_px, query, verbose=True):
-    t0 = time.time()
-    gnome_query_results = get_gnome_query_results(HashableDict(query))
-    total_query_count = sum(len(g) for g in gnome_query_results)
-    t1 = time.time()
-    if verbose:
-        print("%d gnome_query_results; %.3f seconds; query %s" % (total_query_count, t1-t0, query), get_gnome_query_results.cache_info())
-    # get annotation information for computing abs location
-    try:
-        annotation = loaded_annotations[query['filters']['assembly']]
-    except:
-        annotation = loaded_annotations['GRCh38']
-    # find the chromosomes in range
-    # here we use a naive filter, the performance will be improved if we use interval tree
-    all_gnome_in_range = []
-    for i_ch in range(1, len(annotation.chromo_end_bps)):
-        ch_start = annotation.chromo_end_bps[i_ch-1] + 1
-        ch_end = annotation.chromo_end_bps[i_ch]
-        gnome_query_ch = gnome_query_results[i_ch]
-        if ch_start >= start_bp:
-            if ch_start < end_bp:
-                if ch_end <= end_bp:
-                    # if the entire chromosome is in range, append it
-                    all_gnome_in_range.append(gnome_query_ch)
-                else:
-                    # if the first half of chromosome is in range
-                    ch_gnome_in_range = list(filter(lambda g: (g[1] < end_bp), gnome_query_ch))
-                    all_gnome_in_range.append(ch_gnome_in_range)
-                    break
-        elif ch_start < start_bp:
-            if ch_end > start_bp:
-                if ch_end <= end_bp:
-                    # if the later half of the chromosome is in range
-                    ch_gnome_in_range = list(filter(lambda g: (g[0] > start_bp), gnome_query_ch))
-                    all_gnome_in_range.append(ch_gnome_in_range)
-                else:
-                    # if the chromosome covers the range
-                    ch_gnome_in_range = list(filter(lambda g: (g[0] > start_bp and g[1] < end_bp), gnome_query_ch))
-                    all_gnome_in_range.append(ch_gnome_in_range)
-                    break
-    count_in_range = sum(len(g) for g in all_gnome_in_range)
-    t2 = time.time()
-    if verbose:
-        print("Intersect filter: %d results; %.3f seconds" % (count_in_range, t2 - t1))
-    aggregation_thresh = 5000
-    ret = []
-    if sampling_rate > aggregation_thresh: # turn on aggregation!
-        for gnome_in_range in all_gnome_in_range:
-            ret += get_aggregation_segments(gnome_in_range, annotation, sampling_rate, track_height_px)
-    else:
-        for gnome_in_range in all_gnome_in_range:
-            ret += get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_px)
-    if verbose:
-        print("Data aggregation: assembly %s, %.3f seconds" % (annotation.name, time.time() - t2))
-    return json.dumps({
-        "startBp" : start_bp,
-        "endBp" : end_bp,
-        "samplingRate": sampling_rate,
-        "trackHeightPx": track_height_px,
-        "annotationId": annotation_id,
-        "values": ret,
-        "countInRange": count_in_range
-    })
-
-def get_genome_segments(gnome_in_range, annotation, sampling_rate, track_height_px):
-    ret = []
-    ANNOTATION_HEIGHT_PX = int(track_height_px / 3) - 1
-    last_end, last_y = -float('inf'), 0
-    padding = 20 * sampling_rate
-    for gnome_data in gnome_in_range:
-        (abs_start, abs_end, fid, name) = gnome_data
-        will_append = False
-        if abs_start > last_end + padding:
-            will_append = True
-            last_end = abs_end
-            yOffset = 0
-            last_y = 0
-        elif last_y <= track_height_px - 2 * ANNOTATION_HEIGHT_PX + 1:
-            will_append = True
-            last_end = max(last_end, abs_end)
-            yOffset = last_y + ANNOTATION_HEIGHT_PX + 1
-            last_y = yOffset
-        if will_append == True:
-            color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
-            r_data = {
-                'id': fid,
-                'startBp': abs_start,
-                'endBp': abs_end,
-                'labels': [[name, True, 0, 0, 0]],
-                'yOffsetPx': yOffset,
-                'heightPx': ANNOTATION_HEIGHT_PX,
-                "segments": [[0, abs_end-abs_start+1, None, color, 20]],
-                'title': name,
-                'aggregation': False
-            }
-            ret.append(r_data)
-    return ret
-
+# This endpoint is left as mock before front end refactoring is done
 #**************************
 #*       /tracks          *
 #**************************
-
 from sirius.mockData.mock_util import getMockData, get_mock_track_data
 
 @app.route("/tracks")
 def tracks():
     """Return a list of all track_ids"""
-    # load the sequence datasets from mongo:
-    qt = QueryTree({
-        "type": QUERY_TYPE_INFO,
-        "filters": { "type" : { "$in": ["sequence", "signal"] } } ,
-        "toEdges": []    
-    })
-    result_itr = map(lambda x : { "name": x["name"], "id": x["_id"] } , list(qt.find()))
-    results = []
-    for result in result_itr:
-        results.append(result)
-    return json.dumps(results)
+    MOCK_DATA = getMockData()
+    return json.dumps(list(MOCK_DATA.keys()))
 
 @app.route("/tracks/<string:track_id>")
 def track(track_id):
+    MOCK_DATA = getMockData()
     """Return the track metadata"""
-    return json.dumps(get_data_with_id(track_id))
+    if track_id in MOCK_DATA:
+        return json.dumps(MOCK_DATA[track_id])
+    else:
+        abort(404, "Track not found")
 
 @app.route("/tracks/<string:track_id>/<int:chromosomeIdx>/<int:start_bp>/<int:end_bp>")
 def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
@@ -225,7 +171,54 @@ def get_track_data(track_id, chromosomeIdx, start_bp, end_bp):
     track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
     aggregations = request.args.get('aggregations', default='none').split(',')
-    return read_track_data(track_id, chromosomeIdx, start_bp, end_bp, track_height_px, sampling_rate)
+    return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
+
+# This is the new endpoint that will replace /tracks to return real data
+#**************************
+#*       /datatracks      *
+#**************************
+
+@app.route("/datatracks")
+def datatracks():
+    """
+    Endpoint for getting all available data tracks
+
+    Returns
+    -------
+    loaded_data_tracks: list (json)
+        The list of available track types.
+        In the list, each track_info is a dictionary with keys: 'id', 'name'
+
+    """
+    return json.dumps([{'id': t['id'], 'name': t['name']} for t in loaded_data_tracks])
+
+@app.route("/datatracks/<string:track_id>")
+def datatrack_info_by_id(track_id):
+    """
+    Endpoint for getting all available data tracks
+
+    Returns
+    -------
+    track_info_dict: dictionary (json)
+        The InfoNode that contains the metadata for track_id.
+
+    """
+    return json.dumps(loaded_data_track_info_dict.get(track_id, None))
+
+@app.route("/datatracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
+def datatrack_get_data(track_id, contig, start_bp, end_bp):
+    """Return the data for the given track and base pair range"""
+    # convert the inputs to correct type
+    start_bp = int(start_bp)
+    end_bp = int(end_bp)
+    if start_bp > end_bp:
+        return abort(404, 'start_bp > end_bp not allowed')
+    sampling_rate = int(request.args.get('sampling_rate', default=1))
+    if track_id == 'Isequence':
+        return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
+    else:
+        aggregations = request.args.get('aggregations', default='raw').split(',')
+        return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
 
 # This part is still mock
 #**************************
@@ -288,50 +281,19 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
         "values": edges
     })
 
-#**************************
-#*      /track_info       *
-#**************************
-from sirius.realdata.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK
-@app.route("/track_info")
-def track_info():
-    """Return a list of track information"""
-    mock_track_info = [
-        {
-            'track_type': TRACK_TYPE_SEQUENCE,
-            'title': 'Sequence Tracks',
-            'description': 'Raw sequence data'
-        },
-        {
-            'track_type': TRACK_TYPE_FUNCTIONAL,
-            'title': 'Functional Tracks',
-            'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more'
-        },
-        {
-            'track_type': TRACK_TYPE_3D,
-            'title': '3D Structure',
-            'description': 'Contact Maps, Chromatin Structure and more'
-        },
-        {
-            'track_type': TRACK_TYPE_NETWORK,
-            'title': 'Network Tracks',
-            'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
-        }
-    ]
-    return json.dumps(mock_track_info + loaded_track_info)
+
 
 
 #**************************
 #*     /distince_values   *
 #**************************
-from sirius.realdata.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 
 @app.route("/distinct_values/<string:index>", methods=['POST'])
 def distinct_values(index):
     """ Return all possible values for a certain index for certain query """
     query = request.get_json()
     if not query:
-        print("No query is posted, returning empty list")
-        return json.dumps([])
+        return abort(404, 'no query posted')
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
         QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source', 'info.biosample', 'info.targets'},
@@ -339,8 +301,7 @@ def distinct_values(index):
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:
-        print("Query of index %s is not allowed for %s" % (index, query['type']))
-        return json.dumps([])
+        return abort(404, f"Query of {index} is not allowed for {query['type']}")
     query = HashableDict(query)
     result = get_query_distinct_values(query, index)
     print("/distinct_values/%s for query %s returns %d results. " % (index, query, len(result)), get_query_distinct_values.cache_info())
@@ -352,43 +313,26 @@ def get_query_distinct_values(query, index):
     result = qt.find().distinct(index)
     return result
 
+
+
 #*******************************
 #*         /details            *
 #*******************************
-from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 @app.route("/details/<string:data_id>")
 def details(data_id):
     if not data_id: return
     data = get_data_with_id(data_id)
     if not data:
-        return abort(404, 'data with _id %s not found' % data_id)
+        return abort(404, f'data with _id {data_id} not found')
     if data_id[0] == 'G' or data_id[0] == 'I':
         relations = node_relations(data_id)
     elif data_id[0] == 'E':
         relations = edge_relations(data)
     else:
-        print("Invalid data_id %s, ID should start with G, I or E" % data_id)
+        print(f"Invalid data_id {data_id}, ID should start with G, I or E")
     result = {'details': data, 'relations': relations}
     return json.dumps(result)
-
-def get_data_with_id(data_id):
-    prefix = data_id[0]
-    data = None
-    if prefix == 'G':
-        data = GenomeNodes.find_one({'_id': data_id})
-    elif prefix == 'I':
-        data = InfoNodes.find_one({'_id': data_id})
-    elif prefix == 'E':
-        data = Edges.find_one({'_id': data_id})
-    else:
-        print("Invalid data_id %s, ID should start with G, I or E" % data_id)
-    # format source into string
-    if data:
-        data['source'] = '/'.join(data['source'])
-    else:
-        print("Data not found for _id %s" % data_id)
-    return data
 
 def node_relations(data_id):
     result = []
@@ -441,6 +385,7 @@ def edge_relations(edge):
     return result
 
 
+
 #**************************
 #*       /query           *
 #**************************
@@ -448,12 +393,11 @@ def edge_relations(edge):
 @app.route('/query/full', methods=['POST'])
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
-    if request.method != 'POST':
-        print("/query endpoint works only with post method")
-        return ""
-    query = HashableDict(request.get_json())
-    results = get_query_full_results(query)
-    print("%d results for full query %s" % (len(results), query), get_query_full_results.cache_info())
+    query = request.get_json()
+    if not query:
+        return abort(404, 'no query posted')
+    results = get_query_full_results(HashableDict(query))
+    print(f"{len(results)} results for full query {query} {get_query_full_results.cache_info()}")
     return json.dumps(results)
 
 @lru_cache(maxsize=10000)
@@ -467,11 +411,10 @@ def get_query_full_results(query):
 @app.route('/query/basic', methods=['POST'])
 def query_basic():
     """ Returns results for a query, with only basic information, useful for search """
-    if request.method != 'POST':
-        print("/query endpoint works only with post method")
-        return ""
-    query = HashableDict(request.get_json())
-    results = get_query_basic_results(query)
+    query = request.get_json()
+    if not query:
+        return abort(404, 'no query posted')
+    results = get_query_basic_results(HashableDict(query))
     print("%d results for basic query %s" % (len(results), query), get_query_basic_results.cache_info())
     return json.dumps(results)
 

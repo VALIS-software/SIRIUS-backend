@@ -8,4 +8,4 @@ google-cloud-storage
 pybedtools
 tiledb
 pyBigWig
-
+biopython
