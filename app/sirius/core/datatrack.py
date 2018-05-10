@@ -1,118 +1,100 @@
-import os, json, math
-import tiledb
+import os, json, time
+import numpy as np
+from functools import lru_cache
+from flask import abort
+import pyBigWig
 
-from sirius.mongo import InfoNodes
 from sirius.helpers.loaddata import loaded_data_track_info_dict
+from sirius.helpers.tiledb import tilehelper
 
-def read_track_data(track_id, contig, start_bp, end_bp, track_height_px, sampling_rate):
-    # load the information on the track:
-    trackInfo = loaded_data_track_info_dict.get(track_id, None)
-    if trackInfo == None:
-        return json.dumps({
-            "contig": contig,
-            "startBp" : start_bp,
-            "endBp" : end_bp,
-            "samplingRate": sampling_rate,
-            "numSamples": 0,
-            "trackHeightPx": track_height_px,
-            "values": [],
-            "dimensions": [],
-            "dataType": 'basepairs'
-        })
-    chr_list= trackInfo["info"]["contigs"]
-    isSequence = trackInfo["type"] == "sequence"
-
-    chr_info = chr_list[chromosomeIdx]
-
-    resolutions = chr_info["resolutions"]
-    tileServerId = chr_info["tileServerId"]
-
-    best = 0
-    for i, res in enumerate(resolutions):
-        if res <= sampling_rate:
-            best = i
-
-    char_map = {
-        b'n': 0.0,
-        b'a': 0.25,
-        b't': 0.5,
-        b'c': 0.75,
-        b'g': 1.0,
+def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate):
+    # check the inputs
+    track_info = loaded_data_track_info_dict.get(track_id, None)
+    if track_info == None:
+        return abort(404, f'{track_id} not found')
+    contig_info = track_info['contig_info'].get(contig, None)
+    if contig_info == None:
+        return 'contig not found'
+    if sampling_rate < 1:
+        return abort(404, f'sampling_rate {sampling_rate} should be at least 1')
+    # find the best resolution data
+    best_resolution = 0
+    best_res_data = None
+    for data in contig_info['stored_data']:
+        if data['resolution'] <= sampling_rate and data['resolution'] > best_resolution:
+            best_resolution = data['resolution']
+            best_res_data = data
+    # compute the best start-end range
+    start_bp = max(start_bp-1, 0) # convert to starting index at 0
+    end_bp = min(end_bp, contig_info['length'])
+    i_start = int(np.floor(start_bp / best_resolution))
+    i_end = int(np.ceil(end_bp / best_resolution))
+    # load the data from tiledb
+    dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
+    # re-sample to the nearest neighbor
+    num_bins = i_end - i_start
+    sample_bps = np.arange(num_bins) * sampling_rate + start_bp
+    closest_idxs = np.round(sample_bps / best_resolution).astype(int) - i_start
+    sampledata = dataarray[closest_idxs]
+    # make the return data
+    header = {
+        'trackID': track_id,
+        'contig': contig,
+        'startBp': start_bp+1,
+        'endBp': end_bp,
+        'samplingRate': sampling_rate,
+        'numSamples': num_bins,
+        'aggregations': ['p_a', 'p_t', 'p_g', 'p_c']
     }
+    response = json.dumps(header).encode('utf-8')
+    response += b'\x00'
+    response += sampledata.tobytes()
+    return response
 
-    if best == 0:
-        os.chdir(TILE_DB_PATH)
-        ctx = tiledb.Ctx()
-        db = tiledb.DenseArray.load(ctx, tileServerId)
-        start_bp = max([start_bp, 1])
-        end_bp = min([end_bp, len(db)])
-        num_samples = end_bp - start_bp
-        ret =  db[start_bp - 1 : end_bp - 1]['value']
-        if isSequence:
-            track_data_type = 'basepairs'
-            ret = [char_map[x.lower()] for x in ret]
-            dimensions = ['value']
+def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations, verbose=True):
+    t0 = time.time()
+    bw = get_remote_bigwig(track_id)
+    t1 = time.time()
+    if verbose:
+        print(f"Load remote bigwig {track_id}; {t1-t0:.2f} s")
+    if contig not in bw.chroms():
+        return 'contig not found'
+    data_arrays = []
+    num_bins = int((end_bp - start_bp + 1) / sampling_rate)
+    for ag in aggregations:
+        if ag == 'raw':
+            data_arrays.append(bw.values(contig, start_bp, end_bp+1))
+        elif ag == 'min':
+            data_arrays.append(bw.stats(contig, start_bp, end_bp+1, type='min', nBins=num_bins))
+        elif ag == 'max':
+            data_arrays.append(bw.stats(contig, start_bp, end_bp+1, type='min', nBins=num_bins))
+        elif ag == 'avg':
+            data_arrays.append(bw.stats(contig, start_bp, end_bp+1, type='mean', nBins=num_bins))
         else:
-            ret = [float(x) for x in ret]
-            track_data_type = 'value'
-            dimensions = ['value']
-    else:
-        resolution = resolutions[best]
-        # return gband data:
-        os.chdir(TILE_DB_PATH)
-        ctx = tiledb.Ctx()
-        db = tiledb.DenseArray.load(ctx, tileServerId + "_" + str(resolution))
-        num_samples = int(math.floor(end_bp / sampling_rate)) - int(math.floor(start_bp / sampling_rate))
-
-        if isSequence:
-            track_data_type = 'gbands'
-            dimensions = ['gc']
-        else:
-            track_data_type = 'value'
-            dimensions = ['min', 'max', 'avg']
-
-        # downsample to exact sampling rate
-        ret = []
-        datasets = []
-        for dim in dimensions:
-            sz = len(db)
-            startIdx = int(math.floor(start_bp / resolution))
-            endIdx = int(math.floor(end_bp / resolution)) - 1
-
-            # check bounds:
-            if startIdx < 0:
-                startIdx = 0
-
-            if endIdx < 0:
-                endIdx = 0
-
-            if startIdx > sz - 1:
-                startIdx = sz - 1
-
-            if endIdx > sz - 1:
-                endIdx = sz -1
-
-            if endIdx < startIdx:
-                endIdx = startIdx
-
-            datasets.append(db[startIdx:endIdx][dim])
-
-        if startIdx != endIdx:
-            for i in range(0, num_samples):
-                for dataset in datasets:
-                    idx = int((i / num_samples) * (len(dataset) - 1))
-                    ret.append(float(dataset[idx]))
-        else:
-            ret = []
-    response = {
-        "chromosomeIdx": chromosomeIdx,
-        "startBp" : start_bp,
-        "endBp" : end_bp,
-        "samplingRate": sampling_rate,
-        "numSamples": num_samples,
-        "trackHeightPx": track_height_px,
-        "values": ret,
-        "dimensions": dimensions,
-        "dataType": track_data_type
+            return f'aggregation {ag} is not known'
+    sampledata = np.vstack(data_arrays).astype(np.float32).T
+    t2 = time.time()
+    if verbose:
+        print(f"Parsed and prepared {sampledata.shape} data; {t2-t1:.2f} s")
+        print(sampledata)
+    # make the return data
+    header = {
+        'trackID': track_id,
+        'contig': contig,
+        'startBp': start_bp,
+        'endBp': end_bp,
+        'samplingRate': sampling_rate,
+        'numSamples': num_bins,
+        'aggregations': aggregations
     }
-    return json.dumps(response)
+    response = json.dumps(header).encode('utf-8')
+    response += b'\x00'
+    response += sampledata.tobytes()
+    return response
+
+
+@lru_cache(maxsize=10000)
+def get_remote_bigwig(track_id):
+    encode_url = f'https://www.encodeproject.org/files/{track_id}/@@download/{track_id}.bigWig'
+    bw = pyBigWig.open(encode_url)
+    return bw

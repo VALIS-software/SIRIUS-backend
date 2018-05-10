@@ -5,7 +5,7 @@
 #==================================#
 
 from flask import abort, request, send_from_directory
-import time
+import json, time
 from functools import lru_cache
 
 from sirius.main import app
@@ -14,7 +14,7 @@ from sirius.core.utilities import get_data_with_id, HashableDict
 from sirius.helpers.loaddata import loaded_contig_info, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
-from sirius.core.datatrack import read_track_data
+from sirius.core.datatrack import get_sequence_data, get_signal_data
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 #**************************
@@ -142,13 +142,46 @@ def get_annotation_data(annotation_id, contig, start_bp, end_bp):
 
 
 
-
+# This endpoint is left as mock before front end refactoring is done
 #**************************
 #*       /tracks          *
 #**************************
+from sirius.mockData.mock_util import getMockData, get_mock_track_data
 
 @app.route("/tracks")
 def tracks():
+    """Return a list of all track_ids"""
+    MOCK_DATA = getMockData()
+    return json.dumps(list(MOCK_DATA.keys()))
+
+@app.route("/tracks/<string:track_id>")
+def track(track_id):
+    MOCK_DATA = getMockData()
+    """Return the track metadata"""
+    if track_id in MOCK_DATA:
+        return json.dumps(MOCK_DATA[track_id])
+    else:
+        abort(404, "Track not found")
+
+@app.route("/tracks/<string:track_id>/<int:start_bp>/<int:end_bp>")
+def get_track_data(track_id, start_bp, end_bp):
+    """Return the data for the given track and base pair range"""
+    start_bp = int(start_bp)
+    end_bp = int(end_bp)
+    track_data_type = 'signal'
+    track_height_px = int(request.args.get('track_height_px', default=0))
+    sampling_rate = int(request.args.get('sampling_rate', default=1))
+    aggregations = request.args.get('aggregations', default='none').split(',')
+    return get_mock_track_data(track_id, start_bp, end_bp, track_data_type, track_height_px, sampling_rate, aggregations)
+
+
+# This is the new endpoint that will replace /tracks to return real data
+#**************************
+#*       /datatracks      *
+#**************************
+
+@app.route("/datatracks")
+def datatracks():
     """
     Endpoint for getting all available data tracks
 
@@ -159,10 +192,10 @@ def tracks():
         In the list, each track_info is a dictionary with keys: 'id', 'name'
 
     """
-    return json.dumps(loaded_data_tracks)
+    return json.dumps([{'id': t['id'], 'name': t['name']} for t in loaded_data_tracks])
 
-@app.route("/tracks/<string:track_id>")
-def track_info_by_id(track_id):
+@app.route("/datatracks/<string:track_id>")
+def datatrack_info_by_id(track_id):
     """
     Endpoint for getting all available data tracks
 
@@ -174,15 +207,18 @@ def track_info_by_id(track_id):
     """
     return json.dumps(loaded_data_track_info_dict.get(track_id, None))
 
-@app.route("/tracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
-def get_track_data(track_id, contig, start_bp, end_bp):
+@app.route("/datatracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
+def datatrack_get_data(track_id, contig, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
+    # convert the inputs to correct type
     start_bp = int(start_bp)
     end_bp = int(end_bp)
-    track_height_px = int(request.args.get('track_height_px', default=0))
     sampling_rate = int(request.args.get('sampling_rate', default=1))
-    aggregations = request.args.get('aggregations', default='none').split(',')
-    return read_track_data(track_id, contig, start_bp, end_bp, sampling_rate, track_height_px)
+    if track_id == 'Isequence':
+        return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
+    else:
+        aggregations = request.args.get('aggregations', default='raw').split(',')
+        return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
 
 # This part is still mock
 #**************************

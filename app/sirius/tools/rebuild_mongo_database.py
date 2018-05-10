@@ -32,11 +32,11 @@ def download_genome_data():
 #    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
 #    os.chdir('..')
 #    # GRCh38_fasta
-#    print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
-#    os.mkdir('GRCh38_fasta')
-#    os.chdir('GRCh38_fasta')
-#    subprocess.check_call('wget '+GRCH38_FASTA_URL, shell=True)
-#    os.chdir('..')
+    print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
+    os.mkdir('GRCh38_fasta')
+    os.chdir('GRCh38_fasta')
+    subprocess.check_call('wget '+GRCH38_FASTA_URL, shell=True)
+    os.chdir('..')
     # GRCh38_gff
     print("Downloading GRCh38 annotation data in GRCh38_gff folder")
     os.mkdir('GRCh38_gff')
@@ -95,13 +95,12 @@ def parse_upload_all_datasets():
 #    # only upload 1 chromosome for now
 #    parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
 #    os.chdir('..')
-#    # GRCh38_fasta
-#    print("\n*** GRCh38_fasta ***")
-#    os.chdir('GRCh38_fasta')
-#    parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-#    # only upload 1 chromosome for now
-#    parse_upload_data(parser, GRCH38_FASTA_URL, 1)
-#    os.chdir('..')
+    # GRCh38_fasta
+    print("\n*** GRCh38_fasta ***")
+    os.chdir('GRCh38_fasta')
+    parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
+    parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
+    os.chdir('..')
     # GRCh38_gff
     print("\n*** GRCh38_gff ***")
     os.chdir('GRCh38_gff')

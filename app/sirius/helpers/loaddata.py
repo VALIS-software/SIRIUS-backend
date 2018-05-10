@@ -43,15 +43,15 @@ loaded_track_types_info = load_mongo_data_information()
 # Load contig information
 #------------------------------
 def load_contig_information():
-    results = []
+    loaded_contig_info = []
     for data in InfoNodes.find({'type': 'contig'}):
         contig_info = {
             'name': data['name'],
             'length': data['info']['length'],
             'chromosome': data['info'].get('chromosome', 'Unknown')
         }
-        results.append(contig_info)
-    return results
+        loaded_contig_info.append(contig_info)
+    return loaded_contig_info
 
 loaded_contig_info = load_contig_information()
 loaded_contig_info_dict = dict([(d['name'], d) for d in loaded_contig_info])
@@ -60,11 +60,19 @@ loaded_contig_info_dict = dict([(d['name'], d) for d in loaded_contig_info])
 # Load data track information
 #-------------------------------
 def load_data_track_information():
+    loaded_data_tracks = []
     data_track_info_dict = dict()
     for data in InfoNodes.find({'type': {'$in':['sequence', 'signal']}}):
-        id_str = data['_id']
-        data_track_info_dict[id_str] = data
-    return data_track_info_dict
+        data_track_info = {
+            'id': data['_id'],
+            'name': data['name'],
+            'type': data['type'],
+            'source': data['source'],
+            'contig_info': dict([ (contig['contig'], contig) for contig in data['info']['contigs'] ])
+        }
 
-loaded_data_track_info_dict = load_data_track_information()
-loaded_data_tracks = [{'id': d['_id'], 'name': d['name']} for d in loaded_data_track_info_dict.values()]
+        loaded_data_tracks.append(data_track_info)
+    return loaded_data_tracks
+
+loaded_data_tracks = load_data_track_information()
+loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])

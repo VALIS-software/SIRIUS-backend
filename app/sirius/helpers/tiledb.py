@@ -35,17 +35,17 @@ class TileHelper(object):
         domain = tiledb.Domain(self.ctx, *tile_dims)
         #print(domain.dump())
         attr = tiledb.Attr(self.ctx, "value", compressor=('lz4',-1), dtype=data.dtype)
-        tile_array_id = self.root + arrayID
+        tile_array_id = os.path.join(self.root, arrayID)
         dense_array = tiledb.DenseArray(self.ctx, tile_array_id, domain=domain, attrs=[attr])
         dense_array[:] = data
         return dense_array
 
     def load_dense_array(self, arrayID):
-        tile_array_id = self.root + arrayID
+        tile_array_id = os.path.join(self.root, arrayID)
         return tiledb.DenseArray.load(self.ctx, tile_array_id)
 
     def remove(self, arrayID):
-        tile_array_id = self.root + arrayID
+        tile_array_id = os.path.join(self.root, arrayID)
         tiledb.remove(self.ctx, tile_array_id)
 
     def ls(self):
