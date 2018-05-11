@@ -295,7 +295,7 @@ def distinct_values(index):
         return abort(404, 'no query posted')
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
-        QUERY_TYPE_GENOME: {'type', 'chromid', 'assembly', 'source', 'info.biosample', 'info.targets'},
+        QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets'},
         QUERY_TYPE_INFO: {'type', 'source', 'info.description', 'info.biosample', 'info.targets', 'info.types'},
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
@@ -421,7 +421,7 @@ def query_basic():
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
-    basic_projection = ['_id', 'source', 'type', 'name', 'chromid', 'start', 'end', 'info.description']
+    basic_projection = ['_id', 'source', 'type', 'name', 'contig', 'start', 'end', 'info.description']
     qt = QueryTree(query)
     results = list(qt.find(projection=basic_projection))
     return results
