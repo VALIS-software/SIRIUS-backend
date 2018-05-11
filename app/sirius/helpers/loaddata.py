@@ -76,3 +76,7 @@ def load_data_track_information():
 
 loaded_data_tracks = load_data_track_information()
 loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
+
+# Store all possible genome contigs
+# this should be normalized with the InfoNodes in the future
+loaded_genome_contigs = set(GenomeNodes.distinct('contig'))

@@ -8,14 +8,14 @@ from functools import lru_cache
 from sirius.core.QueryTree import QueryTree
 from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
-from sirius.helpers.loaddata import loaded_contig_info_dict
+from sirius.helpers.loaddata import loaded_genome_contigs
 
 @lru_cache(maxsize=10000)
 def get_annotation_query_results(query):
     qt = QueryTree(query)#, verbose=True)
     # we split the results into contigs
     contig_genome_data, contig_start_bps = dict(), dict()
-    for contig in loaded_contig_info_dict:
+    for contig in loaded_genome_contigs:
         contig_genome_data[contig] = []
         contig_start_bps[contig] = []
     # save the 1-D array of starting loation
