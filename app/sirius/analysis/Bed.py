@@ -24,7 +24,7 @@ def get_inverval(d):
         strand = d['info']['strand']
     except KeyError:
         pass
-    return (d['chromid'], d['start'], d['end'], d['name'], score, strand, d['_id'], d['type'])
+    return (d['contig'], d['start'], d['end'], d['name'], score, strand, d['_id'], d['type'])
 
 class Bed(object):
     def __init__(self, fn=None):
@@ -38,7 +38,7 @@ class Bed(object):
         elif isinstance(fn, dict) or isinstance(fn, QueryTree):
             # if we have a query
             qt = QueryTree(fn) if isinstance(fn, dict) else fn
-            cursor = qt.find(projection=['_id', 'chromid', 'start', 'end', 'name', 'type', 'info.score', 'info.strand'])
+            cursor = qt.find(projection=['_id', 'contig', 'start', 'end', 'name', 'type', 'info.score', 'info.strand'])
             iv_iter = (get_inverval(d) for d in cursor)
             tmpfn = write_tmp_bed(iv_iter)
             self.bedtool = BedTool(tmpfn)
@@ -114,7 +114,7 @@ class Bed(object):
             chrom, start, end, name, score, strand, _id, gtype = iv.fields[:8]
             gnode = {
                 '_id': _id,
-                'chromid': int(chrom),
+                'contig': 'chr'+chrom,
                 'start': start,
                 'end': end,
                 'type': gtype,
