@@ -216,7 +216,7 @@ def datatrack_get_data(track_id, contig, start_bp, end_bp):
     if track_id == 'sequence':
         return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
     else:
-        aggregations = request.args.get('aggregations', default='raw').split(',')
+        aggregations = request.args.get('aggregations', default='none').split(',')
         return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
 
 # This part is still mock
