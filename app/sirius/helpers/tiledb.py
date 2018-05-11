@@ -42,7 +42,11 @@ class TileHelper(object):
 
     def load_dense_array(self, arrayID):
         tile_array_id = os.path.join(self.root, arrayID)
-        return tiledb.DenseArray.load(self.ctx, tile_array_id)
+        try:
+            return tiledb.DenseArray.load(self.ctx, tile_array_id)
+        except tiledb.TileDBError as e:
+            print(e)
+            return np.array([])
 
     def remove(self, arrayID):
         tile_array_id = os.path.join(self.root, arrayID)

@@ -175,7 +175,6 @@ def old_sequence_get_contig_data(track_id, contig, start_bp, end_bp, track_heigh
         track_data_type = 'basepairs'
         dimensions = ['value']
         # n: 0, a:0.25, t: 0.5, g: 0.75, c: 1.0
-        dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[start_bp: end_bp]['value']
         format_data = np.array(dataarray, dtype=np.float32) % 5 # convert 'n' from 5 to 0
         format_data *= 0.25
     else:
@@ -223,7 +222,7 @@ def old_signal_get_contig_data(track_id, contig, start_bp, end_bp, track_height_
             "startBp" : start_bp,
             "endBp" : end_bp,
             "samplingRate": sampling_rate,
-            "numSamples": num_bins,
+            "numSamples": 0,
             "trackHeightPx": track_height_px,
             "values": [],
             "dimensions": [],
