@@ -114,24 +114,8 @@ def track_info():
 #**************************
 #*     /annotations       *
 #**************************
-@app.route("/annotations/<string:annotation_id>/<int:start_bp>/<int:end_bp>", methods=['GET','POST'])
-def get_annotation_data(annotation_id, start_bp, end_bp):
-    sampling_rate = int(request.args.get('sampling_rate', default=1))
-    track_height_px = int(request.args.get('track_height_px', default=0))
-    query = request.get_json()
-    # hard code contig
-    contig = 'chr1'
-    if query:
-        # let us show some real data!!
-        result = get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
-    elif annotation_id == "GRCh38":
-        # this was the default track
-        query = {'type': 'GenomeNode', 'filters':{'assembly': 'GRCh38', 'type':'gene'}}
-        result = get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
-    return result
 
-
-@app.route("/annotationtrack/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
+@app.route("/annotations/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
 def get_annotationtrack_data(annotation_id, contig, start_bp, end_bp):
     """
     Endpoint for rendering the selections in DataBrowser side panel.

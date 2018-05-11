@@ -1,4 +1,4 @@
-import time, json
+import time, json, random
 import numpy as np
 from collections import defaultdict
 from scipy.spatial.distance import pdist
@@ -8,17 +8,20 @@ from functools import lru_cache
 from sirius.core.QueryTree import QueryTree
 from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
+from sirius.helpers.loaddata import loaded_contig_info_dict
 
 @lru_cache(maxsize=10000)
 def get_annotation_query_results(query):
     qt = QueryTree(query)#, verbose=True)
     # we split the results into contigs
-    contig_genome_data = defaultdict(list)
+    contig_genome_data, contig_start_bps = dict(), dict()
+    for contig in loaded_contig_info_dict:
+        contig_genome_data[contig] = []
+        contig_start_bps[contig] = []
+    # save the 1-D array of starting loation
     for gnode in qt.find(projection=['_id', 'contig', 'start', 'end', 'name']):
         genome_data = (gnode['start'], gnode['end'], gnode['_id'], gnode['name'])
         contig_genome_data[gnode['contig']].append(genome_data)
-    # save the 1-D array of starting loation
-    contig_start_bps = dict()
     # sort the results based on the start
     for contig, genome_data_list in contig_genome_data.items():
         genome_data_list.sort()
@@ -33,7 +36,7 @@ def get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate,
     total_query_count = len(contig_genome_data)
     t1 = time.time()
     if verbose:
-        print(f"{total_query_count} gnome_query_results; {t1-t0:.3f} seconds \n Query: {query} \n {get_gnome_query_results.cache_info()}")
+        print(f"{total_query_count} gnome_query_results; {t1-t0:.3f} seconds \n Query: {query} \n {get_annotation_query_results.cache_info()}")
     # find the data in range
     start_idx, end_idx = np.searchsorted(contig_start_bps, [start_bp, end_bp])
     genome_data_in_range = contig_genome_data[start_idx:end_idx]
@@ -49,8 +52,9 @@ def get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate,
         ret = get_genome_segments(genome_data_in_range, sampling_rate, track_height_px)
     t3 = time.time()
     if verbose:
-        print("Data aggregation; {t3-t2:.3f} seconds")
+        print(f"Data aggregation; {t3-t2:.3f} seconds")
     return json.dumps({
+        "contig": contig,
         "startBp" : start_bp,
         "endBp" : end_bp,
         "samplingRate": sampling_rate,
@@ -67,28 +71,28 @@ def get_genome_segments(genome_data_list, sampling_rate, track_height_px):
     last_end, last_y = -float('inf'), 0
     padding = 20 * sampling_rate
     for gnome_data in genome_data_list:
-        (abs_start, abs_end, fid, name) = gnome_data
+        (start_bp, end_bp, fid, name) = gnome_data
         will_append = False
-        if abs_start > last_end + padding:
+        if start_bp > end_bp + padding:
             will_append = True
-            last_end = abs_end
+            last_end = end_bp
             yOffset = 0
             last_y = 0
         elif last_y <= track_height_px - 2 * ANNOTATION_HEIGHT_PX + 1:
             will_append = True
-            last_end = max(last_end, abs_end)
+            last_end = max(last_end, end_bp)
             yOffset = last_y + ANNOTATION_HEIGHT_PX + 1
             last_y = yOffset
         if will_append == True:
             color = [random.random()*0.5, random.random()*0.5, random.random()*0.5, 1.0]
             r_data = {
                 'id': fid,
-                'startBp': abs_start,
-                'endBp': abs_end,
+                'startBp': start_bp,
+                'endBp': end_bp,
                 'labels': [[name, True, 0, 0, 0]],
                 'yOffsetPx': yOffset,
                 'heightPx': ANNOTATION_HEIGHT_PX,
-                "segments": [[0, abs_end-abs_start+1, None, color, 20]],
+                "segments": [[0, end_bp-start_bp+1, None, color, 20]],
                 'title': name,
                 'aggregation': False
             }
@@ -122,9 +126,10 @@ def get_aggregation_segments(coords, sampling_rate, track_height_px):
     c_begin = 0
     for c_end in cluster_ends:
         cluster_coords = coords[c_begin:c_end]
+        c_size = len(cluster_coords)
+        if c_size == 0: continue
         startBp = int(cluster_coords[0])
         endBp = int(cluster_coords[-1])
-        c_size = len(cluster_coords)
         label = str(c_size)
         color_level = max(min(c_size / 100, 1.0), 0.2) # between (0.2~1.0)
         color = [0.15, 0.55, 1.0, color_level]

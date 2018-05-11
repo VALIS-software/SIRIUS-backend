@@ -108,7 +108,7 @@ class QueryEdge:
 
 
 class QueryTree:
-    Query_operators = [('>', '$gt'), ('>=', '$gte'), ('<', '$lt'), ('<=', '$lte'), ('=', '$eq'), ('==', '$eq'), ('!=', '$ne')]
+    Query_operators = {'>':'$gt', '>=':'$gte', '<':'$lt', '<=':'$lte', '=':'$eq', '==':'$eq', '!=':'$ne'}
     EdgeRules = {'and': 0, 'or': 1, 'not': 2}
     def __init__(self, query=dict(), verbose=False):
         self.verbose = verbose
