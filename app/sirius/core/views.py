@@ -404,7 +404,10 @@ def get_query_full_results(query):
     """ Cached function for getting full query results """
     if not query: return []
     qt = QueryTree(query)
-    results = list(qt.find())
+    results = []
+    for d in qt.find():
+        d['id'] = d.pop('_id')
+        results.append(d)
     return results
 
 @app.route('/query/basic', methods=['POST'])
@@ -423,5 +426,8 @@ def get_query_basic_results(query):
     if not query: return []
     basic_projection = ['_id', 'source', 'type', 'name', 'contig', 'start', 'end', 'info.description']
     qt = QueryTree(query)
-    results = list(qt.find(projection=basic_projection))
+    results = []
+    for d in qt.find(projection=basic_projection)):
+        d['id'] = d.pop('_id')
+        results.append(d)
     return results
