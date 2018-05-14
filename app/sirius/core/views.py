@@ -427,7 +427,7 @@ def get_query_basic_results(query):
     basic_projection = ['_id', 'source', 'type', 'name', 'contig', 'start', 'end', 'info.description']
     qt = QueryTree(query)
     results = []
-    for d in qt.find(projection=basic_projection)):
+    for d in qt.find(projection=basic_projection):
         d['id'] = d.pop('_id')
         results.append(d)
     return results
