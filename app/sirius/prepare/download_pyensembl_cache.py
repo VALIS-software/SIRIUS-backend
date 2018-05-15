@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-import os, shutil, subprocess
-from google.cloud import storage
-from zipfile import ZipFile
+import os, shutil
 
-def download_fasta_tiledb():
-    dest = os.environ['TILEDB_ROOT']
-    filename = 'sirius_fasta_data.tar.gz'
-    if not os.path.isdir(dest):
-        os.chdir(dest)
+def download_pyensembl_cache():
+    cachedir = os.environ['PYENSEMBL_CACHE_DIR']
+    dest = os.path.join(cachedir, 'pyensembl')
+    if not os.path.exists(dest):
+        os.chdir(cachedir)
         storage_client = storage.Client()
         bucket = storage_client.get_bucket('siriusdata')
+        filename = 'pyensembl.tar.gz'
         blob = bucket.get_blob(filename)
         print(f"Connected to google cloud. File {filename} found.")
         blob.download_to_filename(filename)
@@ -23,4 +22,4 @@ def download_fasta_tiledb():
         print(f"{dest} already exists, skipped downloading")
 
 if __name__ == "__main__":
-     download_fasta_tiledb()
+     download_pyensembl_cache()
