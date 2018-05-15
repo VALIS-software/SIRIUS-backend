@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from sirius.prepare import update_valis_webfront, copy_pyensembl_cache, copy_tiledb
+from sirius.prepare import update_valis_webfront, copy_pyensembl_cache, download_tiledb_data
 
 def prepare_all():
     try:
@@ -12,9 +12,9 @@ def prepare_all():
     except Exception as e:
         print(str(e))
     try:
-        copy_tildb.copy_tiledb()
+        download_tiledb_data.download_tiledb_data()
     except Exception as e:
         print(str(e))
-   
+
 if __name__ == "__main__":
     prepare_all()
