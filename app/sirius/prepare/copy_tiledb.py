@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 
-import os, shutil
+import os, shutil, subprocess
+from google.cloud import storage
+from zipfile import ZipFile
 
-def copy_tiledb(source='/pd/tiledb'):
-    """
-    Copy pyensembl cache from /pd/tiledb to a writable cache folder.
-    """
-    if not os.path.isdir(source):
-        print("Source not found at %s. Nothing done." % source)
-        return
+def download_fasta_tiledb():
     dest = os.environ.get('TILEDB_ROOT', None)
+    filename = 'sirius_fasta_data.tar.gz'
     if not os.path.isdir(dest):
-        shutil.copytree(source, dest)
-        print(f"Copy from {source} to {dest} finished.")
+        os.chdir(dest)
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket('siriusdata')
+        blob = bucket.get_blob(filename)
+        print(f"Connected to google cloud. File {filename} found.")
+        blob.download_to_filename(filename)
+        print("File download finished. Extracting")
+        subprocess.check_call(f"tar zxf {filename}", shell=True)
+        # delete the tar file
+        os.unlink(filename)
+        print(f"File {filename} deleted")
     else:
-        print(f"{dest} already exist, skipped copy.")
+        print(f"{dest} already exists, skipped downloading")
 
 if __name__ == "__main__":
-     copy_tiledb()
+     download_fasta_tiledb()
