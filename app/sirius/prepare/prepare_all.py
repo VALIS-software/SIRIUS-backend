@@ -12,7 +12,7 @@ def prepare_all():
     except Exception as e:
         print(str(e))
     try:
-        download_tiledb_data.download_tiledb_data()
+        download_tiledb_data.download_fasta_tiledb()
     except Exception as e:
         print(str(e))
 
