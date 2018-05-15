@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from sirius.core.QueryTree import QueryTree
+from sirius.query.QueryTree import QueryTree
 from pybedtools import BedTool, Interval
 import os, shutil, tempfile
 
