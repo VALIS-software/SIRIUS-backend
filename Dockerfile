@@ -24,6 +24,9 @@ ENV STATIC_PATH /app/sirius/valis-dist/static
 ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
 
+# pybedtools use the default tempfile.tempdir
+ENV SIRIUS_TEMP_DIR /cache/tmp
+
 # TileDB
 ENV TILEDB_ROOT /cache/tiledb
 
