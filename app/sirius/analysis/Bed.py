@@ -1,8 +1,11 @@
-#!/usr/bin/env python
-
-from sirius.query.QueryTree import QueryTree
-from pybedtools import BedTool, Interval
 import os, shutil, tempfile
+import sirius.query.QueryTree
+import sirius.query.GenomeQueryNode
+from sirius.mongo import GenomeNodes
+from pybedtools import BedTool, Interval
+
+# This will let both pybedtools and our Bed class to use this temp folder
+tempfile.tempdir = os.environ.get('SIRIUS_TEMP_DIR', None)
 
 def write_tmp_bed(iterable):
     """ Write an iterable to a temporary bed file, return the filename """
@@ -14,17 +17,9 @@ def write_tmp_bed(iterable):
 
 def get_inverval(d):
     """ Convert a gnode dictionary to an interval tuple """
-    score = '.'
-    strand = '.'
-    try:
-        score = d['info']['score']
-    except KeyError:
-        pass
-    try:
-        strand = d['info']['strand']
-    except KeyError:
-        pass
-    return (d['contig'], d['start'], d['end'], d['name'], score, strand, d['_id'], d['type'])
+    score = d['info'].get('score', '.')
+    strand = d['info'].get('strand', '.')
+    return (d['contig'], d['start'], d['end'], d['_id'], score, strand)
 
 class Bed(object):
     def __init__(self, fn=None):
@@ -35,10 +30,10 @@ class Bed(object):
             self.bedtool = fn
         elif isinstance(fn, str):
             self.bedtool = BedTool(fn)
-        elif isinstance(fn, dict) or isinstance(fn, QueryTree):
+        elif isinstance(fn, dict) or isinstance(fn, sirius.query.QueryTree.QueryTree) or isinstance(fn, sirius.query.GenomeQueryNode.GenomeQueryNode):
             # if we have a query
-            qt = QueryTree(fn) if isinstance(fn, dict) else fn
-            cursor = qt.find(projection=['_id', 'contig', 'start', 'end', 'name', 'type', 'info.score', 'info.strand'])
+            qt = sirius.query.QueryTree.QueryTree(fn) if isinstance(fn, dict) else fn
+            cursor = qt.find(projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand'])
             iv_iter = (get_inverval(d) for d in cursor)
             tmpfn = write_tmp_bed(iv_iter)
             self.bedtool = BedTool(tmpfn)
@@ -79,6 +74,15 @@ class Bed(object):
         self._delete_tmp()
         del self.bedtool
 
+    def load_from_ids(self, ids):
+        projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
+        mongo_filter = { '_id' : {'$in': list(ids)} }
+        cursor = GenomeNodes.find(mongo_filter, projection=projection)
+        iv_iter = (get_inverval(d) for d in cursor)
+        tmpfn = write_tmp_bed(iv_iter)
+        self.bedtool = BedTool(tmpfn)
+        self.istmp = True
+
     def head(self):
         self.bedtool.head()
 
@@ -108,19 +112,9 @@ class Bed(object):
         # we are now using a tmp file
         self.istmp = True
 
-    def gnodes(self):
-        """ Generator to yield gnodes one by one from self.bedtool """
-        for iv in self.bedtool:
-            chrom, start, end, name, score, strand, _id, gtype = iv.fields[:8]
-            gnode = {
-                '_id': _id,
-                'contig': 'chr'+chrom,
-                'start': start,
-                'end': end,
-                'type': gtype,
-                'name': name
-            }
-            yield gnode
+    def gids(self):
+        """ Return a set of gnode ids from self.bedtool """
+        return set(iv[3] for iv in self.bedtool)
 
     def intersect(self, b, *args, **kwargs):
         c = Bed()
@@ -128,8 +122,8 @@ class Bed(object):
         c.istmp = True
         return c
 
-    def window(self, b, *args, **kwargs):
+    def window(self, b, window=1000):
         c = Bed()
-        c.bedtool = self.bedtool.window(b.bedtool, *args, **kwargs)
+        c.bedtool = self.bedtool.window(b.bedtool, w=window, u=True)
         c.istmp = True
         return c

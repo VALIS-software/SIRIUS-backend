@@ -18,7 +18,9 @@ class QueryTree(object):
         if typ == QUERY_TYPE_GENOME:
             edgeRule = self.EdgeRules[query.get('edgeRule', 'and')]
             edges = [self.build_recur(d) for d in query.get('toEdges', [])]
-            resultNode = GenomeQueryNode.GenomeQueryNode(qfilter, edges, edgeRule, limit)
+            # genome arithmetics
+            arithmetics = self.build_arithmetics(query.get('arithmetics', []))
+            resultNode = GenomeQueryNode.GenomeQueryNode(qfilter, edges, edgeRule, arithmetics, limit)
         elif typ == QUERY_TYPE_INFO:
             edgeRule = self.EdgeRules[query.get('edgeRule', 'and')]
             edges = [self.build_recur(d) for d in query.get('toEdges', [])]
@@ -47,6 +49,23 @@ class QueryTree(object):
                 result['$text'] = {'$search': '\"' + value + '\"'}
             else:
                 result[key] = value
+        return result
+
+    def build_arithmetics(self, arithmetics):
+        """ Parse a list of arithemics dictionary and build target Query Objects """
+        result = []
+        for orig_ar in arithmetics:
+            ar = dict()
+            assert orig_ar['operator'] in {'intersect', 'window', 'union'}
+            ar['operator'] = orig_ar['operator']
+            ar['targets'] = [self.build_recur(query) for query in orig_ar.get('target_queries', [])]
+            # operator-specific settings and checks
+            if ar['operator'] == 'window':
+                assert len(ar['targets']) > 0
+                ar['windowSize'] = orig_ar.get('windowSize', 1000)
+            elif ar['operator'] in ('intersect', 'union'):
+                assert len(ar['targets']) > 0
+            result.append(ar)
         return result
 
     def find(self, projection=None):

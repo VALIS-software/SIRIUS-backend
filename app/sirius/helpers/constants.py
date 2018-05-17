@@ -21,6 +21,7 @@ TRACK_TYPE_EQTL = 'track_type_eqtl'
 TRACK_TYPE_ENCODE = 'track_type_encode'
 TRACK_TYPE_3D = 'track_type_3d'
 TRACK_TYPE_NETWORK = 'track_type_network'
+TRACK_TYPE_BOOLEAN = 'track_type_boolean'
 
 ENCODE_COLOR_TYPES = {
     (255,0,0): 'Promoter-like',

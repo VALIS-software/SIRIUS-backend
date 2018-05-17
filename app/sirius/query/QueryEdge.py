@@ -34,7 +34,7 @@ class QueryEdge(object):
         if self.nextnode != None:
             target_ids = list(self.nextnode.findid())
             if len(target_ids) == 0: return set()
-            query['to_id'] = {'$in': target_ids}
+            mongo_filter['to_id'] = {'$in': target_ids}
         if self.verbose == True:
             print(mongo_filter)
         return set(d['from_id'] for d in Edges.find(mongo_filter, {'from_id':1}, limit=self.limit))

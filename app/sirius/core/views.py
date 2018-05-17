@@ -12,7 +12,8 @@ from sirius.main import app
 from sirius.core.utilities import get_data_with_id, HashableDict
 from sirius.query.QueryTree import QueryTree
 from sirius.helpers.loaddata import loaded_contig_info, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
-from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
+from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, TRACK_TYPE_BOOLEAN, \
+                                     QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
 from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
@@ -104,6 +105,11 @@ def track_info():
             'track_type': TRACK_TYPE_NETWORK,
             'title': 'Network Tracks',
             'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
+        },
+        {
+            'track_type': TRACK_TYPE_BOOLEAN,
+            'title': 'Boolean Tracks',
+            'description': 'Intersection operations between annotation tracks'
         }
     ]
     return json.dumps(mock_track_types_info + loaded_track_types_info)
