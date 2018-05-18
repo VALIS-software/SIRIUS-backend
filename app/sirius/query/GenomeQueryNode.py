@@ -1,4 +1,4 @@
-import numpy as np
+import time
 from sirius.mongo import GenomeNodes
 from sirius.core.utilities import HashableDict
 from sirius.analysis.Bed import Bed
@@ -7,7 +7,7 @@ def find_gid(mongo_filter, limit=100000):
     """ Cached funtion to find the GenomeNodes and return their IDs """
     mongo_filter = HashableDict(mongo_filter)
     # if we previously have executed the filter, check previous limit
-    max_limit = find_gid.max_limit.get(mongo_filter, 0)
+    max_limit = find_gid.max_limit.get(mongo_filter, -10000)
     if limit == max_limit:
         result_ids = find_gid.cached_ids[mongo_filter]
     elif limit < max_limit:
@@ -23,7 +23,7 @@ def find_gid(mongo_filter, limit=100000):
         key = next(iter(find_gid.cached_ids.keys()))
         find_gid.cached_ids.pop(key)
         find_gid.max_limit.pop(key)
-    return result_ids
+    return result_ids.copy()
 
 find_gid.cached_ids, find_gid.max_limit = dict(), dict()
 
@@ -44,19 +44,23 @@ class GenomeQueryNode(object):
         Return a generator for MongoDB.find() query, or an empty list if none found
         """
         if self.verbose:
-            print(self.filter)
-        result_ids = list(self.findid())
-        # Here result_ids may exceed the limit of BSON document size for MongoDB
-        # Therefore we generate the documents by batches
-        batch_size = 100000
-        for i_batch in range(int(len(result_ids) / batch_size)+1):
-            batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
-            query = {'_id' : {'$in': batch_ids}}
-            if projection != None:
+            print(self.filter, self.edges, self.arithmetics)
+        if not self.edges and not self.arithmetics:
+            for d in GenomeNodes.find(self.filter, limit=self.limit, projection=projection):
+                yield d
+        else:
+            t0 = time.time()
+            result_ids = list(self.findid())
+            t1 = time.time()
+            if self.verbose:
+                print(f"Find id result {len(result_ids)} took {t1-t0:.2f} s")
+            # Here result_ids may exceed the limit of BSON document size for MongoDB
+            # Therefore we generate the documents by batches
+            batch_size = 100000
+            for i_batch in range(int(len(result_ids) / batch_size)+1):
+                batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+                query = {'_id' : {'$in': batch_ids}}
                 for d in GenomeNodes.find(query, limit=self.limit, projection=projection):
-                    yield d
-            else:
-                for d in GenomeNodes.find(query, limit=self.limit):
                     yield d
 
     def findid(self):

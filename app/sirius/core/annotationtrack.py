@@ -18,13 +18,14 @@ def get_annotation_query_results(query):
     for contig in loaded_genome_contigs:
         contig_genome_data[contig] = []
         contig_start_bps[contig] = []
-    # save the 1-D array of starting loation
+    # put the results in to cache
     for gnode in qt.find(projection=['_id', 'contig', 'start', 'end', 'name']):
         genome_data = (gnode['start'], gnode['end'], gnode['_id'], gnode['name'])
         contig_genome_data[gnode['contig']].append(genome_data)
     # sort the results based on the start
     for contig, genome_data_list in contig_genome_data.items():
         genome_data_list.sort()
+        # save the 1-D array of starting loation
         contig_start_bps[contig] = np.array([d[0] for d in genome_data_list])
     return contig_genome_data, contig_start_bps
 
