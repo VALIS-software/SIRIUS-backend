@@ -52,7 +52,7 @@ def get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate,
         ret = get_genome_segments(genome_data_in_range, sampling_rate, track_height_px)
     t3 = time.time()
     if verbose:
-        print(f"len(ret) after data aggregation; {t3-t2:.3f} seconds")
+        print(f"{len(ret)} after data aggregation; {t3-t2:.3f} seconds")
     return json.dumps({
         "contig": contig,
         "startBp" : start_bp,
