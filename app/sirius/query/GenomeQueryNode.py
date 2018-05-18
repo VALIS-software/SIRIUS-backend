@@ -1,7 +1,7 @@
+import numpy as np
 from sirius.mongo import GenomeNodes
 from sirius.core.utilities import HashableDict
 from sirius.analysis.Bed import Bed
-
 
 def find_gid(mongo_filter, limit=100000):
     """ Cached funtion to find the GenomeNodes and return their IDs """
@@ -41,16 +41,23 @@ class GenomeQueryNode(object):
     def find(self, projection=None):
         """
         Find all nodes from GenomeNodes, based on self.filter and the edge connected.
-        Return a cursor of MongoDB.find() query, or an empty list if none found
+        Return a generator for MongoDB.find() query, or an empty list if none found
         """
         if self.verbose:
             print(self.filter)
-        result_ids = self.findid()
-        query = {'_id': {"$in": list(result_ids)}}
-        if projection != None:
-            return GenomeNodes.find(query, limit=self.limit, projection=projection)
-        else:
-            return GenomeNodes.find(query, limit=self.limit)
+        result_ids = list(self.findid())
+        # Here result_ids may exceed the limit of BSON document size for MongoDB
+        # Therefore we generate the documents by batches
+        batch_size = 100000
+        for i_batch in range(int(len(result_ids) / batch_size)+1):
+            batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+            query = {'_id' : {'$in': batch_ids}}
+            if projection != None:
+                for d in GenomeNodes.find(query, limit=self.limit, projection=projection):
+                    yield d
+            else:
+                for d in GenomeNodes.find(query, limit=self.limit):
+                    yield d
 
     def findid(self):
         """
