@@ -74,12 +74,7 @@ def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregati
     t0 = time.time()
     bw = get_remote_bigwig(track_id)
     t1 = time.time()
-    if contig not in bw.chroms():
-        return abort(404, f'contig {contig} not found')
-    # check range
-    contig_size = bw.chroms(contig)
-    if start_bp > contig_size or end_bp < 0:
-        return json.dumps({
+    empty_result = json.dumps({
             'trackID': track_id,
             'contig': contig,
             'startBp': start_bp,
@@ -87,7 +82,13 @@ def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregati
             'samplingRate': sampling_rate,
             'numSamples': 0,
             'aggregations': aggregations
-        })
+    })
+    if contig not in bw.chroms():
+        return empty_result
+    # check range
+    contig_size = bw.chroms(contig)
+    if start_bp > contig_size or end_bp < 0:
+        return empty_result
     start_bp = max(start_bp, 1)
     end_bp = min(end_bp, contig_size)
     # parse data
@@ -212,12 +213,7 @@ def old_signal_get_contig_data(track_id, contig, start_bp, end_bp, track_height_
     t0 = time.time()
     bw = get_remote_bigwig(track_id)
     t1 = time.time()
-    if contig not in bw.chroms():
-        return abort(404, f'contig {contig} not found')
-    # check range
-    contig_size = bw.chroms(contig)
-    if start_bp > contig_size or end_bp < 0:
-        return json.dumps({
+    empty_result = json.dumps({
             "contig": contig,
             "startBp" : start_bp,
             "endBp" : end_bp,
@@ -227,7 +223,13 @@ def old_signal_get_contig_data(track_id, contig, start_bp, end_bp, track_height_
             "values": [],
             "dimensions": [],
             "dataType": 'value'
-        })
+    })
+    if contig not in bw.chroms():
+        return empty_result
+    # check range
+    contig_size = bw.chroms(contig)
+    if start_bp > contig_size or end_bp < 0:
+        return empty_result
     start_bp = max(start_bp, 1)
     end_bp = min(end_bp, contig_size)
     # get data
