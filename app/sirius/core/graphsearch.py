@@ -1,7 +1,7 @@
 import json
 import re
 from functools import lru_cache
-# from sirius.query.QueryTree import QueryTree
+from sirius.query.QueryTree import QueryTree
 
 def Token(ttype, remainder, value, depth):
     return {
@@ -28,24 +28,48 @@ class Parser:
         token = parse_path[0]
         q = None
         if token[0] == 'OF':
-            q = {
+            gene_name = parse_path[1][0]
+            # TODO: return a boolean track intersecting SNPs with Gene
+            return {
                 "query" : "TODO"
             }
         elif token[0] == 'INFLUENCING':
-            q = {
-                "query" : "TODO"
+            trait_name = parse_path[1][0]
+            return {
+              "type": "GenomeNode",
+              "filters": {
+                
+              },
+              "toEdges": [
+                {
+                  "type": "EdgeNode",
+                  "filters": {
+                    "info.p-value": {
+                      "<": 0.05
+                    }
+                  },
+                  "toNode": {
+                    "type": "InfoNode",
+                    "filters": {
+                      "type": "trait",
+                      "$text": trait_name
+                    },
+                    "toEdges": [
+                      
+                    ]
+                  }
+                }
+              ],
+              "limit": 1000000
             }
-        return q
 
     def build_trait_query(self, parse_path):
-        return {
-            "query" : "TODO"
-        }
+        trait_name = parse_path[0][1:-1]
+        return {"type":"InfoNode","filters":{"type":"trait","name": trait_name},"toEdges":[],"limit":150}
 
     def build_gene_query(self, parse_path):
-        return {
-            "query" : "TODO"
-        }
+        gene_name = parse_path[0][1:-1]
+        return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
     def build_query(self, parse_path):
         token = parse_path[0]
@@ -159,7 +183,7 @@ def get_default_parser_settings():
 def load_suggestions():
     genes = []
     traits = []
-    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}
+      
     qt = QueryTree(query)
     genes = qt.find()
     query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
