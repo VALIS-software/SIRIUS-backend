@@ -16,6 +16,7 @@ from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL,
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
 from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
+from sirius.core.graphsearch import get_suggestions
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
 #**************************
@@ -390,6 +391,17 @@ def edge_relations(edge):
     return result
 
 
+#**************************
+#*       /search           *
+#**************************
+@app.route('/search', methods=['POST'])
+def search():
+    """ Returns results for a query, with only basic information, useful for search """
+    query_text = request.get_json()
+    if not query:
+        return abort(404, 'no query posted')
+    results = get_suggestions(query_text)
+    return json.dumps(results)
 
 #**************************
 #*       /query           *
