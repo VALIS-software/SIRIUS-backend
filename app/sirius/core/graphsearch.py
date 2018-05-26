@@ -11,7 +11,7 @@ def Token(ttype, remainder, value, depth):
         "depth": depth
     }
 
-class Parser:
+class QueryParser:
     def __init__(self, grammar, tokens, suggestions):
         self.grammar = grammar
         self.tokens = tokens
@@ -183,7 +183,7 @@ def get_default_parser_settings():
 def load_suggestions():
     genes = []
     traits = []
-      
+    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}  
     qt = QueryTree(query)
     genes = qt.find()
     query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
@@ -194,12 +194,21 @@ def load_suggestions():
         'TRAIT': traits,
     }
 
+@lru_cache(maxsize=1)
 def build_parser(suggestions=None):
     tokens, grammar = get_default_parser_settings()
     if suggestions == None:
         suggestions =  load_suggestions()
-    return Parser(grammar, tokens, suggestions)
-        
+    return QueryParser(grammar, tokens, suggestions)
+
+def get_suggestions(search_text):
+    p = build_parser()
+    tokens, suggestions, query = p.get_suggestions(text)
+    return {
+        "tokens": tokens,
+        "suggestions": suggestions,
+        "query": query,
+    }
 
 if __name__ == "__main__":
     print("Testing grammar")

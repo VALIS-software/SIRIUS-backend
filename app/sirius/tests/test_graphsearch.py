@@ -2,7 +2,8 @@
 
 import unittest
 from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.core.graphsearch import Parser, build_parser
+from sirius.core.graphsearch import build_parser
+from sirius.core.utilities import HashableDict
 
 class GraphSearchText(TimedTestCase):
     def parse_text(self, text):
@@ -12,9 +13,8 @@ class GraphSearchText(TimedTestCase):
             'GENE': genes,
             'TRAIT': traits,
         }
-        p = build_parser(suggestions)
+        p = build_parser(HashableDict(suggestions))
         result = p.get_suggestions(text)
-        print(result)
         return result
 
 
