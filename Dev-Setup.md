@@ -168,10 +168,14 @@ sudo docker build -t sirius-dev:latest .
 ``` 
 
 ```
-sudo docker run -p 5000:5000 --link some-mongo:mongo -d sirius-dev:latest
+sudo docker run  -it -p 5000:5000 --link some-mongo:mongo sirius-dev:latest /bin/bash
 ```
 
-The Docker image has been configured to launch Nginx and uWSGI with Flask to serve the SIRIUS server at port 5000.
+```
+root@b1b85c937e89:/app/sirius# flask run -h 0.0.0.0
+```
+
+This will run flask in command line mode.
 
 ## 7. Run VALIS frontend in dev mode
 
