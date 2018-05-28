@@ -397,10 +397,10 @@ def edge_relations(edge):
 @app.route('/search', methods=['POST'])
 def search():
     """ Returns results for a query, with only basic information, useful for search """
-    query_text = request.get_json()
-    if not query:
+    query_json = request.get_json()
+    if not query_json or not "query" in query_json:
         return abort(404, 'no query posted')
-    results = get_suggestions(query_text)
+    results = get_suggestions(query_json["query"])
     return json.dumps(results)
 
 #**************************
