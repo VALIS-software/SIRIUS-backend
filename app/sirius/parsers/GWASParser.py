@@ -172,11 +172,11 @@ class GWASParser(Parser):
         which are contents of self.data
         2. The GenomeNodes generated from this parsing should be SNPs. They should all have "_id" started with "G", like "Gsnp_rs4950928".
         Duplicated SNPs with the same _id are ignored.
-        3. Each study is parsed as one trait, that might be associated with multiple SNPs.
-        4. The InfoNodes generated contain 1 dataSource and multiple traits. They should all have "_id" values start with "I", like "IGWAS", or "Itrait_79485.."
-        The _id for the traits are computed as a hash of the trait description in lower case. Duplicated traits with the same _id are ignored.
+        3. Each study is parsed as one or more Edges, assuming the SNPs and traits are already in the database.
+        4. The InfoNode generated is type dataSource. It has "_id: IGWAS"
         5. The Edges generated are connections between the SNPs and traits. Each edge should have an "_id" starts with "E", and "from_id" = the SNP's _id,
-        and "to_id" = the trait's _id. All edges have the type "association" for now. Details of the GWAS studies are put in to the 'info' block of the edges.
+        and "to_id" = the trait's _id. The _id for the traits are computed as a hash of the trait description in lower case, to match the ones generated in OBOParser_EFO.
+        6. All edges have the type "association" for now. Details of the GWAS studies are put in to the 'info' block of the edges.
         The 'info.p-value' is extracted from the "P-VALUE" column of the data table, and coverted to float points here.
 
         Examples
@@ -192,23 +192,10 @@ class GWASParser(Parser):
 
         The GenomeNodes contain the information for the SNPs:
 
-        >>> print(genome_nodes[0])
-        {
-            "_id": "Gsnp_rs4950928",
-            "type": "SNP",
-            "contig": "chr1",
-            "start": 203186754,
-            "end": 203186754,
-            "length": 1,
-            "source": "GWAS",
-            "name": "RS4950928",
-            "info": {
-                "description": "SNP 4950928",
-                "mapped_gene": "CHI3L1"
-            }
-        },
+        >>> print(genome_nodes)
+        []
 
-        The first InfoNode is the dataSource:
+        The only InfoNode is the dataSource:
 
         >>> print(info_nodes[0])
         {
@@ -217,20 +204,7 @@ class GWASParser(Parser):
             "name": "GWAS",
             "source": "GWAS",
             "info": {
-                "filename": "test_GWAS.tsv"
-            }
-        }
-
-        The rest of the InfoNodes are traits:
-
-        >>> print(info_nodes[1])
-        {
-            "_id": "Itrait_7948525417e53a1f7da272315d6fd30ae1214e6264d1e70b415e1846db81495d",
-            "type": "trait",
-            "name": "YL",
-            "source": "GWAS",
-            "info": {
-                "description": "YKL-40 levels"
+                "filename": "GWAS.tsv"
             }
         }
 
@@ -284,85 +258,33 @@ class GWASParser(Parser):
         info_node = {"_id": 'I'+DATA_SOURCE_GWAS, "type": "dataSource", "name": DATA_SOURCE_GWAS, "source": DATA_SOURCE_GWAS}
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
-        known_rs, known_traits, known_edge_ids = set(), set(), set()
         for study_data in self.studies:
             study = study_data.copy()
-            trait = study["DISEASE/TRAIT"]
-            trait_id = 'Itrait_'+self.hash(trait.lower())
-            short_name = (''.join(s[0] for s in trait.split())).upper()
-            if trait_id not in known_traits:
-                infonode = {
-                    '_id': trait_id,
-                     'type': 'trait',
-                     'name': short_name,
-                     'source': DATA_SOURCE_GWAS,
-                     'info': {
-                         'description': trait
-                     }
-               }
-                info_nodes.append(infonode)
-                known_traits.add(trait_id)
             # there might be multiple snps related, therefore we split them
             snps = study.pop("SNPS").split(';')
-            CHR_IDs = study.pop("CHR_ID").split(';')
-            CHR_POSs = study.pop("CHR_POS").split(';')
-            if not len(snps) == len(CHR_IDs) == len(CHR_POSs):
-                print('Skipped because snp record length not matching \n %s' % str(study))
-                continue
-            MAPPED_GENEs = study.pop("MAPPED_GENE").split(';')
             this_snp_ids = []
             for i, snp_id in enumerate(snps):
                 rs = snp_id.strip().lower()
                 if rs[:2] != 'rs': continue # we skip some non standard IDs for now
                 rs = rs[2:]
-                if CHR_IDs[i] not in CHROMO_IDXS:
-                    print("Skipped because CHR_ID %s not known" % CHR_IDs[i])
-                    continue
-                else:
-                    contig = 'chr' + CHR_IDs[i]
                 rs_id = 'Gsnp_rs' + rs
                 this_snp_ids.append(rs_id)
-                name = 'RS' + rs
-                # add SNP to genome_nodes
-                if rs_id not in known_rs:
-                    known_rs.add(rs_id)
-                    pos = int(CHR_POSs[i])
-                    mapped_gene = MAPPED_GENEs[i]
-                    gnode = {
-                        '_id': rs_id,
-                        'type': 'SNP',
-                        'contig': contig,
-                        'start': pos,
-                        'end': pos,
-                        'length': 1,
-                        'source': DATA_SOURCE_GWAS,
-                        'name': name,
-                        'info': {
-                            'description': 'SNP ' + rs
-                        }
-                    }
-                    try:
-                        gnode['info']['mapped_gene'] = MAPPED_GENEs[i]
-                    except:
-                        pass
-                    genome_nodes.append(gnode)
-            # add edge node for each SNP
-            for rs_id in this_snp_ids:
-                # add study to edges
-                edge = {'from_id': rs_id , 'to_id': trait_id,
-                        'type': 'association',
-                        'source': DATA_SOURCE_GWAS,
-                        'name': 'GWAS',
-                        'info': study.copy(),
-                       }
-                # parse pvalue
-                try:
-                    edge['info']['p-value'] = float(edge['info'].pop('P-VALUE'))
-                except:
-                    pass
-                edge['info']['description'] = edge['info'].pop('STUDY')
-                edge['_id'] = 'E' + self.hash(str(edge))
-                if edge['_id'] not in known_edge_ids:
-                    known_edge_ids.add(edge['_id'])
-                    edges.append(edge)
+            # there might be multiple traits, compute the trait ids from there MAPPED_TRAIT
+            trait_names = study.pop("MAPPED_TRAIT").split(',')
+            trait_ids = sorted([self.hash(t.strip().lower()) for t in trait_names])
+            # This is redundant but left here for sanity checking
+            # study.pop("MAPPED_TRAIT_URL")
+            # add study to edges
+            edge = {
+                'from_ids': this_snp_ids , 'to_ids': trait_ids,
+                'type': 'association',
+                'source': DATA_SOURCE_GWAS,
+                'name': 'GWAS',
+                'info': study.copy(),
+            }
+            # parse pvalue
+            edge['info']['p-value'] = float(edge['info'].pop('P-VALUE', 0))
+            edge['info']['description'] = edge['info'].pop('STUDY')
+            edge['_id'] = 'E' + self.hash(str(edge))
+            edges.append(edge)
         return genome_nodes, info_nodes, edges
