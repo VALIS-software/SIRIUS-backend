@@ -193,10 +193,10 @@ def load_suggestions():
     traits = []
     query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}  
     qt = QueryTree(query)
-    genes = ["\"" + x["name"] + "\"" for x in qt.find()]
+    genes = [x["name"] for x in qt.find()]
     query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
     qt = QueryTree(query)
-    traits = [ "\"" + x + "\""  for x in qt.find().distinct('info.description')]
+    traits = [x for x in qt.find().distinct('info.description')]
     return {
         'GENE': genes,
         'TRAIT': traits,

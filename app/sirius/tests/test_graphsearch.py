@@ -45,9 +45,18 @@ class GraphSearchText(TimedTestCase):
         
     def test_parse_variant_query_complete(self):
         """ Test valid search text parses to Query """
-        tokens, suggestions, query, is_quoted = self.parse_text('variants of "MAOA"')
+        tokens, suggestions, query, is_quoted = self.parse_text('variants of \"MAOA\"')
         self.assertEqual(len(tokens), 4)
         self.assertEqual(len(suggestions), 1)
+        self.assertEqual(suggestions[-1], "MAOA")
+        self.assertNotEqual(query, None)
+
+    def test_parse_variant_query_prefix_quoted(self):
+        """ Test valid search text parses to Query """
+        tokens, suggestions, query, is_quoted = self.parse_text('variants of "MAO"')
+        self.assertEqual(len(tokens), 4)
+        self.assertEqual(len(suggestions), 2)
+        self.assertEqual(suggestions[-1], "MAOB")
         self.assertNotEqual(query, None)
 
     def test_parse_variant_query_prefix(self):
