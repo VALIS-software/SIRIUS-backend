@@ -9,6 +9,7 @@ from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
+from sirius.parsers.OBOParser import OBOParser_EFO
 from sirius.helpers.constants import TILE_DB_PATH
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
@@ -19,6 +20,8 @@ ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/
 # We use a private source here because the above one is too slow now.
 EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
+DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
+EFO_URL = 'https://github.com/EBISPOT/efo/blob/master/efo.obo'
 
 def download_genome_data():
     " Download Genome Data on to disk "
@@ -68,6 +71,17 @@ def download_genome_data():
     from sirius.tools import automate_encode_upload
     automate_encode_upload.download_search_files()
     os.chdir('..')
+    #dbSNP
+    print("Downloading dbSNP dataset in dbSNP folder")
+    os.mkdir('dbSNP')
+    os.chdir('dbSNP')
+    subprocess.check_call('wget '+DBSNP_URL, shell=True)
+    os.chdir('..')
+    # EFO
+    print("Downloading the EFO Ontology data file")
+    os.mkdir("EFO")
+    os.chdir("EFO")
+    subprocess.check_call('wget '+EFO_URL, shell=True)
     # Finish
     print("All downloads finished")
     os.chdir('..')
@@ -88,13 +102,6 @@ def drop_all_data():
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
-    # ENCODE_bigwig
-#    print("\n*** ENCODE_bigwig ***")
-#    os.chdir('bigwig')
-#    parser = BigWigParser(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
-#    # only upload 1 chromosome for now
-#    parse_upload_data(parser, ENCODE_BIGWIG_URL, ["chr1"])
-#    os.chdir('..')
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
@@ -117,7 +124,8 @@ def parse_upload_all_datasets():
     os.chdir('eQTL')
     parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
     parse_upload_data(parser, {"sourceurl": EQTL_URL})
-    os.chdir('..')# ClinVar
+    os.chdir('..')
+    # ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
     parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
@@ -128,6 +136,16 @@ def parse_upload_all_datasets():
     os.chdir('ENCODE')
     from sirius.tools import automate_encode_upload
     automate_encode_upload.parse_upload_files()
+    os.chdir('..')
+    # dbSNP
+    os.chdir('dbSNP')
+    parse_upload_dbSNP_chunk()
+    os.chdir('..')
+    # EFO
+    print("\n*** EFO ***")
+    os.chdir('EFO')
+    parser = OBOParser_EFO('efo.obo', verbose=True)
+    parse_upload_data(parser, {"sourceurl": EFO_URL})
     os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
@@ -148,7 +166,7 @@ def parse_upload_gff_chunk():
         if finished == True:
             break
     # we only upload info_nodes[0] once here because all the chunks has the same first info node for the dataSource.
-    update_insert_many(InfoNodes, [info_nodes[0]])
+    update_insert_many(InfoNodes, info_nodes[0:1])
     print("InfoNodes uploaded")
 
 def parse_upload_data(parser, metadata={}):
@@ -159,20 +177,36 @@ def parse_upload_data(parser, metadata={}):
     update_insert_many(InfoNodes, info_nodes)
     update_insert_many(Edges, edges)
 
+def parse_upload_dbSNP_chunk():
+    filename = os.path.basename(DBSNP_URL)
+    parser = VCFParser_dbSNP(filename, verbose=True)
+    parser.metadata['sourceurl'] = DBSNP_URL
+    i_chunk = 0
+    while True:
+        finished = parser.parse_chunk()
+        print(f'Parsing and uploading chunk {i_chunk}')
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        update_insert_many(GenomeNodes, genome_nodes)
+        i_chunk += 1
+        if finished == True:
+            break
+    # we only insert the infonode for dbSNP dataSource once
+    update_insert_many(InfoNodes, info_nodes)
+
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
     for idx in ['source', 'type', 'contig', 'start', 'end', 'length', 'info.biosample', 'info.accession', 'info.targets']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
-    print("Creating compound index for type and info.biosample")
+    print("Creating compound index for 'type' and 'info.biosample'")
     GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
     print("InfoNodes")
     for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
-    print("Creating text index 'info.description'")
-    InfoNodes.create_index([('info.description', 'text')], default_language='english')
+    print("Creating text index 'name'")
+    InfoNodes.create_index([('name', 'text')], default_language='english')
     print("Edges")
     for idx in ['source', 'from_id', 'to_id', 'type', 'info.p-value']:
         print("Creating index %s" % idx)

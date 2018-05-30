@@ -23,7 +23,7 @@ class QueryParser:
 
     def is_terminal(self, token):
         return token[0] in self.tokens
-    
+
     def build_variant_query(self, parse_path):
         token = parse_path[0]
         q = None
@@ -38,7 +38,7 @@ class QueryParser:
             return {
               "type": "GenomeNode",
               "filters": {
-                
+
               },
               "toEdges": [
                 {
@@ -55,7 +55,7 @@ class QueryParser:
                       "$text": trait_name
                     },
                     "toEdges": [
-                      
+
                     ]
                   }
                 }
@@ -183,12 +183,12 @@ def get_default_parser_settings():
 def load_suggestions():
     genes = []
     traits = []
-    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}  
+    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}
     qt = QueryTree(query)
     genes = qt.find()
     query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
     qt = QueryTree(query)
-    traits = qt.find().distinct('info.description')
+    traits = qt.find().distinct('name')
     return {
         'GENE': genes,
         'TRAIT': traits,

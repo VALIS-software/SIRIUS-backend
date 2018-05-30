@@ -458,7 +458,7 @@ class OBOParser_EFO(OBOParser):
             "info": {
                 "type": "Term",
                 "created_by": "James Malone",
-                "EFO_ID": "EFO:0000001",
+                "EFO": "0000001",
                 "description": "An experimental factor in Array Express which are essentially the variable aspects ..."
             }
         },
@@ -483,9 +483,11 @@ class OBOParser_EFO(OBOParser):
             d = d.copy()
             if d['type'] != 'Term': continue
             name = d.pop('name')
-            efo_id = d.pop('id')
+            data_id = d.pop('id')
             # skip every thing other than EFO: and GO: for now
-            if not (efo_id.startswith('EFO:') or efo_id.startswith('GO:')): continue
+            key, value = data_id.split(':')
+            if key not in ('EFO', 'GO'): continue
+            d[key] = value
             description = d.pop('def', None)
             trait_id = 'Itrait' + self.hash(name.lower())
             info_node = {
@@ -495,8 +497,12 @@ class OBOParser_EFO(OBOParser):
                 'source': DATA_SOURCE_EFO,
                 'info': d
             }
-            info_node['info']['EFO_ID'] = efo_id
             if description != None:
+                # fix the redundant \\n in the def
+                if description[:2] == '\\n':
+                    description = description[2:]
+                if description[-2:] == '\\n':
+                    description = description[:-2]
                 info_node['info']['description'] = description
             info_nodes.append(info_node)
             if self.verbose and len(info_node) % 100000 == 0:
