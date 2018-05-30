@@ -80,3 +80,9 @@ loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
 # Store all possible genome contigs
 # this should be normalized with the InfoNodes in the future
 loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
+
+# store all loaded genes
+loaded_gene_names = GenomeNodes.distinct('name', {'type': 'gene'})
+
+# store all loaded traits
+loaded_trait_names = InfoNodes.distinct('name', {'type': 'trait'})

@@ -2,6 +2,7 @@ import json
 import re
 from functools import lru_cache
 from sirius.query.QueryTree import QueryTree
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names
 
 def Token(ttype, remainder, value, depth):
     return {
@@ -26,15 +27,16 @@ class QueryParser:
 
     def build_variant_query(self, parse_path):
         token = parse_path[0]
+        print(parse_path[1])
         q = None
         if token[0] == 'OF':
-            gene_name = parse_path[1][0]
+            gene_name = parse_path[1][1][1:-1]
             # TODO: return a boolean track intersecting SNPs with Gene
             return {
                 "query" : "TODO"
             }
         elif token[0] == 'INFLUENCING':
-            trait_name = parse_path[1][0]
+            trait_name = parse_path[1][1][1:-1]
             return {
               "type": "GenomeNode",
               "filters": {
@@ -64,14 +66,15 @@ class QueryParser:
             }
 
     def build_trait_query(self, parse_path):
-        trait_name = parse_path[0][1:-1]
-        return {"type":"InfoNode","filters":{"type":"trait","name": trait_name},"toEdges":[],"limit":150}
+        trait_name = parse_path[0][1][1:-1]
+        return {"type":"InfoNode","filters":{"type":"trait","$text": trait_name},"toEdges":[],"limit":150}
 
     def build_gene_query(self, parse_path):
-        gene_name = parse_path[0][1:-1]
+        gene_name = parse_path[0][1][1:-1]
         return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
     def build_query(self, parse_path):
+        print(parse_path)
         token = parse_path[0]
         if token[0] == 'VARIANTS':
             return self.build_variant_query(parse_path[1:])
@@ -85,20 +88,28 @@ class QueryParser:
         max_parse = max(results, key=lambda x : len(x[-1]))
         max_depth = len(max_parse[2])
         final_suggestions = []
-        for token, token_text, path in [x for x in results if x[0] != 'EOF']:
+        quoted_suggestion = False
+        for token, token_text, path in [x for x in results]:
             if len(path) != max_depth:
                 continue
+            if token == 'EOF':
+                # ignore the EOF and keep giving suggestions for the previous token
+                token = path[-2][0]
+                # set the token text to the text with '"' characters removed
+                token_text = path[-2][1][1:-1]
             if token in self.suggestions:
                 token_text = token_text.strip().lower()
-                # try doing a fuzzy + prefix match with the remainder
+                # try doing a prefix match with the remainder
                 for suggestion in self.suggestions[token]:
                     suggestion_l = suggestion.lower()
                     if token_text in suggestion_l and suggestion_l.index(token_text) == 0:
                         final_suggestions.append(suggestion)
                         if len(final_suggestions) >= max_suggestions:
                             break
+                quoted_suggestion = True
             else:
-                # just return the regex
+                # just return the token string
+                quoted_suggestion = False
                 final_suggestions.append(self.tokens[token])
                 if len(final_suggestions) >= max_suggestions:
                     break
@@ -106,7 +117,7 @@ class QueryParser:
         if max_parse[0] == 'EOF':
             query = self.build_query(max_parse[2])
         paths_to_return = [result[2] for result in results if len(result[2]) == max_depth]
-        return paths_to_return[0], final_suggestions, query
+        return paths_to_return[0], final_suggestions, query, quoted_suggestion
 
     def eat(self, so_far, rule):
         so_far = so_far.strip()
@@ -158,8 +169,8 @@ class QueryParser:
 
 def get_default_parser_settings():
     tokens = {
-        'TRAIT': '"\w+"',
-        'GENE': '"\w+"',
+        'TRAIT': '"(.+?)"',
+        'GENE': '"(.+?)"',
         'INFLUENCING': 'influencing',
         'OF': 'of',
         'VARIANTS': 'variants',
@@ -179,19 +190,10 @@ def get_default_parser_settings():
 
     return tokens, grammar
 
-@lru_cache(maxsize=1)
 def load_suggestions():
-    genes = []
-    traits = []
-    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}
-    qt = QueryTree(query)
-    genes = qt.find()
-    query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
-    qt = QueryTree(query)
-    traits = qt.find().distinct('name')
     return {
-        'GENE': genes,
-        'TRAIT': traits,
+        'GENE': loaded_gene_names,
+        'TRAIT': loaded_trait_names,
     }
 
 @lru_cache(maxsize=1)
@@ -203,11 +205,12 @@ def build_parser(suggestions=None):
 
 def get_suggestions(search_text):
     p = build_parser()
-    tokens, suggestions, query = p.get_suggestions(text)
+    tokens, suggestions, query, quoted_suggestion = p.get_suggestions(search_text)
     return {
         "tokens": tokens,
         "suggestions": suggestions,
         "query": query,
+        "quoted_suggestion": quoted_suggestion,
     }
 
 if __name__ == "__main__":
