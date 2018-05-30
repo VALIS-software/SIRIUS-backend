@@ -26,15 +26,16 @@ class QueryParser:
     
     def build_variant_query(self, parse_path):
         token = parse_path[0]
+        print(parse_path[1])
         q = None
         if token[0] == 'OF':
-            gene_name = parse_path[1][0]
+            gene_name = parse_path[1][1][1:-1]
             # TODO: return a boolean track intersecting SNPs with Gene
             return {
                 "query" : "TODO"
             }
         elif token[0] == 'INFLUENCING':
-            trait_name = parse_path[1][0]
+            trait_name = parse_path[1][1][1:-1]
             return {
               "type": "GenomeNode",
               "filters": {
@@ -64,14 +65,15 @@ class QueryParser:
             }
 
     def build_trait_query(self, parse_path):
-        trait_name = parse_path[0][1:-1]
-        return {"type":"InfoNode","filters":{"type":"trait","name": trait_name},"toEdges":[],"limit":150}
+        trait_name = parse_path[0][1][1:-1]
+        return {"type":"InfoNode","filters":{"type":"trait","$text": trait_name},"toEdges":[],"limit":150}
 
     def build_gene_query(self, parse_path):
-        gene_name = parse_path[0][1:-1]
+        gene_name = parse_path[0][1][1:-1]
         return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
     def build_query(self, parse_path):
+        print(parse_path)
         token = parse_path[0]
         if token[0] == 'VARIANTS':
             return self.build_variant_query(parse_path[1:])
