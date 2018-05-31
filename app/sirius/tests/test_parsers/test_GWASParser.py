@@ -32,15 +32,15 @@ class GWASParserTest(TimedTestCase):
         parser = GWASParser(self.testfile)
         parser.parse()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
-        self.assertEqual(len(genome_nodes), 87, 'Parsing test_GWAS.tsv should give 87 GenomeNodes')
+        self.assertEqual(len(genome_nodes), 0, 'Parsing test_GWAS.tsv should give 0 GenomeNodes')
         for gn in genome_nodes:
             self.assertEqual(gn['_id'][0], 'G', 'GenomeNodes should have _id starting with G')
             for key, typ in (('contig',str), ('start',int), ('end',int), ('length',int), ('name',str), ('type',str), ('source',str), ('info',dict)):
                 self.assertIn(key, gn, f"All GenomeNodes should have key {key}")
                 self.assertTrue(isinstance(gn[key], typ), f'GenomeNodes[{key}] should be type {typ}')
-        self.assertEqual(len(info_nodes), 35, 'Parsing test_GWAS.tsv should give 35 InfoNodes')
+        self.assertEqual(len(info_nodes), 10, 'Parsing test_GWAS.tsv should give 10 InfoNodes')
         self.assertEqual(info_nodes[0]['type'], 'dataSource', 'Parising test_GWAS.tsv should give 1 InfoNode with type dataSource')
-        self.assertEqual(len(edges), 98, 'Parsing test_GWAS.tsv should give 98 Edges')
+        self.assertEqual(len(edges), 145, 'Parsing test_GWAS.tsv should give 145 Edges')
 
 if __name__ == "__main__":
     unittest.main()

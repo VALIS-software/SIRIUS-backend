@@ -12,7 +12,7 @@ class CoreTest(TimedTestCase):
         dfilter = {'type': 'InfoNode', 'filters': {'$text': "cancer"}}
         qt = QueryTree(dfilter)
         n_result = qt.find().count()
-        self.assertGreater(n_result, 200, 'Query cancer traits should return more than 200 InfoNodes')
+        self.assertGreater(n_result, 10, 'Query cancer traits should return more than 200 InfoNodes')
 
     def test_core_views(self):
         """ Test core.annotationtrack.get_annotation_query() """
