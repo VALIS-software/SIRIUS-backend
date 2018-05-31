@@ -222,13 +222,13 @@ class EQTLParser(Parser):
             # create EdgeNode
             from_id = 'Gsnp_rs'+d['exSNP']
             to_id = 'Ggeneid_'+d['exGENEID']
-            edge = {'from_id': from_id, 'to_id': to_id,
-                    'from_type': 'SNP', 'to_type': 'gene',
-                    'type': 'association',
-                    'source': DATA_SOURCE_EQTL,
-                    'name': DATA_SOURCE_EQTL,
-                    'info': dict()
-                   }
+            edge = {
+                'from_id': from_id, 'to_id': to_id,
+                'type': 'association:SNP:gene',
+                'source': DATA_SOURCE_EQTL,
+                'name': DATA_SOURCE_EQTL,
+                'info': dict()
+            }
             for k,v in d.items():
                 if k not in ('exSNP', 'exGENEID', 'exGENE'):
                     edge['info'][k] = v
