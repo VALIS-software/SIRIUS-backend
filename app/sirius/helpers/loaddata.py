@@ -83,6 +83,8 @@ loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
 
 # store all loaded genes
 loaded_gene_names = GenomeNodes.distinct('name', {'type': 'gene'})
+print(f'Loaded {len(loaded_gene_names)} genes')
 
 # store all loaded traits
 loaded_trait_names = InfoNodes.distinct('name', {'type': 'trait'})
+print(f'Loaded {len(loaded_trait_names)} traits')

@@ -14,14 +14,14 @@ from sirius.helpers.constants import TILE_DB_PATH
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
-GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/full'
+GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/ENCFF918ESR.bigWig'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
 EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
-EFO_URL = 'https://github.com/EBISPOT/efo/blob/master/efo.obo'
+EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 
 def download_genome_data():
     " Download Genome Data on to disk "
@@ -82,6 +82,7 @@ def download_genome_data():
     os.mkdir("EFO")
     os.chdir("EFO")
     subprocess.check_call('wget '+EFO_URL, shell=True)
+    os.chdir('..')
     # Finish
     print("All downloads finished")
     os.chdir('..')
