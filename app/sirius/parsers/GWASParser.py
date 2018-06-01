@@ -310,16 +310,16 @@ class GWASParser(Parser):
             edge = {
                 'type': 'association:SNP:trait',
                 'source': DATA_SOURCE_GWAS,
-                'name': 'GWAS Study',
                 'info': study.copy(),
             }
             edge['info']['p-value'] = float(edge['info'].pop('P-VALUE', 0))
             edge['info']['description'] = edge['info'].pop('STUDY')
             # create edges between each snp and each trait
             for snpid in snp_ids:
-                for traitid in trait_ids:
+                for traitid, traitname in zip(trait_ids, trait_names):
                     this_edge = edge.copy()
                     this_edge.update({
+                        'name': traitname, 
                         'from_id': snpid,
                         'to_id': traitid,
                     })

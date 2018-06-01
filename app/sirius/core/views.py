@@ -350,7 +350,8 @@ def node_relations(data_id):
         else:
             description = "data not found"
         result.append({
-            'title': source_str + ' ' + edge['type'].capitalize(),
+            'title': edge['name'],
+            'type': edge['type'],
             'source': edge['source'],
             'description': description,
             'id': edge['_id']
@@ -363,7 +364,8 @@ def node_relations(data_id):
         else:
             description = "data not found"
         result.append({
-            'title': source_str + ' ' + edge['type'].capitalize(),
+            'title': edge['name'],
+            'type': edge['type'],
             'source': edge['source'],
             'description': description,
             'id': edge['_id']
@@ -378,7 +380,8 @@ def edge_relations(edge):
             'title': 'From ' + from_data['type'],
             'source': from_data['source'],
             'description': from_data['name'],
-            'id': edge['from_id']
+            'id': edge['from_id'],
+            'type': from_data['type']
         })
     to_data = get_data_with_id(edge['to_id'])
     if to_data:
@@ -386,7 +389,8 @@ def edge_relations(edge):
             'title': 'To ' + to_data['type'],
             'source': to_data['source'],
             'description': to_data['name'],
-            'id': edge['to_id']
+            'id': edge['to_id'],
+            'type': to_data['type']
         })
     return result
 

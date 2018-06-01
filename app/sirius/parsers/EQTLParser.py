@@ -226,7 +226,7 @@ class EQTLParser(Parser):
                 'from_id': from_id, 'to_id': to_id,
                 'type': 'association:SNP:gene',
                 'source': DATA_SOURCE_EQTL,
-                'name': DATA_SOURCE_EQTL,
+                'name': d['exGENE'] + ' Expression',
                 'info': dict()
             }
             for k,v in d.items():

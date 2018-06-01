@@ -19,8 +19,8 @@ def get_annotation_query_results(query):
         contig_genome_data[contig] = []
         contig_start_bps[contig] = []
     # put the results in to cache
-    for gnode in qt.find(projection=['_id', 'contig', 'start', 'end', 'name']):
-        genome_data = (gnode['start'], gnode['end'], gnode['_id'], gnode['name'])
+    for gnode in qt.find(projection=['_id', 'contig', 'start', 'end', 'name', 'type']):
+        genome_data = (gnode['start'], gnode['end'], gnode['_id'], gnode['name'], gnode['type'])
         contig_genome_data[gnode['contig']].append(genome_data)
     # sort the results based on the start
     for contig, genome_data_list in contig_genome_data.items():
@@ -72,7 +72,7 @@ def get_genome_segments(genome_data_list, sampling_rate, track_height_px):
     last_end, last_y = -float('inf'), 0
     padding = 20 * sampling_rate
     for gnome_data in genome_data_list:
-        (start_bp, end_bp, fid, name) = gnome_data
+        (start_bp, end_bp, fid, name, gtype) = gnome_data
         will_append = False
         if start_bp > last_end + padding:
             will_append = True
@@ -95,7 +95,7 @@ def get_genome_segments(genome_data_list, sampling_rate, track_height_px):
                 'heightPx': ANNOTATION_HEIGHT_PX,
                 "segments": [[0, end_bp-start_bp+1, None, color, 20]],
                 'title': name,
-                'aggregation': False
+                'type': gtype
             }
             ret.append(r_data)
     return ret
@@ -142,7 +142,7 @@ def get_aggregation_segments(coords, sampling_rate, track_height_px):
                   'yOffsetPx': 0,
                   'heightPx': track_height_px,
                   'segments': [[0, endBp-startBp+1, None, color, 20]],
-                  'aggregation': True
+                  'type': 'aggregation'
                  }
         ret.append(r_data)
         c_begin = c_end+1
