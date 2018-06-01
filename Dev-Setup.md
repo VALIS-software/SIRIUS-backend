@@ -182,6 +182,7 @@ This will run flask in command line mode.
 At this point, you can run valis in dev mode
 
 ```
+cd ~/src/VALIS-frontend
 npm run dev
 ```
 
