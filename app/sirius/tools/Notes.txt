@@ -10,9 +10,5 @@ Steps for building a full database.
    This will download all the rest of the ENCODE datasets, then parse and upload them one by one.
    This step will add 1000 M GenomeNodes for intervals to MongoDB, and will take several hours to finish.
 
-3. To add the dbSNP dataset, one can use this command:
-   ./automate_dbSNP_upload.py
-   This will add 37.3 M GenomeNodes for SNPs in the database.
-
-Finishing all 3 steps will end up with a MongoDB taking 100GB or more.
+Finishing all steps will end up with a MongoDB potentially taking 100GB or more.
 

@@ -115,7 +115,7 @@ class FASTAParser(Parser):
             })
         t4 = time.time()
         if self.verbose:
-            print(f"Wrote distributino matrices down-sampled to tiledb; {t4-t3:.2f} s")
+            print(f"Wrote distribution matrices down-sampled to tiledb; {t4-t3:.2f} s")
         return stored_data
 
     def get_mongo_nodes(self):

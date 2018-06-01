@@ -543,14 +543,14 @@ class VCFParser_ClinVar(VCFParser):
                 continue
             for trait_name, trait_disdb in zip(trait_names, trait_CLNDISDBs):
                 trait_desp = trait_name.replace("_"," ")
-                trait_id = 'Itrait_' + self.hash(trait_desp.lower())
+                trait_id = 'Itrait' + self.hash(trait_desp.lower())
                 this_trait_ids.append(trait_id)
-                short_name = (''.join(s[0] for s in trait_desp.split())).upper()
+                #short_name = (''.join(s[0] for s in trait_desp.split())).upper()
                 if trait_id not in known_traits:
                     infonode = {
                         '_id': trait_id,
                         'type': 'trait',
-                        'name': short_name,
+                        'name': trait_desp,
                         'source': DATA_SOURCE_CLINVAR,
                         'info': dict()
                     }
@@ -567,9 +567,9 @@ class VCFParser_ClinVar(VCFParser):
             for trait_id in this_trait_ids:
                 # add study to edges
                 edge = {'from_id': variant_id , 'to_id': trait_id,
-                        'type': 'association',
+                        'type': f'association:{variant_type}:trait',
                         'source': DATA_SOURCE_CLINVAR,
-                        'name': 'ClinVar',
+                        'name': 'ClinVar Study',
                         'info': {
                             'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
                             'p-value': 0,

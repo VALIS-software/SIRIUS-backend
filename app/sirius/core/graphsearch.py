@@ -2,6 +2,7 @@ import json
 import re
 from functools import lru_cache
 from sirius.query.QueryTree import QueryTree
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names
 
 def Token(ttype, remainder, value, depth):
     return {
@@ -23,7 +24,7 @@ class QueryParser:
 
     def is_terminal(self, token):
         return token[0] in self.tokens
-    
+
     def build_variant_query(self, parse_path):
         token = parse_path[0]
         print(parse_path[1])
@@ -39,7 +40,7 @@ class QueryParser:
             return {
               "type": "GenomeNode",
               "filters": {
-                
+
               },
               "toEdges": [
                 {
@@ -56,7 +57,7 @@ class QueryParser:
                       "$text": trait_name
                     },
                     "toEdges": [
-                      
+
                     ]
                   }
                 }
@@ -189,19 +190,10 @@ def get_default_parser_settings():
 
     return tokens, grammar
 
-@lru_cache(maxsize=1)
 def load_suggestions():
-    genes = []
-    traits = []
-    query = {"type": "GenomeNode", "filters": {"type": "gene"}, "toEdges": []}  
-    qt = QueryTree(query)
-    genes = [x["name"] for x in qt.find()]
-    query = {"type": "InfoNode", "filters": {"type": "trait"}, "toEdges": []}
-    qt = QueryTree(query)
-    traits = [x for x in qt.find().distinct('info.description')]
     return {
-        'GENE': genes,
-        'TRAIT': traits,
+        'GENE': loaded_gene_names,
+        'TRAIT': loaded_trait_names,
     }
 
 @lru_cache(maxsize=1)
