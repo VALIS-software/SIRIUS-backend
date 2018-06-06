@@ -3,7 +3,7 @@ import re
 from functools import lru_cache
 from sirius.query.QueryTree import QueryTree
 from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names
-
+from sirius.core.utilities import HashableDict
 def Token(ttype, remainder, value, depth):
     return {
         "type": ttype,
@@ -27,7 +27,6 @@ class QueryParser:
 
     def build_variant_query(self, parse_path):
         token = parse_path[0]
-        print(parse_path[1])
         q = None
         if token[0] == 'OF':
             gene_name = parse_path[1][1][1:-1]
@@ -74,7 +73,6 @@ class QueryParser:
         return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
     def build_query(self, parse_path):
-        print(parse_path)
         token = parse_path[0]
         if token[0] == 'VARIANTS':
             return self.build_variant_query(parse_path[1:])
@@ -85,11 +83,16 @@ class QueryParser:
 
     def get_suggestions(self, input_text, max_suggestions=15):
         results = self.parse(input_text, self.grammar['ROOT'])
-        max_parse = max(results, key=lambda x : len(x[-1]))
+        if (len(results) == 0) :
+            return []
+        return self.build_suggestions_from_parse(results, max_suggestions)
+    
+    def build_suggestions_from_parse(self, results, max_suggestions=15):
+        max_parse = max(results, key=lambda x : len(x[-2]))
         max_depth = len(max_parse[2])
         final_suggestions = []
         quoted_suggestion = False
-        for token, token_text, path in [x for x in results]:
+        for token, token_text, path, is_terminal in [x for x in results]:
             if len(path) != max_depth:
                 continue
             if token == 'EOF':
@@ -136,9 +139,15 @@ class QueryParser:
         if (rule == 'EOF' and len(so_far) == 0):
             new_path = path[:]
             new_path.append(('EOF', ''))
-            return [(rule, so_far, new_path)]
+            return [(rule, so_far, new_path, True)]
         if (isinstance(rule, str) and rule in self.tokens):
-            return [(rule, so_far, path[:])]
+            parsed, rest = self.eat(so_far, rule)
+            if parsed != None:
+                path_copy = path[:]
+                path_copy.append((rule, parsed))
+                return [(rule, parsed, path_copy, True)]
+            else:
+                return [(rule, so_far, path[:], False)]
         if (isinstance(rule, str) and rule in self.grammar):
             return self.parse(so_far, self.grammar[rule], path[:])
         elif (rule[0] == 'ANY'):
@@ -164,6 +173,31 @@ class QueryParser:
                         return self.parse(rest, rule[2], new_path)
                     else:
                         return self.parse(rest, ['ALL'] + rule[2:], new_path)
+            elif (rule[1] in self.grammar):
+                try_parse = self.parse(so_far, self.grammar[rule[1]], path[:])
+                max_parse = max(try_parse, key=lambda x : len(x[-2]))
+                max_depth = len(max_parse[2])
+                paths = []
+                for token, token_text, sub_path, is_terminal in [x for x in try_parse]:
+                    if len(sub_path) != max_depth:
+                        continue
+                    if (is_terminal):
+                        # go to the next parse path (rule[2]) and add results:
+                        parsed = ' ' .join([x[1] for x in sub_path[len(path):]]).strip()
+                        cleaned_so_far = so_far.strip()
+                        idx_to = cleaned_so_far.index(parsed)
+                        rest = cleaned_so_far[idx_to + len(parsed):]
+                        if (len(rule[2:]) == 0):
+                            paths.append((token, token_text, path, is_terminal))
+                        if (len(rule[2:]) == 1):
+                            return self.parse(rest, rule[2], sub_path[:])
+                        else:
+                            return self.parse(rest, ['ALL'] + rule[2:], sub_path[:])
+                    else:
+                        paths.append((token, token_text, sub_path, is_terminal))
+                
+                return paths
+                
         return []
 
 
@@ -176,24 +210,37 @@ def get_default_parser_settings():
         'VARIANTS': 'variants',
         'GENE_T': 'gene',
         'TRAIT_T': 'trait',
+        'NEAR': 'near',
+        'IN': 'in',
+        'PROMOTER': 'promoters',
+        'ENHANCER': 'enhancers',
+        'CELL_TYPE': '"(.+?)"'
     }
 
     grammar = {
         'VARIANT_OF_ASSOCIATION': ['ALL', 'OF', 'GENE', 'EOF'],
-        'VARIANT_INFLUENCING_ASSOCIATION': ['ALL', 'INFLUENCING', 'TRAIT', 'EOF'],
-        'VARIANT_ASSOCIATION': ['ANY', 'VARIANT_INFLUENCING_ASSOCIATION', 'VARIANT_OF_ASSOCIATION'],
+        'VARIANT_INFLUENCING_ASSOCIATION': ['ALL', 'INFLUENCING', 'TRAIT',  'EOF'],
+        'VARIANT_ASSOCIATION': ['ANY', 'VARIANT_INFLUENCING_ASSOCIATION', 'VARIANT_OF_ASSOCIATION',  'VARIANT_NEAR'],
+        'VARIANT_NEAR': ['ALL', 'NEAR', 'CELL_ANNOTATION', 'EOF'],
         'VARIANT_QUERY': ['ALL', 'VARIANTS', 'VARIANT_ASSOCIATION'],
         'GENE_QUERY' : ['ALL', 'GENE_T', 'GENE', 'EOF'],
+        'ANNOTATION_TYPE': ['ANY', 'PROMOTER', 'ENHANCER'],
+        'CELL_ANNOTATION' : ['ALL',  'ANNOTATION_TYPE', 'IN', 'CELL_TYPE'],
+        'ANNOTATION_QUERY' : ['ALL', 'CELL_ANNOTATION', 'EOF'],
         'TRAIT_QUERY' : ['ALL', 'TRAIT_T', 'TRAIT', 'EOF'],
-        'ROOT': ['ANY', 'VARIANT_QUERY', 'GENE_QUERY', 'TRAIT_QUERY']
+        'ROOT': ['ANY', 'VARIANT_QUERY', 'GENE_QUERY', 'TRAIT_QUERY', 'ANNOTATION_QUERY']
     }
 
     return tokens, grammar
 
 def load_suggestions():
+    genes = ['MAOA', 'MAOB', 'PCSK9', 'NF2']
+    traits = ['Cancer', 'Alzheimers', 'Depression']
     return {
-        'GENE': loaded_gene_names,
-        'TRAIT': loaded_trait_names,
+        'GENE': genes,
+        'TRAIT': traits,
+        'CELL_TYPE': ['liver cells', 'lung cells', 'heart cells'],
+        'ANNOTATION_TYPE': ['promoters', 'enhancers'],
     }
 
 @lru_cache(maxsize=1)
@@ -221,8 +268,10 @@ if __name__ == "__main__":
         suggestions = {
             'GENE': genes,
             'TRAIT': traits,
+            'CELL_TYPE': ['liver cells', 'lung cells', 'heart cells'],
+            'ANNOTATION_TYPE': ['promoters', 'enhancers'],
         }
-        p = build_parser(suggestions)
-        text = input("Enter a search: ")
+        p = build_parser(HashableDict(suggestions))
+        text = input("Enter a search:")
         result = p.get_suggestions(text)
         print(result)
