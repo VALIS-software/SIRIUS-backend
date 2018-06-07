@@ -27,19 +27,7 @@ class QueryParser:
     def build_variant_query(self, parse_path):
         token = parse_path[0]
         q = None
-        if token.rule == 'OF':
-            print(parse_path)
-            gene_name = parse_path[1].value[1:-1]
-            # TODO: return a boolean track intersecting SNPs with Gene
-            return {
-                "query" : "TODO"
-            }
-        elif token.rule == 'NEAR':
-            print(parse_path)
-            return {
-                "query" : "TODO"
-            }
-        elif token.rule == 'INFLUENCING':
+        if token.rule == 'INFLUENCING':
             trait_name = parse_path[1].value[1:-1]
             return {
               "type": "GenomeNode",
@@ -66,7 +54,7 @@ class QueryParser:
                   }
                 }
               ],
-              "limit": 1000000
+              "limit": 10000000
             }
 
     def build_trait_query(self, parse_path):
@@ -78,9 +66,20 @@ class QueryParser:
         return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
     def build_cell_query(self, parse_path):
-        print(parse_path)
+        cell_type = parse_path[2].value[1:-1]
+        if(parse_path[0].rule == 'PROMOTER'):
+            annotation_type = "Promoter-like"
+        else:
+            annotation_type = "Enhancer-like"
         return {
-            "query" : "TODO"
+            "type": "GenomeNode",
+            "filters": {
+                "type": annotation_type,
+                "info.biosample": cell_type
+            },
+            "toEdges": [],
+            "arithmetics": [],
+            "limit": 2000000
         }
 
     def build_query(self, parse_path):
@@ -231,11 +230,7 @@ def get_default_parser_settings():
     }
 
     grammar = {
-        'VARIANT_OF_ASSOCIATION': [ALL, 'OF', 'GENE', EOF],
-        'VARIANT_INFLUENCING_ASSOCIATION': [ALL, 'INFLUENCING', 'TRAIT',  EOF],
-        'VARIANT_ASSOCIATION': [ANY, 'VARIANT_INFLUENCING_ASSOCIATION', 'VARIANT_OF_ASSOCIATION',  'VARIANT_NEAR'],
-        'VARIANT_NEAR': [ALL, 'NEAR', 'CELL_ANNOTATION', EOF],
-        'VARIANT_QUERY': [ALL, 'VARIANTS', 'VARIANT_ASSOCIATION'],
+        'VARIANT_QUERY': [ALL, 'VARIANTS', 'INFLUENCING', 'TRAIT',  EOF],
         'GENE_QUERY' : [ALL, 'GENE_T', 'GENE', EOF],
         'ANNOTATION_TYPE': [ANY, 'PROMOTER', 'ENHANCER'],
         'CELL_ANNOTATION' : [ALL,  'ANNOTATION_TYPE', 'IN', 'CELL_TYPE'],
