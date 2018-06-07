@@ -2,7 +2,7 @@ import json
 import re
 from functools import lru_cache
 from sirius.query.QueryTree import QueryTree
-from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types
 from sirius.core.utilities import HashableDict
 from collections import namedtuple
 
@@ -28,8 +28,14 @@ class QueryParser:
         token = parse_path[0]
         q = None
         if token.rule == 'OF':
+            print(parse_path)
             gene_name = parse_path[1].value[1:-1]
             # TODO: return a boolean track intersecting SNPs with Gene
+            return {
+                "query" : "TODO"
+            }
+        elif token.rule == 'NEAR':
+            print(parse_path)
             return {
                 "query" : "TODO"
             }
@@ -71,6 +77,12 @@ class QueryParser:
         gene_name = parse_path[0].value[1:-1]
         return {"type":"GenomeNode","filters":{"type":"gene","name": gene_name},"toEdges":[],"limit":150}
 
+    def build_cell_query(self, parse_path):
+        print(parse_path)
+        return {
+            "query" : "TODO"
+        }
+
     def build_query(self, parse_path):
         token = parse_path[0]
         if token.rule == 'VARIANTS':
@@ -79,6 +91,8 @@ class QueryParser:
             return self.build_gene_query(parse_path[1:])
         elif token.rule == 'TRAIT_T':
             return self.build_trait_query(parse_path[1:])
+        elif token.rule == 'PROMOTER' or token.rule == 'ENHANCER':
+            return self.build_cell_query(parse_path)
 
     def get_suggestions(self, input_text, max_suggestions=15):
         results = self.parse(input_text, self.grammar[ROOT])
@@ -232,13 +246,12 @@ def get_default_parser_settings():
 
     return tokens, grammar
 
+@lru_cache(maxsize=1)
 def load_suggestions():
-    genes = ['MAOA', 'MAOB', 'PCSK9', 'NF2']
-    traits = ['Cancer', 'Alzheimers', 'Depression']
     return {
-        'GENE': genes,
-        'TRAIT': traits,
-        'CELL_TYPE': ['liver cells', 'lung cells', 'heart cells'],
+        'GENE': loaded_gene_names,
+        'TRAIT': loaded_trait_names,
+        'CELL_TYPE': loaded_cell_types,
         'ANNOTATION_TYPE': ['promoters', 'enhancers'],
     }
 

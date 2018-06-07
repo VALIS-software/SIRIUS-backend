@@ -85,6 +85,10 @@ class GraphSearchText(TimedTestCase):
         tokens, suggestions, query, is_quoted = self.parse_text('variants near enhancers in "heart cell"')
         self.assertEqual(tokens[2][0], 'ENHANCER')
 
+    def test_parse_cell_query(self):
+        """ Test enhancer query parses properly """
+        tokens, suggestions, query, is_quoted = self.parse_text('enhancers in "heart cell"')
+        self.assertNotEqual(query, None)
 
 if __name__ == "__main__":
     unittest.main()
