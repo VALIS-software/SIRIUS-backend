@@ -26,7 +26,7 @@ class GraphSearchText(TimedTestCase):
         """ Test variant search returns correct suggestions """
         tokens, suggestions, query, is_quoted = self.parse_text('variants')
         self.assertEqual(len(tokens), 1)
-        self.assertEqual(len(suggestions), 2)
+        self.assertEqual(len(suggestions), 3)
         self.assertEqual(query, None)
 
     def test_parse_variant_query_missing_gene(self):
@@ -74,6 +74,17 @@ class GraphSearchText(TimedTestCase):
         tokens3, suggestions3, query3, is_quoted3 = self.parse_text('    variants of  "MAOA"    ')
         self.assertEqual(len(tokens1), len(tokens2))
         self.assertEqual(len(tokens2), len(tokens3))
+
+    def test_parse_promoter_query(self):
+        """ Test promoter query parses properly """
+        tokens, suggestions, query, is_quoted = self.parse_text('variants near promoters in "heart cell"')
+        self.assertEqual(tokens[2][0], 'PROMOTER')
+    
+    def test_parse_enhancer_query(self):
+        """ Test enhancer query parses properly """
+        tokens, suggestions, query, is_quoted = self.parse_text('variants near enhancers in "heart cell"')
+        self.assertEqual(tokens[2][0], 'ENHANCER')
+
 
 if __name__ == "__main__":
     unittest.main()
