@@ -242,6 +242,11 @@ class GFFParser(Parser):
             d['attributes'][key] = value
         return d
 
+class GFFParser_RefSeq(GFFParser):
+    """
+    GFFParser_RefSeq class is a subclass of GFFParser class.
+    It is specifically designed to parse the RefSeq GFF3 file.
+    """
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
@@ -430,3 +435,8 @@ class GFFParser(Parser):
         if self.verbose:
             print("Parsing GFF into mongo nodes finished.")
         return genome_nodes, info_nodes, edges
+
+class GFFParser_ENSEMBL(GFFParser):
+    """ A subclass of GFFParser that is specifically designed for parsing the ENSEMBL gff3 file """
+    def get_mongo_nodes(self):
+        pass
