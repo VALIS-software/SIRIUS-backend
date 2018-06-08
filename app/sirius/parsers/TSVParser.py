@@ -1,8 +1,8 @@
-import os
+import os, copy
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_GWAS
+from sirius.helpers.constants import DATA_SOURCE_GWAS, DATA_SOURCE_ENCODEbigwig
 
-class GWASParser(Parser):
+class TSVParser(Parser):
     """
     Parser for the GWAS .tsv file format
 
@@ -52,9 +52,9 @@ class GWASParser(Parser):
 
     Examples
     --------
-    Initiate a GWASParser:
+    Initiate a TSVParser:
 
-    >>> parser = GWASParser("gwas.tsv")
+    >>> parser = TSVParser("gwas.tsv")
 
     Parse the file:
 
@@ -101,7 +101,7 @@ class GWASParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = GWASParser('GWAS.tsv')
+        >>> parser = TSVParser('GWAS.tsv')
         >>> parser.parse()
 
         The parsed data are stored in self.data, which contains self.metadata and self.studies:
@@ -157,6 +157,8 @@ class GWASParser(Parser):
             if self.verbose and len(self.studies) % 100000 == 0:
                 print("%d data parsed" % len(self.studies), end='\r')
 
+class TSVParser_GWAS(TSVParser):
+    """ Subclass of TSVParser specifically designed to parse the GWAS tsv file """
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
@@ -184,7 +186,7 @@ class GWASParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = GWASParser('GWAS.tsv')
+        >>> parser = TSVParser_GWAS('GWAS.tsv')
         >>> parser.parse()
 
         Get the Mongo nodes:
@@ -299,6 +301,7 @@ class GWASParser(Parser):
                     info_node = {
                         '_id': traitid,
                         'name': name,
+                        'type': 'trait',
                         'source': DATA_SOURCE_GWAS,
                         'info': {
                             urikey: urivalue,
@@ -319,10 +322,42 @@ class GWASParser(Parser):
                 for traitid, traitname in zip(trait_ids, trait_names):
                     this_edge = edge.copy()
                     this_edge.update({
-                        'name': traitname, 
+                        'name': traitname,
                         'from_id': snpid,
                         'to_id': traitid,
                     })
                     this_edge['_id'] = 'E' + self.hash(str(this_edge))
                     edges.append(this_edge)
+        return genome_nodes, info_nodes, edges
+
+class TSVParser_ENCODEbigwig(TSVParser):
+    """ Subclass of TSVParser, to parse the ENCODE bigwig tsv metadata """
+    def get_mongo_nodes(self):
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = {"_id": 'I'+DATA_SOURCE_ENCODEbigwig, "type": "dataSource", "name": DATA_SOURCE_ENCODEbigwig, "source": DATA_SOURCE_ENCODEbigwig}
+        info_node['info'] = self.metadata.copy()
+        info_nodes.append(info_node)
+        # parse each
+        for d in copy.deepcopy(self.studies):
+            accession = d.pop("File accession")
+            assay = d.pop("Assay")
+            biosample = d["Biosample term name"]
+            outtype = d["Output type"]
+            fileurl = d.pop("File download URL")
+            info_node = {
+                '_id': 'Ieb' + accession,
+                'name': accession,
+                'type': 'bigwig',
+                'source': DATA_SOURCE_ENCODEbigwig,
+                'info': d
+            }
+            info_node['info'].update({
+                'accession': accession,
+                'assay': assay,
+                'biosample': biosample,
+                'outtype': outtype,
+                'fileurl': fileurl
+            })
+            info_nodes.append(info_node)
         return genome_nodes, info_nodes, edges
