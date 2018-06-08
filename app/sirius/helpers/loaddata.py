@@ -88,3 +88,7 @@ print(f'Loaded {len(loaded_gene_names)} genes')
 # store all loaded traits
 loaded_trait_names = InfoNodes.distinct('name', {'type': 'trait'})
 print(f'Loaded {len(loaded_trait_names)} traits')
+
+# store all loaded cell types
+loaded_cell_types = InfoNodes.distinct('info.biosample', {'type': 'ENCODE_accession'})
+print(f'Loaded {len(loaded_cell_types)} cell types')

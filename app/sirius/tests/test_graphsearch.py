@@ -26,14 +26,7 @@ class GraphSearchText(TimedTestCase):
         """ Test variant search returns correct suggestions """
         tokens, suggestions, query, is_quoted = self.parse_text('variants')
         self.assertEqual(len(tokens), 1)
-        self.assertEqual(len(suggestions), 2)
-        self.assertEqual(query, None)
-
-    def test_parse_variant_query_missing_gene(self):
-        """ Test autocomplete of gene names """
-        tokens, suggestions, query, is_quoted = self.parse_text('variants of ')
-        self.assertEqual(len(tokens), 2)
-        self.assertEqual(len(suggestions), 4)
+        self.assertEqual(len(suggestions), 1)
         self.assertEqual(query, None)
 
     def test_parse_variant_query_influencing(self):
@@ -42,38 +35,31 @@ class GraphSearchText(TimedTestCase):
         self.assertEqual(len(tokens), 2)
         self.assertEqual(len(suggestions), 3)
         self.assertEqual(query, None)
-        
-    def test_parse_variant_query_complete(self):
+
+    def test_parse_gene_query_complete(self):
         """ Test valid search text parses to Query """
-        tokens, suggestions, query, is_quoted = self.parse_text('variants of \"MAOA\"')
-        self.assertEqual(len(tokens), 4)
+        tokens, suggestions, query, is_quoted = self.parse_text('gene \"MAOA\"')
+        self.assertEqual(len(tokens), 3)
         self.assertEqual(len(suggestions), 1)
+        self.assertEqual(tokens[0].rule, 'GENE_T')
         self.assertEqual(suggestions[-1], "MAOA")
         self.assertNotEqual(query, None)
 
-    def test_parse_variant_query_prefix_quoted(self):
+    def test_parse_gene_query_prefix_quoted(self):
         """ Test valid search text parses to Query """
-        tokens, suggestions, query, is_quoted = self.parse_text('variants of "MAO"')
-        self.assertEqual(len(tokens), 4)
+        tokens, suggestions, query, is_quoted = self.parse_text('gene "MAO"')
+        self.assertEqual(len(tokens), 3)
+        self.assertEqual(tokens[0].rule, 'GENE_T')
         self.assertEqual(len(suggestions), 2)
         self.assertEqual(suggestions[-1], "MAOB")
         self.assertNotEqual(query, None)
-
-    def test_parse_variant_query_prefix(self):
-        """ Test token prefix search works """
-        tokens, suggestions, query, is_quoted = self.parse_text('variants of MAO')
-        self.assertEqual(len(tokens), 2)
-        self.assertEqual(len(suggestions), 2)
-        self.assertEqual(suggestions[-1], "MAOB")
-        self.assertEqual(query, None)
-
-    def test_parse_variant_query_extra_spaces(self):
-        """ Test spaces around tokens are ignored """
-        tokens1, suggestions1, query1, is_quoted1 = self.parse_text('variants    of    "MAOA"    ')
-        tokens2, suggestions2, query2, is_quoted2 = self.parse_text('    variants    of  "MAOA"    ')
-        tokens3, suggestions3, query3, is_quoted3 = self.parse_text('    variants of  "MAOA"    ')
-        self.assertEqual(len(tokens1), len(tokens2))
-        self.assertEqual(len(tokens2), len(tokens3))
+    
+    def test_parse_cell_query(self):
+        """ Test enhancer query parses properly """
+        tokens, suggestions, query, is_quoted = self.parse_text('enhancers in "heart cell"')
+        self.assertEqual(query['filters']['type'], 'Enhancer-like')
+        self.assertEqual(query['filters']['info.biosample'], 'heart cell')
+        self.assertNotEqual(query, None)
 
 if __name__ == "__main__":
     unittest.main()
