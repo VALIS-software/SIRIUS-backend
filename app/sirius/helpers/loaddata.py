@@ -19,11 +19,11 @@ def load_mongo_data_information():
           'description': 'Variants related to traits or diseases.',
           'depends': {DATA_SOURCE_GWAS, DATA_SOURCE_EQTL}
         },
-        { 'track_type': TRACK_TYPE_EQTL,
-          'title': 'Quantitative Trait Loci',
-          'description': 'Variants related to changes in gene expression or other quantitative measures.',
-          'depends': {DATA_SOURCE_EQTL}
-        },
+        # { 'track_type': TRACK_TYPE_EQTL,
+        #   'title': 'Quantitative Trait Loci',
+        #   'description': 'Variants related to changes in gene expression or other quantitative measures.',
+        #   'depends': {DATA_SOURCE_EQTL}
+        # },
         { 'track_type': TRACK_TYPE_ENCODE,
           'title': 'Encyclopedia of DNA Elements',
           'description': 'Comprehensive parts list of functional elements in the human genome.',

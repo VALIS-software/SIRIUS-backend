@@ -87,31 +87,31 @@ def track_info():
 
     """
     mock_track_types_info = [
-        {
-            'track_type': TRACK_TYPE_SEQUENCE,
-            'title': 'Sequence Tracks',
-            'description': 'Raw sequence data'
-        },
+        # {
+        #     'track_type': TRACK_TYPE_SEQUENCE,
+        #     'title': 'Sequence Tracks',
+        #     'description': 'Raw sequence data'
+        # },
         {
             'track_type': TRACK_TYPE_FUNCTIONAL,
             'title': 'Functional Tracks',
             'description': 'DNase, RNASeq, ChIP, ATAC-Seq and more'
         },
-        {
-            'track_type': TRACK_TYPE_3D,
-            'title': '3D Structure',
-            'description': 'Contact Maps, Chromatin Structure and more'
-        },
-        {
-            'track_type': TRACK_TYPE_NETWORK,
-            'title': 'Network Tracks',
-            'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
-        },
-        {
-            'track_type': TRACK_TYPE_BOOLEAN,
-            'title': 'Boolean Tracks',
-            'description': 'Intersection operations between annotation tracks'
-        }
+        # {
+        #     'track_type': TRACK_TYPE_3D,
+        #     'title': '3D Structure',
+        #     'description': 'Contact Maps, Chromatin Structure and more'
+        # },
+        # {
+        #     'track_type': TRACK_TYPE_NETWORK,
+        #     'title': 'Network Tracks',
+        #     'description': 'Relationships between variants or genes: co-expression, co-inheritance, co-regulation'
+        # },
+        # {
+        #     'track_type': TRACK_TYPE_BOOLEAN,
+        #     'title': 'Boolean Tracks',
+        #     'description': 'Intersection operations between annotation tracks'
+        # }
     ]
     return json.dumps(mock_track_types_info + loaded_track_types_info)
 
