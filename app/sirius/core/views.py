@@ -303,7 +303,7 @@ def distinct_values(index):
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
         QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets'},
-        QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types'},
+        QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype'},
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:

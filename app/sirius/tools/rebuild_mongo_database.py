@@ -6,7 +6,7 @@ from sirius.mongo.upload import update_insert_many
 from sirius.parsers.GFFParser import GFFParser
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
-from sirius.parsers.GWASParser import GWASParser
+from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
 from sirius.parsers.OBOParser import OBOParser_EFO
@@ -15,7 +15,7 @@ from sirius.helpers.constants import TILE_DB_PATH
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
-ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/ENCFF918ESR.bigWig'
+ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
 EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
@@ -28,13 +28,13 @@ def download_genome_data():
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
-#    # ENCODE sample bigwig
-#    print("Downloading ENCODE sample to bigwig folder")
-#    os.mkdir('bigwig')
-#    os.chdir('bigwig')
-#    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
-#    os.chdir('..')
-#    # GRCh38_fasta
+    # ENCODE bigwig
+    print("Downloading ENCODE sample to bigwig folder")
+    os.mkdir('encode_bigwig')
+    os.chdir('encode_bigwig')
+    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
+    os.chdir('..')
+    # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
     os.mkdir('GRCh38_fasta')
     os.chdir('GRCh38_fasta')
@@ -103,6 +103,12 @@ def drop_all_data():
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
+    # ENCODE bigWig
+    print("*** ENCODE_bigwig ***")
+    os.chdir('encode_bigwig')
+    parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+    parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
+    os.chdir('..')
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
@@ -117,7 +123,7 @@ def parse_upload_all_datasets():
     # GWAS
     print("\n*** GWAS ***")
     os.chdir('gwas')
-    parser = GWASParser('gwas.tsv', verbose=True)
+    parser = TSVParser_GWAS('gwas.tsv', verbose=True)
     parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
     # eQTL
@@ -203,7 +209,7 @@ def build_mongo_index():
     print("Creating compound index for 'type' and 'info.biosample'")
     GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
     print("InfoNodes")
-    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types']:
+    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
     print("Creating text index 'name'")
