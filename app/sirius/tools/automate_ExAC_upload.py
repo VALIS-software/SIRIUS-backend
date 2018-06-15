@@ -25,7 +25,7 @@ def parse_upload():
     parser.metadata['sourceurl'] = ExAC_URL
     i_chunk = 0
     while True:
-        finished = parser.parse_chunk()
+        finished = parser.parse_chunk(100000)
         print(f'Parsing and uploading chunk {i_chunk}')
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         update_insert_many(GenomeNodes, genome_nodes)
