@@ -8,7 +8,7 @@ from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser
-from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
+from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
 from sirius.helpers.constants import TILE_DB_PATH
 
@@ -22,6 +22,7 @@ EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
+ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 
 def download_genome_data():
     " Download Genome Data on to disk "
@@ -82,6 +83,12 @@ def download_genome_data():
     os.mkdir("EFO")
     os.chdir("EFO")
     subprocess.check_call('wget '+EFO_URL, shell=True)
+    os.chdir('..')
+    # ExAC
+    print("Downloading ExAC data file into ExAC folder")
+    os.mkdir('ExAC')
+    os.chdir('ExAC')
+    subprocess.check_call('wget '+ExAC_URL, shell=True)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -198,6 +205,22 @@ def parse_upload_dbSNP_chunk():
         if finished == True:
             break
     # we only insert the infonode for dbSNP dataSource once
+    update_insert_many(InfoNodes, info_nodes)
+
+def parse_upload_ExAC_chunk():
+    filename = os.path.basename(ExAC_URL)
+    parser = VCFParser_ExAC(filename, verbose=True)
+    parser.metadata['sourceurl'] = ExAC_URL
+    i_chunk = 0
+    while True:
+        finished = parser.parse_chunk(100000)
+        print(f'Parsing and uploading chunk {i_chunk}')
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        update_insert_many(GenomeNodes, genome_nodes)
+        i_chunk += 1
+        if finished == True:
+            break
+    # we only insert the infonode for ExAC dataSource once
     update_insert_many(InfoNodes, info_nodes)
 
 def build_mongo_index():
