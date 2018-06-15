@@ -311,7 +311,7 @@ class VCFParser(Parser):
                 allele_idxs_new[alt_new] = doc_idx
         # parse the info block into common and per_allele entries
         dinfo_common = {'flags': []}
-        dinfo_unique = [{'CSQs': []} for _ in unique_docs]
+        dinfo_unique = [{} for _ in unique_docs]
         for keyandvalue in d['INFO'].split(';'):
             if '=' in keyandvalue:
                 k, v = keyandvalue.split('=', 1)
@@ -341,6 +341,7 @@ class VCFParser(Parser):
                             #    print(f"REF {d['REF']}\nALT {d['ALT']}")
                             #    print(f"Skipped ambiguous allele {alt}")
                             break
+                        dinfo_unique[idx].setdefault("CSQs", [])
                         dinfo_unique[idx]["CSQs"].append(CSQdict)
                 else:
                     dinfo_common[k] = v
@@ -912,6 +913,9 @@ class VCFParser_dbSNP(VCFParser):
                 print(f"Warning, RS number not found, skipping this data {d}")
                 continue
             pos = int(d['POS'])
+            gene = d['INFO'].pop('GENEINFO', '').split(':')[0]
+            if gene:
+                genes = [gene]
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
                 gnode = {
@@ -929,7 +933,8 @@ class VCFParser_dbSNP(VCFParser):
                     "variant_ref": d["REF"],
                     'variant_alt': d['ALT'],
                     'filter': d['FILTER'],
-                    'qual': d['QUAL']
+                    'qual': d['QUAL'],
+                    'genes': genes
                 })
                 genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges
