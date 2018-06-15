@@ -9,11 +9,11 @@ def load_mongo_data_information():
     loaded_dataSources = set(InfoNodes.distinct('source'))
     # the description is hard coded here, could be replaced by querying InfoNodes of type dataSource later
     track_type_list = [
-        { 'track_type': TRACK_TYPE_GENOME,
-          'title': 'Genomic Elements',
-          'description': 'Genes, Promoters, Enhancers, Binding Sites and more.',
-          'depends': {DATA_SOURCE_GENOME}
-        },
+        # { 'track_type': TRACK_TYPE_GENOME,
+        #   'title': 'Genomic Elements',
+        #   'description': 'Genes, Promoters, Enhancers, Binding Sites and more.',
+        #   'depends': {DATA_SOURCE_GENOME}
+        # },
         { 'track_type': TRACK_TYPE_GWAS,
           'title': 'Genome Wide Associations',
           'description': 'Variants related to traits or diseases.',
