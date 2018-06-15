@@ -161,6 +161,11 @@ def parse_upload_all_datasets():
     parser = OBOParser_EFO('efo.obo', verbose=True)
     parse_upload_data(parser, {"sourceurl": EFO_URL})
     os.chdir('..')
+    # ExAC
+    print("\n*** ExAC ***")
+    os.chdir('ExAC')
+    parse_upload_ExAC_chunk()
+    os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
     os.chdir('..')
