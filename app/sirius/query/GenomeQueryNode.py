@@ -63,6 +63,21 @@ class GenomeQueryNode(object):
                 for d in GenomeNodes.find(query, limit=self.limit, projection=projection):
                     yield d
 
+    def distinct(self, key):
+        """
+        Find all distinct values for a key
+        """
+        if not self.edges and not self.arithmetics:
+            return GenomeNodes.distinct(key, self.filter)
+        else:
+            result_ids = list(self.findid())
+            batch_size = 100000
+            result = set()
+            for i_batch in range(int(len(result_ids) / batch_size)+1):
+                batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+                query = {'_id' : {'$in': batch_ids}}
+                result.update(GenomeNodes.distinct(key, query))
+
     def findid(self):
         """
         Find all nodes from GenomeNodes, based on self.filter and the edge connected

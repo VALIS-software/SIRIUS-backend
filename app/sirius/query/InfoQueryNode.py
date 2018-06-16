@@ -36,6 +36,9 @@ class InfoQueryNode(object):
         else:
             return InfoNodes.find(mongo_filter, limit=self.limit)
 
+    def distinct(self, key):
+        return self.find().distinct(key)
+
     def findid(self):
         """
         Find all nodes from InfoNodes, based on self.filter and the edge connected

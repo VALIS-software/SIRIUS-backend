@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
-from sirius.parsers.GWASParser import GWASParser
+from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser
-from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
+from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.BEDParser import BEDParser_ENCODE
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.OBOParser import OBOParser_EFO
@@ -14,7 +14,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'maf'], help='What data are we parsing?')
+    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac', 'maf'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
@@ -22,7 +22,7 @@ def main():
 
     ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
-                   'maf': MAFParser}
+                   'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'maf': MAFParser}
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 

@@ -303,7 +303,7 @@ def distinct_values(index):
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
         QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets'},
-        QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types'},
+        QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype'},
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
     if index not in allowed_query_indices[query['type']]:
@@ -316,7 +316,7 @@ def distinct_values(index):
 @lru_cache(maxsize=10000)
 def get_query_distinct_values(query, index):
     qt = QueryTree(query)
-    result = qt.find().distinct(index)
+    result = qt.distinct(index)
     return result
 
 
@@ -414,12 +414,31 @@ def search():
 @app.route('/query/full', methods=['POST'])
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
+    result_start = request.args.get('result_start', default=None)
+    result_end = request.args.get('result_end', default=None)
     query = request.get_json()
     if not query:
         return abort(404, 'no query posted')
     results = get_query_full_results(HashableDict(query))
     print(f"{len(results)} results for full query {query} {get_query_full_results.cache_info()}")
-    return json.dumps(results)
+    if result_start != None:
+        if result_start < 0:
+            return abort(404, 'result_start should >= 0')
+        result_start = int(result_start)
+    if result_end != None:
+        result_end = int(result_end)
+        if result_end <= result_start:
+            return abort(404, 'result_end should > result_start')
+        result_end = min(result_end, len(results))
+    results = results[result_start:result_end]
+    return_dict = {
+        "result_start": result_start,
+        "result_end": result_end,
+        "results_total": len(results),
+        "data": results,
+        "query": query
+    }
+    return json.dumps(return_dict)
 
 @lru_cache(maxsize=10000)
 def get_query_full_results(query):
@@ -435,12 +454,31 @@ def get_query_full_results(query):
 @app.route('/query/basic', methods=['POST'])
 def query_basic():
     """ Returns results for a query, with only basic information, useful for search """
+    result_start = request.args.get('result_start', default=None)
+    result_end = request.args.get('result_end', default=None)
     query = request.get_json()
     if not query:
         return abort(404, 'no query posted')
     results = get_query_basic_results(HashableDict(query))
     print("%d results for basic query %s" % (len(results), query), get_query_basic_results.cache_info())
-    return json.dumps(results)
+    if result_start != None:
+        if result_start < 0:
+            return abort(404, 'result_start should >= 0')
+        result_start = int(result_start)
+    if result_end != None:
+        result_end = int(result_end)
+        if result_end <= result_start:
+            return abort(404, 'result_end should > result_start')
+        result_end = min(result_end, len(results))
+    results = results[result_start:result_end]
+    return_dict = {
+        "result_start": result_start,
+        "result_end": result_end,
+        "results_total": len(results),
+        "data": results,
+        "query": query
+    }
+    return json.dumps(return_dict)
 
 @lru_cache(maxsize=10000)
 def get_query_basic_results(query):

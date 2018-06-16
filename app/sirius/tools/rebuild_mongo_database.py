@@ -6,37 +6,38 @@ from sirius.mongo.upload import update_insert_many
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
-from sirius.parsers.GWASParser import GWASParser
+from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser
-from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
+from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
-from sirius.helpers.constants import TILE_DB_PATH
+from sirius.helpers.tiledb import tilehelper
 
 #GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 #GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_rm.primary_assembly.fa.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
-ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/ENCFF918ESR.bigWig'
+ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
 EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
+ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 
 def download_genome_data():
     " Download Genome Data on to disk "
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
     os.mkdir('gene_data_tmp')
     os.chdir('gene_data_tmp')
-#    # ENCODE sample bigwig
-#    print("Downloading ENCODE sample to bigwig folder")
-#    os.mkdir('bigwig')
-#    os.chdir('bigwig')
-#    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
-#    os.chdir('..')
-#    # GRCh38_fasta
+    # ENCODE bigwig
+    print("Downloading ENCODE sample to bigwig folder")
+    os.mkdir('encode_bigwig')
+    os.chdir('encode_bigwig')
+    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
+    os.chdir('..')
+    # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
     os.mkdir('GRCh38_fasta')
     os.chdir('GRCh38_fasta')
@@ -85,6 +86,12 @@ def download_genome_data():
     os.chdir("EFO")
     subprocess.check_call('wget '+EFO_URL, shell=True)
     os.chdir('..')
+    # ExAC
+    print("Downloading ExAC data file into ExAC folder")
+    os.mkdir('ExAC')
+    os.chdir('ExAC')
+    subprocess.check_call('wget '+ExAC_URL, shell=True)
+    os.chdir('..')
     # Finish
     print("All downloads finished")
     os.chdir('..')
@@ -95,16 +102,23 @@ def drop_all_data():
     # iterate through the chromosomes for each organism and delete each TileDB file:
     print("\n\n#2. Deleting existing data.")
     for cname in db.list_collection_names():
-        print("Dropping %s" % cname)
+        print(f"Dropping {cname}")
         db.drop_collection(cname)
-
     # drop the tileDB directory
-    if os.path.exists(TILE_DB_PATH):
-        shutil.rmtree(TILE_DB_PATH)
+    if os.path.exists(tilehelper.root):
+        print(f"Deleting tiledb folder {tilehelper.root}")
+        shutil.rmtree(tilehelper.root)
+        os.makedirs(tilehelper.root)
 
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
+    # ENCODE bigWig
+    print("*** ENCODE_bigwig ***")
+    os.chdir('encode_bigwig')
+    parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+    parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
+    os.chdir('..')
     # GRCh38_fasta
     print("\n*** GRCh38_fasta ***")
     os.chdir('GRCh38_fasta')
@@ -119,7 +133,7 @@ def parse_upload_all_datasets():
     # GWAS
     print("\n*** GWAS ***")
     os.chdir('gwas')
-    parser = GWASParser('gwas.tsv', verbose=True)
+    parser = TSVParser_GWAS('gwas.tsv', verbose=True)
     parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
     # eQTL
@@ -149,6 +163,11 @@ def parse_upload_all_datasets():
     os.chdir('EFO')
     parser = OBOParser_EFO('efo.obo', verbose=True)
     parse_upload_data(parser, {"sourceurl": EFO_URL})
+    os.chdir('..')
+    # ExAC
+    print("\n*** ExAC ***")
+    os.chdir('ExAC')
+    parse_upload_ExAC_chunk()
     os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
@@ -196,6 +215,22 @@ def parse_upload_dbSNP_chunk():
     # we only insert the infonode for dbSNP dataSource once
     update_insert_many(InfoNodes, info_nodes)
 
+def parse_upload_ExAC_chunk():
+    filename = os.path.basename(ExAC_URL)
+    parser = VCFParser_ExAC(filename, verbose=True)
+    parser.metadata['sourceurl'] = ExAC_URL
+    i_chunk = 0
+    while True:
+        finished = parser.parse_chunk(100000)
+        print(f'Parsing and uploading chunk {i_chunk}')
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        update_insert_many(GenomeNodes, genome_nodes)
+        i_chunk += 1
+        if finished == True:
+            break
+    # we only insert the infonode for ExAC dataSource once
+    update_insert_many(InfoNodes, info_nodes)
+
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
@@ -205,7 +240,7 @@ def build_mongo_index():
     print("Creating compound index for 'type' and 'info.biosample'")
     GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
     print("InfoNodes")
-    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types']:
+    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
     print("Creating text index 'name'")
