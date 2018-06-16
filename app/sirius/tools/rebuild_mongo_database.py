@@ -3,7 +3,7 @@
 import os, shutil, subprocess
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many
-from sirius.parsers.GFFParser import GFFParser
+from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.GWASParser import GWASParser
@@ -12,8 +12,10 @@ from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
 from sirius.parsers.OBOParser import OBOParser_EFO
 from sirius.helpers.constants import TILE_DB_PATH
 
-GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
-GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
+#GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
+#GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
+GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
+GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_rm.primary_assembly.fa.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://www.encodeproject.org/files/ENCFF918ESR/@@download/ENCFF918ESR.bigWig'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'

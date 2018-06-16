@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from sirius.parsers.GFFParser import GFFParser
+from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.GWASParser import GWASParser
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP
@@ -14,13 +14,13 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument('datatype', choices=['gff', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'maf'], help='What data are we parsing?')
+    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'maf'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
     args = parser.parse_args()
 
-    ParserClass = {'gff': GFFParser, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
+    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
                    'maf': MAFParser}
 

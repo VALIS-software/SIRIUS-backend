@@ -82,7 +82,7 @@ loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
 loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
 
 # store all loaded genes
-loaded_gene_names = GenomeNodes.distinct('name', {'type': 'gene'})
+loaded_gene_names = GenomeNodes.distinct('name', {'type': {'$in': ['gene', 'pseudogene']}})
 print(f'Loaded {len(loaded_gene_names)} genes')
 
 # store all loaded traits

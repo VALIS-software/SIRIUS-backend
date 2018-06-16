@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import DATA_SOURCE_GENOME
+from sirius.helpers.constants import DATA_SOURCE_GENOME, DATA_SOURCE_ENSEMBL, SEQ_CONTIG
 
 class GFFParser(Parser):
     """
@@ -439,4 +439,80 @@ class GFFParser_RefSeq(GFFParser):
 class GFFParser_ENSEMBL(GFFParser):
     """ A subclass of GFFParser that is specifically designed for parsing the ENSEMBL gff3 file """
     def get_mongo_nodes(self):
-        pass
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = {"_id": 'I'+DATA_SOURCE_ENSEMBL, "type": "dataSource", "name": DATA_SOURCE_ENSEMBL, "source": DATA_SOURCE_ENSEMBL}
+        info_node['info'] = self.metadata.copy()
+        info_nodes.append(info_node)
+        unique_ids = set()
+        for d in self.features.copy():
+            ft = d['type']
+            contig = SEQ_CONTIG.get(d['seqid'], d['seqid'])
+            start = d['start']
+            end = d['end']
+            length = end - start + 1
+            attributes = d.pop('attributes')
+            if ft == 'chromosome':
+                if start != 1:
+                    # skip contigs that does not start with idx 1
+                    continue
+                contig_info_node = {
+                    '_id': 'Icontig' + contig,
+                    'type': 'contig',
+                    'name': contig,
+                    'source': DATA_SOURCE_ENSEMBL,
+                    'info': attributes
+                }
+                contig_info_node['info'].update({
+                    'length': length,
+                    'source': d['source'],
+                    'score': d['score'],
+                    'strand': d['strand'],
+                    'phase': d['phase'],
+                })
+                info_nodes.append(contig_info_node)
+            elif ft == 'biological_region':
+                continue
+            else:
+                if ft == 'exon':
+                    # exon do not have ID field, but have exon_id
+                    eid = attributes.pop('exon_id')
+                elif ft == 'CDS':
+                    # the ID of CDS is not unique, they point to an protein ID
+                    eid = 'CDS_' + self.hash(f'{contig}_{start}_{end}')
+                else:
+                    rawID = attributes.pop('ID', None)
+                    # things like five_prime_UTR do not have ID
+                    if rawID != None:
+                        eid = rawID.split(':', 1)[1]
+                    else:
+                        eid = f'{ft}_' + self.hash(f'{contig}_{start}_{end}')
+                gid = 'G' + eid
+                # check if gid is unique
+                if gid in unique_ids:
+                    raise RuntimeError("gid {gid} is not unique")
+                else:
+                    unique_ids.add(gid)
+                gnode = {
+                    '_id': gid,
+                    'source': DATA_SOURCE_ENSEMBL,
+                    'type': ft,
+                    'contig': contig,
+                    'start': start,
+                    'end': end,
+                    'length': length,
+                    'name': attributes.pop('Name', ft),
+                    'info': attributes
+                }
+                gnode['info'].update({
+                    'source': d['source'],
+                    'score': d['score'],
+                    'strand': d['strand'],
+                    'phase': d['phase'],
+                })
+                genome_nodes.append(gnode)
+                if self.verbose and len(genome_nodes) % 100000 == 0:
+                    print("%d GenomeNodes prepared" % len(genome_nodes), end='\r')
+        if self.verbose:
+            print("Parsing GFF into mongo nodes finished.")
+        return genome_nodes, info_nodes, edges
