@@ -38,8 +38,6 @@ ENCODE_COLOR_TYPES = {
 # The samplingrate threshold for annotation track to return aggregations
 AGGREGATION_THRESH = 5000
 
-TILE_DB_PATH = "/tiledb"
-
 TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
 
 SYNONYMS = {

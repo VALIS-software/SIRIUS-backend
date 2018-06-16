@@ -10,7 +10,7 @@ from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
-from sirius.helpers.constants import TILE_DB_PATH
+from sirius.helpers.tiledb import tilehelper
 
 GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
@@ -100,12 +100,13 @@ def drop_all_data():
     # iterate through the chromosomes for each organism and delete each TileDB file:
     print("\n\n#2. Deleting existing data.")
     for cname in db.list_collection_names():
-        print("Dropping %s" % cname)
+        print(f"Dropping {cname}")
         db.drop_collection(cname)
-
     # drop the tileDB directory
-    if os.path.exists(TILE_DB_PATH):
-        shutil.rmtree(TILE_DB_PATH)
+    if os.path.exists(tilehelper.root):
+        print(f"Deleting tiledb folder {tilehelper.root}")
+        shutil.rmtree(tilehelper.root)
+        os.makedirs(tilehelper.root)
 
 def parse_upload_all_datasets():
     print("\n\n#3. Parsing and uploading each data set")

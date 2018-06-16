@@ -14,7 +14,7 @@ class TileHelper(object):
 
     def __init__(self, backend=None, tile_size=1000000):
         if backend == None:
-            self.root = os.environ.get('TILEDB_ROOT', './')
+            self.root = os.environ.get('TILEDB_ROOT', os.path.realpath('./tiledb/'))
             if not os.path.isdir(self.root):
                 try:
                     os.makedirs(self.root)
