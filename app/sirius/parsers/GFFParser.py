@@ -490,7 +490,8 @@ class GFFParser_ENSEMBL(GFFParser):
                 gid = 'G' + eid
                 # check if gid is unique
                 if gid in unique_ids:
-                    raise RuntimeError("gid {gid} is not unique")
+                    # print(f"Warning: gid {gid} is duplicated")
+                    continue
                 else:
                     unique_ids.add(gid)
                 gnode = {

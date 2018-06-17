@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
     args = parser.parse_args()
 
-    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': GWASParser, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
+    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
                    'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'maf': MAFParser}
 

@@ -20,77 +20,82 @@ GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 #EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
 # We use a private source here because the above one is too slow now.
-EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
+# EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 
+def mkchdir(dir):
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
+    os.chdir(dir)
+
+def download_not_exist(url, filename=None, command=None):
+    if filename == None:
+        filename = os.path.basename(url)
+    if command == None:
+        command = 'wget'
+    if not os.path.isfile(filename):
+        subprocess.check_call(f'{command} {url}', shell=True)
+    else:
+        print(f"File {filename} exists, skipped download")
+
 def download_genome_data():
     " Download Genome Data on to disk "
     print("\n\n#1. Downloading all datasets to disk, please make sure you have 5 GB free space")
-    os.mkdir('gene_data_tmp')
-    os.chdir('gene_data_tmp')
+    mkchdir('gene_data_tmp')
     # ENCODE bigwig
     print("Downloading ENCODE sample to bigwig folder")
-    os.mkdir('encode_bigwig')
-    os.chdir('encode_bigwig')
-    subprocess.check_call('wget '+ENCODE_BIGWIG_URL, shell=True)
+    mkchdir('encode_bigwig')
+    download_not_exist(ENCODE_BIGWIG_URL)
     os.chdir('..')
     # GRCh38_fasta
     print("Downloading GRCh38 sequence data in GRCh38_fasta folder")
-    os.mkdir('GRCh38_fasta')
-    os.chdir('GRCh38_fasta')
-    subprocess.check_call('wget '+GRCH38_FASTA_URL, shell=True)
+    mkchdir('GRCh38_fasta')
+    download_not_exist(GRCH38_FASTA_URL)
     os.chdir('..')
     # GRCh38_gff
     print("Downloading GRCh38 annotation data in GRCh38_gff folder")
-    os.mkdir('GRCh38_gff')
-    os.chdir('GRCh38_gff')
-    subprocess.check_call('wget '+GRCH38_URL, shell=True)
+    mkchdir('GRCh38_gff')
+    download_not_exist(GRCH38_URL)
     os.chdir('..')
     # GWAS
     print("Downloading GWAS data in gwas folder")
-    os.mkdir('gwas')
-    os.chdir('gwas')
-    subprocess.check_call('curl -o gwas.tsv '+GWAS_URL, shell=True)
+    mkchdir('gwas')
+    download_not_exist(GWAS_URL, filename='gwas.tsv', command='curl -o gwas.tsv')
     os.chdir('..')
     # eQTL
-    print("Downloading eQTL data in eQTL folder")
-    os.mkdir("eQTL")
-    os.chdir("eQTL")
-    subprocess.check_call('curl -O '+EQTL_URL, shell=True)
-    os.chdir('..')
+    # print("Downloading eQTL data in eQTL folder")
+    # os.mkdir("eQTL")
+    # os.chdir("eQTL")
+    # subprocess.check_call(EQTL_URL, command='curl -O', shell=True)
+    # os.chdir('..')
     # ClinVar
     print("Downloading ClinVar data into ClinVar folder")
-    os.mkdir("ClinVar")
-    os.chdir("ClinVar")
-    subprocess.check_call('wget '+CLINVAR_URL, shell=True)
+    mkchdir("ClinVar")
+    download_not_exist(CLINVAR_URL)
     os.chdir('..')
     # ENCODE
     print("Downloading ENCODE data files into ENCODE folder")
-    os.mkdir("ENCODE")
-    os.chdir("ENCODE")
+    mkchdir("ENCODE")
     from sirius.tools import automate_encode_upload
     automate_encode_upload.download_search_files()
     os.chdir('..')
     #dbSNP
     print("Downloading dbSNP dataset in dbSNP folder")
-    os.mkdir('dbSNP')
-    os.chdir('dbSNP')
-    subprocess.check_call('wget '+DBSNP_URL, shell=True)
+    mkchdir('dbSNP')
+    download_not_exist(DBSNP_URL)
     os.chdir('..')
     # EFO
     print("Downloading the EFO Ontology data file")
-    os.mkdir("EFO")
-    os.chdir("EFO")
-    subprocess.check_call('wget '+EFO_URL, shell=True)
+    mkchdir("EFO")
+    download_not_exist(EFO_URL)
     os.chdir('..')
     # ExAC
     print("Downloading ExAC data file into ExAC folder")
-    os.mkdir('ExAC')
-    os.chdir('ExAC')
-    subprocess.check_call('wget '+ExAC_URL, shell=True)
+    mkchdir('ExAC')
+    download_not_exist(ExAC_URL)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -137,11 +142,11 @@ def parse_upload_all_datasets():
     parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
     # eQTL
-    print("\n*** eQTL ***")
-    os.chdir('eQTL')
-    parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
-    parse_upload_data(parser, {"sourceurl": EQTL_URL})
-    os.chdir('..')
+    # print("\n*** eQTL ***")
+    # os.chdir('eQTL')
+    # parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
+    # parse_upload_data(parser, {"sourceurl": EQTL_URL})
+    # os.chdir('..')
     # ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
@@ -175,7 +180,7 @@ def parse_upload_all_datasets():
 
 def parse_upload_gff_chunk():
     filename = os.path.basename(GRCH38_URL)
-    parser = GFFParser(filename, verbose=True)
+    parser = GFFParser_ENSEMBL(filename, verbose=True)
     parser.metadata['sourceurl'] = GRCH38_URL
     i_chunk = 0
     while True:
