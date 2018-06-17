@@ -8,7 +8,7 @@ this_file_folder = os.path.dirname(os.path.realpath(__file__))
 class ParserTest(TimedTestCase):
     def setUp(self):
         super(ParserTest, self).setUp()
-        self.testfile = os.path.join(this_file_folder, 'files', 'test.gff')
+        self.testfile = os.path.join(this_file_folder, 'files', 'test_refseq.gff')
 
     def test_init(self):
         """Test Parser Initializer"""
