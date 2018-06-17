@@ -9,4 +9,4 @@ pyBigWig
 google-cloud-storage
 nltk
 sklearn
-fuzzywuzzy
+fuzzyset
