@@ -12,9 +12,11 @@ DATA_SOURCE_CLINVAR = 'ClinVar'
 DATA_SOURCE_DBSNP = 'dbSNP'
 DATA_SOURCE_ENCODE = 'ENCODE'
 DATA_SOURCE_FASTA = 'RefSeq'
-DATA_SOURCE_EFO = "EFO"
+DATA_SOURCE_EFO = 'EFO'
 DATA_SOURCE_ENCODEbigwig = "ENCODEbigwig"
 DATA_SOURCE_ExAC = "ExAC"
+DATA_SOURCE_TCGA = 'TCGA'
+DATA_SOURCE_ENSEMBL = 'ENSEMBL'
 
 TRACK_TYPE_SEQUENCE = 'track_type_sequence'
 TRACK_TYPE_FUNCTIONAL = 'track_type_functional'
@@ -68,5 +70,10 @@ SEQ_CONTIG = {
     'NC_000021.9': 'chr21',
     'NC_000022.11': 'chr22',
     'NC_000023.11': 'chrX',
-    'NC_000024.10': 'chrY'
+    'NC_000024.10': 'chrY',
+    'MT': 'chrMT',
 }
+
+for name in CHROMO_NAMES:
+    SEQ_CONTIG[name] = 'chr' + name
+

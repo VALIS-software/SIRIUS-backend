@@ -29,7 +29,9 @@ class FASTAParser(Parser):
             self.sequences = []
         name = seq_record.name
         # get the contig id for this sequence
-        contig = SEQ_CONTIG.get(name, name)
+        contig = SEQ_CONTIG.get(name, None)
+        # we only parse the known contigs for now
+        if contig == None: return True
         # encode the sequence into integers
         t0 = time.time()
         datastr = np.array(list(str(seq_record.seq.lower())))
