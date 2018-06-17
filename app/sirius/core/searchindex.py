@@ -16,13 +16,13 @@ class SearchIndex:
 		self.data = data
 		self.dataKey = dataKey
 		self.fuzzyset = fuzzyset.FuzzySet(use_levenshtein=False)
-		documents = []
+		self.documents = []
 		for doc_id in self.data.keys():
 			self.add_document(doc_id, self.data[doc_id])
-			documents.append(self.data[doc_id][dataKey])
+			self.documents.append(self.data[doc_id][dataKey])
 		
 		self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words='english')
-		self.tfs = self.tfidf.fit_transform(documents)
+		self.tfs = self.tfidf.fit_transform(self.documents)
 	
 	def add_document(self, doc_id, doc):
 		tokens = self.tokenize_document(doc[self.dataKey])
@@ -74,6 +74,8 @@ class SearchIndex:
 
 	def get_results(self, query, max_hits=100, enable_fuzzy=True):
 		tokens = self.tokenize_document(query)
+		if (len(tokens) == 0):
+			return self.documents[:max_hits]
 		results = set()
 		token_results = self.get_token_results(tokens)
 		
