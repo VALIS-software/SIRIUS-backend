@@ -72,15 +72,20 @@ class SearchIndex:
 
 		return (total, result)
 
-	def get_results(self, query, max_hits=100):
+	def get_results(self, query, max_hits=100, enable_fuzzy=True):
 		tokens = self.tokenize_document(query)
 		results = set()
 		token_results = self.get_token_results(tokens)
-		fuzzy_results = self.get_fuzzy_results(tokens)
+		
+		if enable_fuzzy:
+			fuzzy_results = self.get_fuzzy_results(tokens) 
+		else:
+			fuzzy_results = collections.Counter([])
+
 		a = [self.data[x[0]][self.dataKey] for x in (token_results).most_common()]
 		b = [self.data[x[0]][self.dataKey] for x in (fuzzy_results).most_common()]
 		result = sorted([self.score_result(x, query) for x in set(a).union(set(b))], key=lambda x : x[0], reverse=True)
 		if max_hits != None:
-			return result[:max_hits]
+			return [x[1] for x in result[:max_hits]]
 		else:
-			return result
+			return [x[1] for x in result]
