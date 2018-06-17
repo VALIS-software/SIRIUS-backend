@@ -9,3 +9,6 @@ pybedtools
 tiledb
 pyBigWig
 biopython
+nltk
+sklearn
+fuzzyset
