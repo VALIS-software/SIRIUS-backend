@@ -1,8 +1,6 @@
 # Use my own runtime as a parent image
 FROM yudongdev/uwsgi-nginx-flask:sirius
 
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
-
 # Set the working directory (cd)
 WORKDIR /app
 
