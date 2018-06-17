@@ -25,6 +25,9 @@ class QueryEdge(object):
         else:
             return Edges.find(mongo_filter, limit=self.limit)
 
+    def distinct(self, key):
+        return self.find().distinct(key)
+
     def find_from_id(self):
         """
         Find all Edges from Edges, based on self.filter, and the next node I connect to

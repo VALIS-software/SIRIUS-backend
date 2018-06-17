@@ -316,7 +316,7 @@ def distinct_values(index):
 @lru_cache(maxsize=10000)
 def get_query_distinct_values(query, index):
     qt = QueryTree(query)
-    result = qt.find().distinct(index)
+    result = qt.distinct(index)
     return result
 
 

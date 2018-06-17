@@ -14,6 +14,7 @@ DATA_SOURCE_ENCODE = 'ENCODE'
 DATA_SOURCE_FASTA = 'RefSeq'
 DATA_SOURCE_EFO = "EFO"
 DATA_SOURCE_ENCODEbigwig = "ENCODEbigwig"
+DATA_SOURCE_ExAC = "ExAC"
 
 TRACK_TYPE_SEQUENCE = 'track_type_sequence'
 TRACK_TYPE_FUNCTIONAL = 'track_type_functional'
@@ -36,8 +37,6 @@ ENCODE_COLOR_TYPES = {
 
 # The samplingrate threshold for annotation track to return aggregations
 AGGREGATION_THRESH = 5000
-
-TILE_DB_PATH = "/tiledb"
 
 TILE_DB_BIGWIG_DOWNSAMPLE_RESOLUTIONS = [32, 128, 256, 1024, 16384, 65536, 131072]
 
