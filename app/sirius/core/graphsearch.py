@@ -121,7 +121,7 @@ class QueryParser:
             if token in self.suggestions:
                 token_text = token_text.strip().lower()
                 # try doing a prefix match with the remainder
-                final_suggestions += self.suggestions[token].get_results(token_text, max_suggestions/2)
+                final_suggestions += self.suggestions[token].get_results(token_text, int(max_suggestions/2))
                 if len(final_suggestions) >= max_suggestions:
                     break
                 quoted_suggestion = True
