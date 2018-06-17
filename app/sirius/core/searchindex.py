@@ -21,8 +21,8 @@ class SearchIndex:
 			self.add_document(doc_id, self.data[doc_id])
 			documents.append(self.data[doc_id][dataKey])
 		
-		tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words='english')
-		self.tfs = tfidf.fit_transform(documents)
+		self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words='english')
+		self.tfs = self.tfidf.fit_transform(documents)
 	
 	def add_document(self, doc_id, doc):
 		tokens = self.tokenize_document(doc[self.dataKey])
@@ -50,30 +50,37 @@ class SearchIndex:
 		return self.get_token_results(final_tokens)
 
 	def score_result(self, result, query):
-		return (1.0, result)
+		tokens = self.tokenize_document(query)
+		query_tokens = []
+		for token in tokens:
+			query_tokens += [x[1] for x in self.fuzzyset.get(token)]
+		
+		result_tokens = self.tokenize_document(result)
+
+		tfidf1 = self.tfidf.transform([" ".join(result_tokens)])
+		tfidf2 = self.tfidf.transform([" ".join(query_tokens)])
+
+		feature_names = self.tfidf.get_feature_names()
+		
+		tf1scores = tfidf1.nonzero()[1]
+		tf2scores = tfidf2.nonzero()[1]
+		total = 0
+
+		for col in tf1scores:
+			if col in tf2scores:
+				total += tfidf1[0, col] * tfidf2[0, col]
+
+		return (total, result)
 
 	def get_results(self, query, max_hits=100):
 		tokens = self.tokenize_document(query)
 		results = set()
 		token_results = self.get_token_results(tokens)
 		fuzzy_results = self.get_fuzzy_results(tokens)
-		# get tf-idf vector for query
 		a = [self.data[x[0]][self.dataKey] for x in (token_results).most_common()]
 		b = [self.data[x[0]][self.dataKey] for x in (fuzzy_results).most_common()]
-		return sorted([self.score_result(x, query) for x in set(a).union(set(b))], key=lambda x : x[0])
-
-
-lines = open("/CTD_diseases.csv", "r").readlines()
-diseases = {}
-for idx, line in enumerate(lines[30:]):
-	name = line.split(",")[0]
-	diseases[idx] = {
-		"name": name,
-		"id": idx	
-	}
-
-index = SearchIndex(diseases, 'name')
-
-while True:
-	query = input("Enter search query:")
-	print(index.get_results(query))
+		result = sorted([self.score_result(x, query) for x in set(a).union(set(b))], key=lambda x : x[0], reverse=True)
+		if max_hits != None:
+			return result[:max_hits]
+		else:
+			return result
