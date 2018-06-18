@@ -7,24 +7,20 @@ from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
 from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
-from sirius.parsers.EQTLParser import EQTLParser
+from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
 from sirius.helpers.tiledb import tilehelper
 
-#GRCH38_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.gff.gz'
-#GRCH38_FASTA_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_genomic.fna.gz'
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_rm.primary_assembly.fa.gz'
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
-#EQTL_URL = 'http://www.exsnp.org/data/GSexSNP_allc_allp_ld8.txt'
-# We use a private source here because the above one is too slow now.
-# EQTL_URL = 'https://storage.googleapis.com/sirius_data_source/eQTL/GSexSNP_allc_allp_ld8.txt'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
+GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
 
 def mkchdir(dir):
     if not os.path.isdir(dir):
@@ -65,12 +61,6 @@ def download_genome_data():
     mkchdir('gwas')
     download_not_exist(GWAS_URL, filename='gwas.tsv', command='curl -o gwas.tsv')
     os.chdir('..')
-    # eQTL
-    # print("Downloading eQTL data in eQTL folder")
-    # os.mkdir("eQTL")
-    # os.chdir("eQTL")
-    # subprocess.check_call(EQTL_URL, command='curl -O', shell=True)
-    # os.chdir('..')
     # ClinVar
     print("Downloading ClinVar data into ClinVar folder")
     mkchdir("ClinVar")
@@ -96,6 +86,12 @@ def download_genome_data():
     print("Downloading ExAC data file into ExAC folder")
     mkchdir('ExAC')
     download_not_exist(ExAC_URL)
+    os.chdir('..')
+    # GTEx
+    print("Downloading GTEx data in GTEx folder")
+    os.mkdir("GTEx")
+    os.chdir("GTEx")
+    download_not_exist(GTEx_URL)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -141,12 +137,6 @@ def parse_upload_all_datasets():
     parser = TSVParser_GWAS('gwas.tsv', verbose=True)
     parse_upload_data(parser, {"sourceurl": GWAS_URL})
     os.chdir('..')
-    # eQTL
-    # print("\n*** eQTL ***")
-    # os.chdir('eQTL')
-    # parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
-    # parse_upload_data(parser, {"sourceurl": EQTL_URL})
-    # os.chdir('..')
     # ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
@@ -160,6 +150,7 @@ def parse_upload_all_datasets():
     automate_encode_upload.parse_upload_files()
     os.chdir('..')
     # dbSNP
+    print("\n*** dbSNP ***")
     os.chdir('dbSNP')
     parse_upload_dbSNP_chunk()
     os.chdir('..')
@@ -174,6 +165,15 @@ def parse_upload_all_datasets():
     os.chdir('ExAC')
     parse_upload_ExAC_chunk()
     os.chdir('..')
+    # GTEx
+    print("\n*** GTEx ***")
+    os.chdir('GTEx')
+    parse_upload_GTEx_files()
+    filename = os.path.basename(GTEx_URL)
+
+    # parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
+    # parse_upload_data(parser, {"sourceurl": EQTL_URL})
+    # os.chdir('..')
     # Finished
     print("All parsing and uploading finished!")
     os.chdir('..')
@@ -234,6 +234,26 @@ def parse_upload_ExAC_chunk():
         if finished == True:
             break
     # we only insert the infonode for ExAC dataSource once
+    update_insert_many(InfoNodes, info_nodes)
+
+def parse_upload_GTEx_files():
+    filename = os.path.basename(GTEx_URL)
+    # the big tar.gz file contains many individual data files
+    print(f"Decompressing {filename}")
+    subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
+    foldername = filename.split('.',1)[0]
+    for f in os.listdir(foldername):
+        if f.endswith('egenes.txt.gz'):
+            fname = os.path.join(foldername, f)
+            print(f"Parsing and uploading from {fname}")
+            parser = EQTLParser_GTEx(fname, verbose=True)
+            parser.parse()
+            genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+            # we only insert the edges here for each file
+            update_insert_many(Edges, edges)
+    # change the filename to the big tar.gz file
+    info_nodes[0]['info']['filename'] = filename
+    # insert one infonode for the GTEx dataSource
     update_insert_many(InfoNodes, info_nodes)
 
 def build_mongo_index():

@@ -2,7 +2,7 @@
 
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
-from sirius.parsers.EQTLParser import EQTLParser
+from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.BEDParser import BEDParser_ENCODE
 from sirius.parsers.FASTAParser import FASTAParser
@@ -14,15 +14,16 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'eqtl', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac', 'maf'], help='What data are we parsing?')
+    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac', 'gtex', 'maf'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
     args = parser.parse_args()
 
-    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'eqtl': EQTLParser, 'clinvar': VCFParser_ClinVar,
+    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
-                   'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'maf': MAFParser}
+                   'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'gtex': EQTLParser_GTEx,
+                   'maf': MAFParser}
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 

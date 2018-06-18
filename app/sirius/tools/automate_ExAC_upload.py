@@ -13,7 +13,7 @@ def download():
     if os.path.isdir(subpath):
         print(f"Working under {subpath}")
         os.chdir(subpath)
-    print("Downloading dbSNP data file")
+    print("Downloading ExAC data file")
     if os.path.isfile(FILENAME):
         print(f"File {FILENAME} already exist, skipping downloading")
     else:
