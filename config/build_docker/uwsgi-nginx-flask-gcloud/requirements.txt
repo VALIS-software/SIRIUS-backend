@@ -11,4 +11,3 @@ pyBigWig
 biopython
 nltk
 sklearn
-fuzzyset

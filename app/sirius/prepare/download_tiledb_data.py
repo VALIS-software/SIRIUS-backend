@@ -2,12 +2,12 @@
 
 import os, shutil, subprocess
 from google.cloud import storage
-from zipfile import ZipFile
 
 def download_fasta_tiledb():
     dest = os.environ['TILEDB_ROOT']
     filename = 'sirius_fasta_data.tar.gz'
     if not os.path.isdir(dest):
+        os.makedirs(dest)
         os.chdir(dest)
         storage_client = storage.Client()
         bucket = storage_client.get_bucket('siriusdata')

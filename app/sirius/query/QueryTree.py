@@ -70,3 +70,7 @@ class QueryTree(object):
 
     def find(self, projection=None):
         return self.head.find(projection=projection)
+
+    def distinct(self, key):
+        return self.head.distinct(key)
+

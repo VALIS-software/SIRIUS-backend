@@ -9,11 +9,11 @@ def load_mongo_data_information():
     loaded_dataSources = set(InfoNodes.distinct('source'))
     # the description is hard coded here, could be replaced by querying InfoNodes of type dataSource later
     track_type_list = [
-        { 'track_type': TRACK_TYPE_GENOME,
-          'title': 'Genomic Elements',
-          'description': 'Genes, Promoters, Enhancers, Binding Sites and more.',
-          'depends': {DATA_SOURCE_GENOME}
-        },
+        # { 'track_type': TRACK_TYPE_GENOME,
+        #   'title': 'Genomic Elements',
+        #   'description': 'Genes, Promoters, Enhancers, Binding Sites and more.',
+        #   'depends': {DATA_SOURCE_GENOME}
+        # },
         { 'track_type': TRACK_TYPE_GWAS,
           'title': 'Genome Wide Associations',
           'description': 'Variants related to traits or diseases.',
@@ -82,7 +82,7 @@ loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
 loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
 
 # store all loaded genes
-loaded_gene_names = GenomeNodes.distinct('name', {'type': 'gene'})
+loaded_gene_names = GenomeNodes.distinct('name', {'type': {'$in': ['gene', 'pseudogene']}})
 print(f'Loaded {len(loaded_gene_names)} genes')
 
 # store all loaded traits

@@ -24,7 +24,7 @@ RUN wget -P tiledb https://github.com/TileDB-Inc/TileDB/archive/1.2.2.tar.gz \
     && cd tiledb/TileDB-1.2.2 \
     && mkdir build && cd build \
     && ../scripts/install-deps.sh \
-    && ../bootstrap --prefix=/usr/local -enable-s3 \
+    && ../bootstrap --prefix=/usr/local \
     && make install
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
@@ -36,6 +36,9 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Install fuzzyset using a separate command
+RUN pip install git+https://github.com/axiak/fuzzyset.git#egg=fuzzyset
 
 # We use our own entrypoint that will generate Nginx additional configs
 COPY entrypoint.sh /entrypoint.sh

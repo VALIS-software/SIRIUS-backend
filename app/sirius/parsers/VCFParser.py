@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ExAC
 import re
 
 def str_to_type(s):
@@ -109,6 +109,9 @@ class VCFParser(Parser):
         ----------
         http://www.internationalgenome.org/wiki/Analysis/vcf4.0/
 
+        v4.2:
+        https://gist.github.com/inutano/f0a2f5c219ab4920c5b5
+
         Examples
         --------
         Initialize and parse the file:
@@ -146,7 +149,7 @@ class VCFParser(Parser):
         """
         # restart the reading of the file from the beginning
         self.filehandle.seek(0)
-        assert self.parse_chunk(size=-1) == True, '.parse_chunk() did not finish parsing the entire file.'
+        assert self.parse_chunk(size=float('inf')) == True, '.parse_chunk() did not finish parsing the entire file.'
 
     def parse_chunk(self, size=1000000):
         """
@@ -224,18 +227,27 @@ class VCFParser(Parser):
                                 # remove the \" in Description
                                 if descpt[0] == '\"' and descpt[-1] == '\"':
                                     descpt = descpt[1:-1]
-                                self.metadata['INFO'][name] = {'Type': fmtdict['Type'], "Description": descpt}
+                                self.metadata['INFO'][name] = {
+                                    'Number': fmtdict['Number'],
+                                    'Type': fmtdict['Type'],
+                                    "Description": descpt
+                                    }
+                                # special parsing for CSQ of ExAC dataset
+                                if name == "CSQ":
+                                    CSQ_labels = descpt.split('Format: ')[1].split('|')
+                                    self.metadata['INFO']['CSQ_LABELS'] = CSQ_labels
                         else:
                             self.metadata[ls[0]] = ls[1]
                 else:
                     # title line
                     self.labels = line[1:].split()
+                    assert self.labels == ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
             elif line:
                 d = self.parse_one_line_data(line)
                 self.variants.append(d)
                 if self.verbose and len(self.variants) % 100000 == 0:
                     print("%d data parsed" % len(self.variants), end='\r')
-                if len(self.variants) == size:
+                if len(self.variants) >= size:
                     if self.verbose:
                         print(f"Parsing file {self.filename} finished for chunk of size {size}" )
                     break
@@ -256,35 +268,115 @@ class VCFParser(Parser):
 
         Returns
         -------
-        d: dictionary
+        variant: dictionary
             The dictionary contains the data for this line
 
         Notes
         -----
         1. The INFO block will be further splitted by the ";".
         2. After splitting, if one phrase has an "=" sign, like "A=ss", it will be parsed into a {key:value} pair like {"A": "ss"} in the d["INFO"] dictionary.
-        3. If one phrase is a flag, like "FL", it will be parsed into a {key: True} pair like "{"FL": True}" in the d["INFO"] dictionary.
+        3. If one phrase is a flag, like "FL", it will be added into the "info['flags']" list, like info['flags'] = ["FL"]
 
         """
         ls = line.strip().split('\t')
         assert len(ls) == len(self.labels), "Error parsing this line:\n%s with %s split" % (line, len(ls))
         d = dict(zip(self.labels, ls))
-        dinfo = dict()
+        dinfo = {'flags': []}
         for keyandvalue in d['INFO'].split(';'):
             if '=' in keyandvalue:
                 k, v = keyandvalue.split('=', 1)
-                vtype = self.metadata['INFO'][k]['Type']
-                v = str_to_type(vtype)(v)
+                info_key_meta = self.metadata['INFO'][k]
+                vtype = str_to_type(info_key_meta['Type'])
+                vnumber = info_key_meta['Number']
+                if vnumber == 'A':
+                    dinfo[k] = [vtype(i) for i in v.split(',')]
+                elif vnumber == '1':
+                    dinfo[k] = vtype(v)
+                elif k == "CSQ":
+                    dinfo.setdefault("CSQs", [])
+                    # special parsing for the CSQ field from ExAC database
+                    for CSQstring in v.split(','):
+                        CSQdict = dict(zip(self.metadata['INFO']['CSQ_LABELS'], CSQstring.split('|')))
+                        dinfo["CSQs"].append(CSQdict)
+                else:
+                    dinfo[k] = v
             else:
                 k = keyandvalue
                 vtype = self.metadata['INFO'][k]['Type']
-                if vtype.lower() != 'flag':
-                    print('line\nWarning! No "=" found in the key %s, but its Type is not Flag' % k)
-                v = True # set flag to true
-            dinfo[k] = v
+                assert vtype.lower() == 'flag', f'{line}\nWarning! No "=" found in the key {k}, but its Type is not Flag'
+                dinfo['flags'].append(k)
         d['INFO'] = dinfo
         return d
 
+    def match_ref_alt_1(self, ref, alt):
+        """ Match two strings to form the best REF ALT pair
+        * This function is not called any more during parsing, but we keep it here in case we need it later
+        """
+        #assert ref != alt, f"Error: Ref {ref} and Alt {alt} are the same!"
+        # already unique if ref or alt is of length 1
+        if len(ref) == 1 or len(alt) == 1:
+             return 0, ref, alt
+        # remove redundant suffix in same position
+        # we keep at least one character in ref or alt, consistent with VCF format
+        for i in range(min(len(ref), len(alt)) - 1):
+            if ref[-1] == alt[-1]:
+                ref = ref[:-1]
+                alt = alt[:-1]
+            else:
+                break
+        else:
+            return 0, ref, alt
+        # remove common prefix and shift starting position
+        shift = 0
+        # we keep at least one character in ref or alt, consistent with VCF format
+        for i in range(min(len(ref), len(alt)) - 1):
+            if ref[0] == alt[0]:
+                ref = ref[1:]
+                alt = alt[1:]
+                shift += 1
+            else:
+                break
+        return shift, ref, alt
+
+    def match_ref_alt(self, ref, alt):
+        """ Match two strings to form the best REF ALT pair
+        This is a less efficient way but works better with the ExAC VCF file.
+        * This function is not called any more during parsing, but we keep it here in case we need it later
+        """
+        #assert ref != alt, f"Error: Ref {ref} and Alt {alt} are the same!"
+        # already unique if ref or alt is of length 1
+        if len(ref) == 1 or len(alt) == 1:
+             return 0, ref, alt
+        # remove common prefix and shift starting position
+        shift = 0
+        # we keep at least one character in ref or alt, consistent with VCF format
+        for i in range(min(len(ref), len(alt))):
+            if ref[0] == alt[0]:
+                last_match = ref[0]
+                ref = ref[1:]
+                alt = alt[1:]
+                shift += 1
+            else:
+                break
+        else:
+            # if all match, we finish
+            shift -= 1
+            ref = last_match + ref
+            alt = last_match + alt
+            return shift, ref, alt
+        # remove redundant suffix in same position
+        for i in range(min(len(ref), len(alt))):
+            if ref[-1] == alt[-1]:
+                ref = ref[:-1]
+                alt = alt[:-1]
+            else:
+                break
+        else:
+            # if all match, we keep one last match from the left side
+            shift -= 1
+            ref = last_match + ref
+            alt = last_match + alt
+        return shift, ref, alt
 
 class VCFParser_ClinVar(VCFParser):
     """
@@ -366,7 +458,7 @@ class VCFParser_ClinVar(VCFParser):
         which are contents of self.data
         2. The GenomeNodes generated from this parsing should be Varients. They should all have "_id" started with "G".
         3. If the variant is a SNP, the rs# will be used, like "Gsnp_rs4950928".
-        4. If the variant is not a SNP, the content of the variant will be hashed to make the _id like "Gvariant_28120123ewe129301"
+        4. If the variant is not a SNP, the content of the variant will be hashed to make the _id like "Gv_28120123ewe129301"
             Duplicated SNPs with the same _id are ignored.
         5. Each variant can be associated with multiple traits.
         6. The InfoNodes generated contain 1 dataSource and multiple traits. They should all have "_id" values start with "I", like "IGWAS", or "Itrait_79485.."
@@ -388,7 +480,7 @@ class VCFParser_ClinVar(VCFParser):
 
         >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
 
-        The GenomeNodes contain the information for the SNPs:
+        The GenomeNodes contain the information for the SNPs or variants:
 
         >>> print(genome_nodes[0])
         {
@@ -407,12 +499,15 @@ class VCFParser_ClinVar(VCFParser):
                 "qual": ".",
                 "ALLELEID": 446939,
                 "CLNVCSO": "SO:0001483",
-                "GENEINFO": "ISG15:9636",
                 "MC": "SO:0001583|missense_variant",
                 "ORIGIN": "1",
-                "CLNHGVS": "NC_000001.11:g.1014042G>A"
+                "CLNHGVS": "NC_000001.11:g.1014042G>A",
+                "variant_affected_genes": [
+                    "ISG15"
+                ]
             }
-        }
+        },
+
 
         The first InfoNode is the dataSource:
 
@@ -502,11 +597,11 @@ class VCFParser_ClinVar(VCFParser):
                 variant_type = "SNP"
                 name = 'RS' + rs
             else:
-                variant_type = d['INFO']['CLNVC'].lower()
+                variant_type = 'variant' #d['INFO']['CLNVC'].lower()
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
-                variant_key_string = '_'.join([variant_type, contig, pos, v_ref, v_alt])
-                variant_id = 'Gvariant_' + self.hash(variant_key_string)
+                variant_key_string = '_'.join([contig, pos, v_ref, v_alt])
+                variant_id = 'Gv_' + self.hash(variant_key_string)
                 name = ' '.join(s.capitalize() for s in variant_type.split('_'))
             pos = int(d['POS'])
             if variant_id not in known_vid:
@@ -527,10 +622,16 @@ class VCFParser_ClinVar(VCFParser):
                     'filter': d['FILTER'],
                     'qual': d['QUAL']
                 }
-                for key in ('ALLELEID', 'CLNVCSO', 'GENEINFO', 'MC', 'ORIGIN', 'CLNHGVS'):
+                for key in ('ALLELEID', 'CLNVCSO', 'MC', 'ORIGIN', 'CLNHGVS'):
                     value = d["INFO"].pop(key, None)
                     if value != None:
                         gnode['info'][key] = value
+                variant_affected_genes = []
+                geneinfo = d['INFO'].pop('GENEINFO', None)
+                if geneinfo != None:
+                    for ginfo in geneinfo.split('|'):
+                        variant_affected_genes.append(ginfo.split(':')[0])
+                gnode['info']['variant_affected_genes'] = variant_affected_genes
                 genome_nodes.append(gnode)
             # we will abandon this entry if no trait information found
             if 'CLNDN' not in d['INFO'] or 'CLNDISDB' not in d['INFO']: continue
@@ -566,15 +667,17 @@ class VCFParser_ClinVar(VCFParser):
             # create EdgeNode for each trait in this entry
             for trait_id in this_trait_ids:
                 # add study to edges
-                edge = {'from_id': variant_id , 'to_id': trait_id,
-                        'type': f'association:{variant_type}:trait',
-                        'source': DATA_SOURCE_CLINVAR,
-                        'name': 'ClinVar Study',
-                        'info': {
-                            'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
-                            'p-value': 0,
-                        }
-                       }
+                edge = {
+                    'from_id': variant_id,
+                    'to_id': trait_id,
+                    'type': f'association:{variant_type}:trait',
+                    'source': DATA_SOURCE_CLINVAR,
+                    'name': 'ClinVar Study',
+                    'info': {
+                        'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
+                        'p-value': 0,
+                    }
+                }
                 edge['_id'] = 'E'+self.hash(str(edge))
                 if edge['_id'] not in known_edge_ids:
                     known_edge_ids.add(edge['_id'])
@@ -658,7 +761,7 @@ class VCFParser_dbSNP(VCFParser):
         -------
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
-            Each of the three is a list of multiple dictionaries, which contains the parsed data.
+            Each of the three is a list of dictionaries, which contains the parsed data.
 
         Notes
         -----
@@ -692,28 +795,36 @@ class VCFParser_dbSNP(VCFParser):
             "source": "dbSNP",
             "name": "RS367896724",
             "info": {
+                "flags": [
+                    "R5",
+                    "ASP",
+                    "VLD",
+                    "G5A",
+                    "G5",
+                    "KGPhase3"
+                ],
                 "RSPOS": 10177,
                 "dbSNPBuildID": 138,
                 "SSR": 0,
                 "SAO": 0,
                 "VP": "0x050000020005170026000200",
-                "GENEINFO": "DDX11L1:100287102",
                 "WGT": 1,
                 "VC": "DIV",
-                "R5": true,
-                "ASP": true,
-                "VLD": true,
-                "G5A": true,
-                "G5": true,
-                "KGPhase3": true,
-                "CAF": "0.5747,0.4253",
-                "COMMON": 1,
                 "variant_ref": "A",
                 "variant_alt": "AC",
                 "filter": ".",
-                "qual": "."
+                "qual": ".",
+                "allele_frequencies": {
+                    "AC": 0.4253
+                },
+                "variant_tags": [
+                    "is_common"
+                ],
+                "variant_affected_genes": [
+                    "DDX11L1"
+                ]
             }
-        }
+        },
 
         Only one InfoNode is given with the type dataSource:
 
@@ -776,6 +887,29 @@ class VCFParser_dbSNP(VCFParser):
                 print(f"Warning, RS number not found, skipping this data {d}")
                 continue
             pos = int(d['POS'])
+            variant_affected_genes = []
+            geneinfo = d['INFO'].pop('GENEINFO', None)
+            if geneinfo != None:
+                for ginfo in geneinfo.split('|'):
+                    variant_affected_genes.append(ginfo.split(':')[0])
+            # try to read allele frequencies from CAF field (1000Genomes)
+            afstring = d['INFO'].pop('CAF', None)
+            # try to use the TOPMED number if CAF not available
+            if afstring == None:
+                afstring = d['INFO'].pop('TOPMED', None)
+            allele_frequencies = {}
+            if afstring != None:
+                afs = afstring.split(',')[1:]
+                alleles = d['ALT'].split(',')
+                assert len(afs) == len(alleles)
+                for alt, af in zip(alleles, afs):
+                    if af == '.':
+                        allele_frequencies[alt] = 0
+                    else:
+                        allele_frequencies[alt] = float(af)
+            variant_tags = []
+            if d['INFO'].pop("COMMON", None) == 1:
+                variant_tags.append('is_common')
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
                 gnode = {
@@ -793,7 +927,204 @@ class VCFParser_dbSNP(VCFParser):
                     "variant_ref": d["REF"],
                     'variant_alt': d['ALT'],
                     'filter': d['FILTER'],
-                    'qual': d['QUAL']
+                    'qual': d['QUAL'],
+                    'allele_frequencies': allele_frequencies,
+                    'variant_tags': variant_tags,
+                    'variant_affected_genes': variant_affected_genes
                 })
                 genome_nodes.append(gnode)
+        return genome_nodes, info_nodes, edges
+
+class VCFParser_ExAC(VCFParser):
+    def get_mongo_nodes(self):
+        """
+        Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
+
+        Returns
+        -------
+        mongonodes: tuple
+            The return tuple is (genome_nodes, info_nodes, edges)
+            Each of the three is a list of dictionaries, which contains the parsed data.
+
+        Notes
+        -----
+        1. This method should be called after self.parse(), because this method will read from self.metadata and self.varients,
+        which are contents of self.data
+        2. The GenomeNodes generated from this parsing should be variants. They should all have "_id" started with "G". The rs# will be used, like "Gsnp_rs4950928".
+        3. Since ExAC VCF file contains a lot of redundant data, we only pick the ones we're interested.
+        4. The InfoNodes generated only contain 1 dataSource. It has "_id" values start with "I", like "IdbSNP".
+        5. No Edges are given.
+        6. The CSQ sub-documents have these labels:
+        CSQ_LABELS = "Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|\
+        HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|\
+        ALLELE_NUM|DISTANCE|STRAND|FLAGS|VARIANT_CLASS|MINIMISED|SYMBOL_SOURCE|HGNC_ID|CANONICAL|TSL|APPRIS|\
+        CCDS|ENSP|SWISSPROT|TREMBL|UNIPARC|GENE_PHENO|SIFT|PolyPhen|DOMAINS|HGVS_OFFSET|GMAF|AFR_MAF|AMR_MAF|\
+        EAS_MAF|EUR_MAF|SAS_MAF|AA_MAF|EA_MAF|ExAC_MAF|ExAC_Adj_MAF|ExAC_AFR_MAF|ExAC_AMR_MAF|ExAC_EAS_MAF|\
+        ExAC_FIN_MAF|ExAC_NFE_MAF|ExAC_OTH_MAF|ExAC_SAS_MAF|CLIN_SIG|SOMATIC|PHENO|PUBMED|MOTIF_NAME|MOTIF_POS|\
+        HIGH_INF_POS|MOTIF_SCORE_CHANGE|LoF|LoF_filter|LoF_flags|LoF_info|context|ancestral"
+
+        Examples
+        --------
+        Initialize and parse the file:
+
+        >>> parser = VCFParser_ExAC('GWAS.tsv')
+        >>> parser.parse()
+
+        Get the Mongo nodes:
+
+        >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+
+        The GenomeNodes contain the information for the SNPs or variants:
+
+        >>> print(genome_nodes[0])
+        {
+            "_id": "Gsnp_rs752859895",
+            "contig": "chr1",
+            "type": "SNP",
+            "start": 13372,
+            "end": 13372,
+            "length": 1,
+            "source": "ExAC",
+            "name": "RS752859895",
+            "info": {
+                "variant_ref": "G",
+                "variant_alt": "C",
+                "filter": "PASS",
+                "qual": "608.91",
+                "allele_frequencies": {
+                    "C": 6.998e-05
+                },
+                "variant_tags": [
+                    "regulatory_region_variant",
+                    "downstream_gene_variant",
+                    "non_coding_transcript_exon_variant",
+                    "intron_variant",
+                    "non_coding_transcript_variant",
+                    "splice_region_variant"
+                ],
+                "variant_affected_genes": [
+                    "DDX11L1",
+                    "WASH7P"
+                ],
+                "variant_affected_feature_types": [
+                    "RegulatoryFeature",
+                    "Transcript"
+                ],
+                "variant_affected_bio_types": [
+                    "transcribed_unprocessed_pseudogene",
+                    "processed_transcript",
+                    "CTCF_binding_site",
+                    "unprocessed_pseudogene"
+                ]
+            }
+        },
+
+        Only one InfoNode is given with the type dataSource:
+
+        >>> print(info_nodes[0])
+        {
+            "_id": "IExAC",
+            "type": "dataSource",
+            "name": "ExAC",
+            "source": "ExAC",
+            "info": {
+                "filename": "test.vcf",
+                "INFO": {
+                "AC": {
+                    "Number": "A",
+                    "Type": "Integer",
+                    "Description": "Allele count in genotypes, for each ALT allele, in the same order as listed"
+                },
+                "AC_AFR": {
+                    "Number": "A",
+                    "Type": "Integer",
+                    "Description": "African/African American Allele Counts"
+                },
+                "AC_AMR": {
+                    "Number": "A",
+                    "Type": "Integer",
+                    "Description": "American Allele Counts"
+                },
+                "AC_Adj": {
+                    "Number": "A",
+                    "Type": "Integer",
+                    "Description": "Adjusted Allele Counts"
+                },
+                ...
+            }
+        }
+
+        No Edges are generated:
+
+        >>> print(edges)
+        []
+
+        """
+
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node= {
+            "_id": 'I'+DATA_SOURCE_ExAC,
+            "type": "dataSource",
+            'name':DATA_SOURCE_ExAC,
+            "source": DATA_SOURCE_ExAC,
+            'info': self.metadata.copy()
+        }
+        info_nodes.append(info_node)
+        # create genome_nodes for each variant
+        for d in self.variants:
+            alleles = d['ALT'].split(',')
+            allele_frequencies = dict(zip(alleles, d['INFO']['AF']))
+            variant_tags = set()
+            variant_affected_genes = set()
+            #impacts = set()
+            variant_affected_feature_types = set()
+            variant_affected_bio_types = set()
+            rs_number = None
+            for csq in d['INFO']['CSQs']:
+                variant_tags.update(csq['Consequence'].split('&'))
+                #impacts.update(csq['IMPACT'])
+                variant_affected_genes.add(csq['SYMBOL'])
+                variant_affected_feature_types.add(csq['Feature_type'])
+                variant_affected_bio_types.add(csq['BIOTYPE'])
+                if csq['LoF'] == 'HC':
+                    variant_tags.add("loss_of_function")
+                rs_number = csq['Existing_variation'] or rs_number
+            # remove empty string ''
+            for s in (variant_tags, variant_affected_genes, variant_affected_feature_types, variant_affected_bio_types):
+                s.discard("")
+            contig = 'chr' + d['CHROM']
+            pos = int(d['POS'])
+            if rs_number != None and rs_number[:2] == 'rs':
+                gid = "Gsnp_" + rs_number
+                gtype = 'SNP'
+                name = rs_number.upper()
+            else:
+                variant_key_string = '_'.join([contig, d['POS'], d['REF'], d['ALT']])
+                gid = 'Gv_' + self.hash(variant_key_string)
+                gtype = 'variant'
+                name = 'Variant'
+            gnode = {
+                '_id': gid,
+                'contig': contig,
+                'type': gtype,
+                'start': pos,
+                'end': pos,
+                'length': 1,
+                'source': DATA_SOURCE_ExAC,
+                'name': name,
+                'info': {
+                    'variant_ref': d["REF"],
+                    'variant_alt': d['ALT'],
+                    'filter': d['FILTER'],
+                    'qual': d['QUAL'],
+                    'allele_frequencies': allele_frequencies,
+                    'variant_tags': list(variant_tags),
+                    'variant_affected_genes': list(variant_affected_genes),
+                    #'impacts': list(impacts),
+                    'variant_affected_feature_types': list(variant_affected_feature_types),
+                    'variant_affected_bio_types': list(variant_affected_bio_types),
+                }
+            }
+            genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges
