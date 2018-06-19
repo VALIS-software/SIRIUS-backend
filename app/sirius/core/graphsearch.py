@@ -4,6 +4,7 @@ from functools import lru_cache
 from sirius.query.QueryTree import QueryTree
 from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types
 from sirius.core.utilities import HashableDict
+from sirius.core.searchindex import SearchIndex
 from collections import namedtuple
 
 ParsePath = namedtuple('ParsePath', ['rule', 'value', 'path', 'is_terminal'])
@@ -22,7 +23,12 @@ class QueryParser:
         for token in self.tokens.keys():
             p = self.tokens[token]
             self.patterns[token] = re.compile(p)
-        self.suggestions = suggestions
+        self.suggestions = {}
+        for key in suggestions.keys():
+            data = {}
+            for idx, suggestion in enumerate(suggestions[key]):
+                data[idx] = { 'text': suggestion, 'id' : idx }
+            self.suggestions[key] = SearchIndex(data, 'text')
 
     def build_variant_query(self, parse_path):
         token = parse_path[0]
@@ -115,12 +121,9 @@ class QueryParser:
             if token in self.suggestions:
                 token_text = token_text.strip().lower()
                 # try doing a prefix match with the remainder
-                for suggestion in self.suggestions[token]:
-                    suggestion_l = suggestion.lower()
-                    if token_text in suggestion_l and suggestion_l.index(token_text) == 0:
-                        final_suggestions.append(suggestion)
-                        if len(final_suggestions) >= max_suggestions:
-                            break
+                final_suggestions += self.suggestions[token].get_results(token_text, int(max_suggestions/2))
+                if len(final_suggestions) >= max_suggestions:
+                    break
                 quoted_suggestion = True
             else:
                 # just return the token string

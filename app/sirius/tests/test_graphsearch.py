@@ -51,7 +51,8 @@ class GraphSearchText(TimedTestCase):
         self.assertEqual(len(tokens), 3)
         self.assertEqual(tokens[0].rule, 'GENE_T')
         self.assertEqual(len(suggestions), 2)
-        self.assertEqual(suggestions[-1], "MAOB")
+        self.assertEqual("MAOA" in suggestions, True)
+        self.assertEqual("MAOB" in suggestions, True)
         self.assertNotEqual(query, None)
     
     def test_parse_cell_query(self):
