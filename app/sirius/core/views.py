@@ -411,6 +411,44 @@ def search():
 #*       /query           *
 #**************************
 
+class QueryResultsCache:
+    """
+    Class that implemented dynamic caching for query results
+    """
+    def __init__(self, query, projection=None):
+        self.qt = QueryTree(query)
+        self.data_generator = self.qt.find(projection=projection)
+        self.projection = projection
+        self.loaded_data = []
+        self.load_finished = False
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            if key.step != None and key.step <= 0:
+                raise ValueError("slice step cannot be zero or negative")
+            self.load_data_until(key.stop)
+            return self.loaded_data[key]
+        elif isinstance(key, int):
+            self.load_data_until(slice.stop + 1)
+            return self.loaded_data[key]
+        else:
+            raise TypeError(f"list indices must be integers or slices, not {type(key)}")
+
+    def load_data_until(self, index=None):
+        # if we already have that many results
+        if index != None and index <= len(self.loaded_data): return
+        # iteratively load data into cache
+        for data in self.data_generator:
+            # convert "_id" to "id" for frontend
+            data['id'] = data.pop('_id')
+            self.loaded_data.append(data)
+            # here we load one more data than requested, so we know if all data loaded
+            if len(self.loaded_data) == index:
+                break
+        else:
+            # all data loaded
+            self.load_finished = True
+
 @app.route('/query/full', methods=['POST'])
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
@@ -419,37 +457,34 @@ def query_full():
     query = request.get_json()
     if not query:
         return abort(404, 'no query posted')
-    results = get_query_full_results(HashableDict(query))
-    print(f"{len(results)} results for full query {query} {get_query_full_results.cache_info()}")
-    if result_start != None:
-        if result_start < 0:
-            return abort(404, 'result_start should >= 0')
-        result_start = int(result_start)
+    result_start = int(result_start) if result_start != None else 0
+    if result_start < 0:
+        return abort(404, 'result_start should >= 0')
     if result_end != None:
         result_end = int(result_end)
         if result_end <= result_start:
             return abort(404, 'result_end should > result_start')
-        result_end = min(result_end, len(results))
-    results = results[result_start:result_end]
+    results_cache = get_query_full_results(HashableDict(query))
+    print(f"full query {query} cache_info: {get_query_full_results.cache_info()}")
+    results = results_cache[result_start:result_end]
+    result_end = result_start + len(results)
+    reached_end = False
+    if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
+        reached_end = True
     return_dict = {
         "result_start": result_start,
         "result_end": result_end,
-        "results_total": len(results),
+        "reached_end": reached_end,
         "data": results,
         "query": query
     }
     return json.dumps(return_dict)
 
-@lru_cache(maxsize=10000)
+@lru_cache(maxsize=1000)
 def get_query_full_results(query):
     """ Cached function for getting full query results """
     if not query: return []
-    qt = QueryTree(query)
-    results = []
-    for d in qt.find():
-        d['id'] = d.pop('_id')
-        results.append(d)
-    return results
+    return QueryResultsCache(query)
 
 @app.route('/query/basic', methods=['POST'])
 def query_basic():
@@ -459,35 +494,32 @@ def query_basic():
     query = request.get_json()
     if not query:
         return abort(404, 'no query posted')
-    results = get_query_basic_results(HashableDict(query))
-    print("%d results for basic query %s" % (len(results), query), get_query_basic_results.cache_info())
-    if result_start != None:
-        if result_start < 0:
-            return abort(404, 'result_start should >= 0')
-        result_start = int(result_start)
+    result_start = int(result_start) if result_start != None else 0
+    if result_start < 0:
+        return abort(404, 'result_start should >= 0')
     if result_end != None:
         result_end = int(result_end)
         if result_end <= result_start:
             return abort(404, 'result_end should > result_start')
-        result_end = min(result_end, len(results))
-    results = results[result_start:result_end]
+    results_cache = get_query_basic_results(HashableDict(query))
+    print(f"full query {query} cache_info: {get_query_full_results.cache_info()}")
+    results = results_cache[result_start:result_end]
+    result_end = result_start + len(results)
+    reached_end = False
+    if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
+        reached_end = True
     return_dict = {
         "result_start": result_start,
         "result_end": result_end,
-        "results_total": len(results),
+        "reached_end": reached_end,
         "data": results,
         "query": query
     }
     return json.dumps(return_dict)
 
-@lru_cache(maxsize=10000)
+@lru_cache(maxsize=1000)
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
     basic_projection = ['_id', 'source', 'type', 'name', 'contig', 'start', 'end', 'info.description']
-    qt = QueryTree(query)
-    results = []
-    for d in qt.find(projection=basic_projection):
-        d['id'] = d.pop('_id')
-        results.append(d)
-    return results
+    return QueryResultsCache(query, projection=basic_projection)
