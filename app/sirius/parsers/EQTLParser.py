@@ -1,5 +1,5 @@
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import DATA_SOURCE_EQTL
+from sirius.helpers.constants import DATA_SOURCE_GTEX, DATA_SOURCE_EXSNP
 
 class EQTLParser(Parser):
     """
@@ -46,10 +46,6 @@ class EQTLParser(Parser):
     3. After parsing, self.eqtls will be a list of eqtl entries, each parsed from one line of data.
     4. The eQTL data file does not contain any metadata.
     5. The exSNP and exGENEID columns are required.
-
-    References
-    ----------
-    http://www.exsnp.org/eQTL
 
     Examples
     --------
@@ -105,25 +101,47 @@ class EQTLParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = EQTLParser('eQTL.txt')
+        >>> parser = EQTLParser('Prostate.v7.egenes.txt.gz')
         >>> parser.parse()
 
         The parsed data are stored in self.data, which contains self.metadata and self.eqtls:
 
         >>> parser.eqtls[0]
         {
-            "exSNP": "945418",
-            "exGENEID": "1187",
-            "exGENE": "CLCNKA",
-            "High_confidence": "N",
-            "Population": "CEU",
-            "CellType": "LCL",
-            "DataSet": "EGEUV_EUR",
-            "StudySet": "EGEUV",
-            "SameSet": "0",
-            "DiffSet": "1",
-            "TotalSet": "1"
-        }
+            "gene_id": "ENSG00000227232.4",
+            "gene_name": "WASH7P",
+            "gene_chr": "1",
+            "gene_start": "14413",
+            "gene_end": "29553",
+            "strand": "-",
+            "num_var": "1493",
+            "beta_shape1": "1.09799",
+            "beta_shape2": "210.597",
+            "true_df": "95.584",
+            "pval_true_df": "0.00617042",
+            "variant_id": "1_1026071_A_C_b37",
+            "tss_distance": "996518",
+            "chr": "1",
+            "pos": "1026071",
+            "ref": "A",
+            "alt": "C",
+            "num_alt_per_site": "1",
+            "rs_id_dbSNP147_GRCh37p13": "rs112305311",
+            "minor_allele_samples": "4",
+            "minor_allele_count": "5",
+            "maf": "0.0189394",
+            "ref_factor": "1",
+            "pval_nominal": "0.00329429",
+            "slope": "0.859833",
+            "slope_se": "0.286178",
+            "pval_perm": "0.710433",
+            "pval_beta": "0.69258",
+            "qval": "0.377421",
+            "pval_nominal_threshold": "6.8408e-05",
+            "log2_aFC": "1.053842",
+            "log2_aFC_lower": "0.880039",
+            "log2_aFC_upper": "1.257119"
+        },
 
         """
         # start from the beginning for reading
@@ -139,6 +157,7 @@ class EQTLParser(Parser):
                 if self.verbose and len(self.eqtls) % 100000 == 0:
                     print("%d data parsed" % len(self.eqtls), end='\r')
 
+class EQTLParser_GTEx(EQTLParser):
     def get_mongo_nodes(self):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
@@ -148,6 +167,127 @@ class EQTLParser(Parser):
         mongonodes: tuple
             The return tuple is (genome_nodes, info_nodes, edges)
             Each of the three is a list of multiple dictionaries, which contains the parsed data.
+
+        References
+        ----------
+        https://www.gtexportal.org/home/documentationPage
+
+        Notes
+        -----
+        1. The GTex data set contains relations between SNPs and genes.
+        2. The InfoNodes generated here have only one entry, with the type dataSource. The _id field should have a string value starts with "I", like "IGTEx".
+        3. All Edges here should have _id starts with "E". The "from_id" and "to_id" field are derived directly from the "gene_id" and
+        "rs_id_dbSNP147_GRCh37p13" keys of the dataset.
+        4. The first word in filename will be parsed as the info.biosample value
+
+        Examples
+        --------
+        Initialize and parse the file:
+
+        >>> parser = EQTLParser_GTex('Prostate.v7.egenes.txt.gz')
+        >>> parser.parse()
+
+        Get the Mongo nodes:
+
+        >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+
+        No GenomeNodes are generated:
+
+        >>> print(genome_nodes)
+        []
+
+        One InfoNode with type dataSource is generated:
+
+        >>> print(info_nodes[0])
+        {
+            "_id": "IGTEx",
+            "type": "dataSource",
+            "name": "GTEx",
+            "source": "GTEx",
+            "info": {
+                "filename": "Prostate.v7.egenes.txt.gz"
+            }
+        }
+
+        Example of an Edge:
+
+        >>> print(edges[0])
+        {
+            "from_id": "Gsnp_rs112305311",
+            "to_id": "GENSG00000227232",
+            "type": "association:SNP:gene",
+            "source": "GTEx",
+            "name": "WASH7P Expression",
+            "info": {
+                "biosample": "prostate",
+                "p-value": 0.00617042,
+                "true_df": 95.584,
+                "pval_nominal": 0.00329429,
+                "pval_nominal_threshold": 6.8408e-05,
+                "slope": 0.859833,
+                "log2_aFC": 1.053842,
+                "log2_aFC_lower": 0.880039,
+                "log2_aFC_upper": 1.257119
+            },
+            "_id": "E52d8b81e20847f297295ba39b1a97cbc47dde8c2c401f932c034613598876334"
+        },
+
+
+        """
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = {"_id": 'I'+DATA_SOURCE_GTEX, "type": "dataSource", 'name': DATA_SOURCE_GTEX, "source": DATA_SOURCE_GTEX}
+        info_node['info'] = self.metadata.copy()
+        info_nodes.append(info_node)
+        known_edge_ids = set()
+        # the first word in filename is parsed as the biosample
+        biosample = self.filename.split('.', 1)[0]
+        # reformat to be consistent with ENCODE dataset
+        biosample = ' '.join(biosample.lower().split('_'))
+        # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
+        for d in self.eqtls:
+            # create EdgeNode
+            from_id = 'Gsnp_' + d['rs_id_dbSNP147_GRCh37p13']
+            to_id = 'G' + d['gene_id'].split('.',1)[0]
+            edge = {
+                    'from_id': from_id, 'to_id': to_id,
+                    'type': 'association:SNP:gene',
+                    'source': DATA_SOURCE_GTEX,
+                    'name': d['gene_name'] + ' Expression',
+                    'info': {
+                        'biosample': biosample,
+                        'p-value': float(d['pval_true_df']),
+                        'true_df': float(d['true_df']),
+                        'pval_nominal': float(d['pval_nominal']),
+                        'pval_nominal_threshold': float(d['pval_nominal_threshold']),
+                        'slope': float(d['slope']),
+                        'log2_aFC': float(d['log2_aFC']),
+                        'log2_aFC_lower': float(d['log2_aFC_lower']),
+                        'log2_aFC_upper': float(d.get('log2_aFC_upper', 'nan')),
+                    }
+            }
+            edge['_id'] = 'E'+self.hash(str(edge))
+            if edge['_id'] not in known_edge_ids:
+                known_edge_ids.add(edge['_id'])
+                edges.append(edge)
+            if self.verbose and len(edges) % 100000 == 0:
+                print("%d varients parsed" % len(edges), end='\r')
+        return genome_nodes, info_nodes, edges
+
+class EQTLParser_exSNP(EQTLParser):
+    def get_mongo_nodes(self):
+        """
+        Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
+
+        Returns
+        -------
+        mongonodes: tuple
+            The return tuple is (genome_nodes, info_nodes, edges)
+            Each of the three is a list of multiple dictionaries, which contains the parsed data.
+
+        References
+        ----------
+        http://www.exsnp.org/eQTL
 
         Notes
         -----
@@ -161,7 +301,7 @@ class EQTLParser(Parser):
         --------
         Initialize and parse the file:
 
-        >>> parser = EQTLParser('eQTL.txt')
+        >>> parser = EQTLParser_exSNP('eQTL.txt')
         >>> parser.parse()
 
         Get the Mongo nodes:
@@ -213,7 +353,7 @@ class EQTLParser(Parser):
         """
         genome_nodes, info_nodes, edges = [], [], []
         # add dataSource into InfoNodes
-        info_node = {"_id": 'I'+DATA_SOURCE_EQTL, "type": "dataSource", 'name': DATA_SOURCE_EQTL, "source": DATA_SOURCE_EQTL}
+        info_node = {"_id": 'I'+DATA_SOURCE_EXSNP, "type": "dataSource", 'name': DATA_SOURCE_EXSNP, "source": DATA_SOURCE_EXSNP}
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         known_edge_ids = set()
@@ -225,7 +365,7 @@ class EQTLParser(Parser):
             edge = {
                 'from_id': from_id, 'to_id': to_id,
                 'type': 'association:SNP:gene',
-                'source': DATA_SOURCE_EQTL,
+                'source': DATA_SOURCE_EXSNP,
                 'name': d['exGENE'] + ' Expression',
                 'info': dict()
             }
