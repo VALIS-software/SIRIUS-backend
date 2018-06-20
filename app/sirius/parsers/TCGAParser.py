@@ -1,8 +1,55 @@
 import os, copy
 from sirius.parsers.Parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_TCGA
+import xml.etree.ElementTree as ET
 
-class MAFParser(Parser):
+class TCGA_XMLParser(Parser):
+    """
+    Parser for the TCGA BCR XML file format.
+    One such xml file will be parsed into a dictionary that contains data for one patient
+    """
+    @property
+    def patientdata(self):
+        return self.data['patientdata']
+
+    @patientdata.setter
+    def patientdata(self, value):
+        self.data['patientdata'] = value
+
+    def parse(self):
+        self.filehandle.seek(0)
+        self.patientdata = dict()
+        tree = ET.parse(self.filehandle)
+        root = tree.getroot()
+        patient = next(child for child in root if child.tag.endswith('patient'))
+        for data in patient:
+            key = data.tag.split('}')[-1]
+            self.patientdata[key] = data.text
+
+    def get_mongo_nodes(self):
+        genome_nodes, info_nodes, edges = [], [], []
+        p = self.patientdata
+        # create one infonode for this patient
+        info_nodes = [{
+            '_id': 'Ipatient' + p['bcr_patient_barcode'],
+            'type': 'patient',
+            'name': 'Patient ' + p['patient_id'],
+            'source': DATA_SOURCE_TCGA,
+            'info': {
+                'patient_id': p['patient_id'],
+                'bcr_patient_uuid': p['bcr_patient_uuid'],
+                'bcr_patient_barcode': p['bcr_patient_barcode'],
+                'days_to_birth': int(p['days_to_birth']),
+                'gender': p['gender'],
+                'tumor_tissue_site': p['tumor_tissue_site'],
+                'ethnicity': p['ethnicity'],
+                'diagnosis': p['diagnosis'],
+            }
+        }]
+        return genome_nodes, info_nodes, edges
+
+
+class TCGA_MAFParser(Parser):
     """
     Parser for the TCGA .maf file format
 
