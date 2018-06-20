@@ -20,10 +20,7 @@ class QueryEdge(object):
             mongo_filter['to_id'] = {'$in': target_ids}
         if self.verbose == True:
             print(query)
-        if projection != None:
-            return Edges.find(mongo_filter, limit=self.limit, projection=projection)
-        else:
-            return Edges.find(mongo_filter, limit=self.limit)
+        return Edges.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
 
     def distinct(self, key):
         return self.find().distinct(key)

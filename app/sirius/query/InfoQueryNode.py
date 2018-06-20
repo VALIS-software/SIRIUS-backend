@@ -31,10 +31,7 @@ class InfoQueryNode(object):
             mongo_filter['_id'] = {"$in": list(result_ids)}
         if self.verbose == True:
             print(mongo_filter)
-        if projection != None:
-            return InfoNodes.find(mongo_filter, limit=self.limit, projection=projection)
-        else:
-            return InfoNodes.find(mongo_filter, limit=self.limit)
+        return InfoNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
 
     def distinct(self, key):
         return self.find().distinct(key)
