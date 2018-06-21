@@ -46,7 +46,7 @@ class GenomeQueryNode(object):
         if self.verbose:
             print(self.filter, self.edges, self.arithmetics)
         if not self.edges and not self.arithmetics:
-            for d in GenomeNodes.find(self.filter, limit=self.limit, projection=projection):
+            for d in GenomeNodes.find(self.filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
                 yield d
         else:
             t0 = time.time()
@@ -60,7 +60,7 @@ class GenomeQueryNode(object):
             for i_batch in range(int(len(result_ids) / batch_size)+1):
                 batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                 query = {'_id' : {'$in': batch_ids}}
-                for d in GenomeNodes.find(query, limit=self.limit, projection=projection):
+                for d in GenomeNodes.find(query, limit=self.limit, projection=projection, no_cursor_timeout=True):
                     yield d
 
     def distinct(self, key):
@@ -130,8 +130,3 @@ class GenomeQueryNode(object):
                     bed = bed.intersect(target_bed)
                 result_ids = bed.gids()
         return result_ids
-
-
-
-
-
