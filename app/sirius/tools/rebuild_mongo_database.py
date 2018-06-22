@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, shutil, subprocess
+import os, shutil, subprocess, json
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
@@ -10,6 +10,7 @@ from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
 from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
+from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser, DATA_SOURCE_TCGA
 from sirius.helpers.tiledb import tilehelper
 
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
@@ -21,6 +22,7 @@ DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/c
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
+TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
 
 def mkchdir(dir):
     if not os.path.isdir(dir):
@@ -89,9 +91,13 @@ def download_genome_data():
     os.chdir('..')
     # GTEx
     print("Downloading GTEx data in GTEx folder")
-    os.mkdir("GTEx")
-    os.chdir("GTEx")
+    mkchdir("GTEx")
     download_not_exist(GTEx_URL)
+    os.chdir('..')
+    # TCGA
+    print("Downloading TCGA data in TCGA folder")
+    mkchdir("TCGA")
+    download_not_exist(TCGA_URL)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -169,12 +175,13 @@ def parse_upload_all_datasets():
     print("\n*** GTEx ***")
     os.chdir('GTEx')
     parse_upload_GTEx_files()
-    filename = os.path.basename(GTEx_URL)
-
-    # parser = EQTLParser('GSexSNP_allc_allp_ld8.txt', verbose=True)
-    # parse_upload_data(parser, {"sourceurl": EQTL_URL})
-    # os.chdir('..')
-    # Finished
+    os.chdir('..')
+    # TCGA
+    print("\n*** TCGA ***")
+    os.chdir('TCGA')
+    parse_upload_TCGA_files()
+    os.chdir('..')
+    # Finish
     print("All parsing and uploading finished!")
     os.chdir('..')
 
@@ -256,6 +263,99 @@ def parse_upload_GTEx_files():
     # insert one infonode for the GTEx dataSource
     update_insert_many(InfoNodes, info_nodes)
 
+def parse_upload_TCGA_files():
+    filename = os.path.basename(TCGA_URL)
+    print(f"Decompressing {filename}")
+    subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
+    # three subfolders have been prepared and we will parse them one by one
+    # XML for patient info
+    os.chdir('BCRXML')
+    xml_files = []
+    for root, d, files in os.walk('.'):
+        for f in files:
+            if f.endswith('.xml'):
+                xml_files.append(os.path.join(root, f))
+    all_patient_infonodes = []
+    # this is used in MAF parser
+    patient_barcode_tumor_site = dict()
+    # this is used in CNV parser
+    patient_uuid_tumor_site = dict()
+    print(f"Parsing {len(xml_files)} patient xml files")
+    for f in xml_files:
+        parser = TCGA_XMLParser(f, verbose=True)
+        parser.parse()
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        # record the tumor site for each patient barcode
+        info = info_nodes[0]['info']
+        patient_barcode = info['bcr_patient_barcode']
+        patient_barcode_tumor_site[patient_barcode] = info['tumor_tissue_site']
+        patient_uuid = info['bcr_patient_uuid']
+        patient_uuid_tumor_site[patient_uuid] = info['tumor_tissue_site']
+        # collection individual info_nodes for each patient
+        all_patient_infonodes += info_nodes
+    # upload all patient info_nodes at once
+    update_insert_many(InfoNodes, all_patient_infonodes)
+    os.chdir('..')
+    # MAF for mutations in tumors
+    os.chdir('MAF')
+    maf_files = []
+    for root, d, files in os.walk('.'):
+        for f in files:
+            if f.endswith('.maf.gz'):
+                maf_files.append(os.path.join(root, f))
+    print(f"Parsing {len(maf_files)} maf files")
+    for i, f in enumerate(maf_files):
+        print(f"{i:3d} ", end='', flush=True)
+        parser = TCGA_MAFParser(f)
+        parser.parse()
+        # provide the patient_barcode_tumor_site so the gnode will have 'info.tumor_tissue_sites'
+        patient_barcode_tumor_site = patient_barcode_tumor_site
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes(patient_barcode_tumor_site)
+        update_insert_many(GenomeNodes, genome_nodes)
+    os.chdir('..')
+    # CNV
+    os.chdir('CNV')
+    cnv_file_caseIDs = dict()
+    for d in json.load(open('metadata.json')):
+        # Each file only have one case
+        cnv_file_caseIDs[d['file_name']] = d['cases'][0]['case_id']
+    cnv_files = []
+    for root, d, files in os.walk('.'):
+        for f in files:
+            if f.endswith('.seg.v2.txt'):
+                cnv_files.append(os.path.join(root, f))
+    print(f"Parsing {len(cnv_files)} cnv files")
+    # we parse 1000 files each time then upload at once
+    i_batch, batch_size = 0, 1000
+    while True:
+        start, end = i_batch*batch_size, (i_batch+1)*batch_size
+        parsing_files = cnv_files[start:end]
+        if len(parsing_files) == 0: break
+        end = start + len(parsing_files)
+        print(f"Parsing CNV files {start+1:6d} ~ {end:6d}")
+        batch_genome_nodes = []
+        for f in parsing_files:
+            parser = TCGA_CNVParser(f)
+            filebasename = os.path.basename(f)
+            tumor_tissue_site = patient_uuid_tumor_site.get(cnv_file_caseIDs[filebasename], None)
+            # some patient data are not available because they are in the "controlled access" catogory
+            if tumor_tissue_site == None: continue
+            parser.parse()
+            genome_nodes, info_nodes, edges = parser.get_mongo_nodes(tumor_tissue_site)
+            batch_genome_nodes += genome_nodes
+        update_insert_many(GenomeNodes, batch_genome_nodes)
+        i_batch += 1
+    # Add one info node for dataSource
+    update_insert_many(InfoNodes, [{
+        '_id': 'I' + DATA_SOURCE_TCGA,
+        "type": "dataSource",
+        'name':DATA_SOURCE_TCGA,
+        "source": DATA_SOURCE_TCGA,
+        'info': {}
+    }])
+    # finish
+    os.chdir('..')
+
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
@@ -288,7 +388,6 @@ Steps:
 2. Delete all data from existing database
 3. Parse each data sets and upload to MongoDB
 4. Build index in data base
-5. Clean up
 '''
 
 def main():
@@ -296,7 +395,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
-    parser.add_argument('-k', '--keep_tmp', action='store_true', help='Keep gene_data_tmp folder.')
+    parser.add_argument('-d', '--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
     args = parser.parse_args()
     if args.starting_step <= 1:
         download_genome_data()
@@ -306,7 +405,7 @@ def main():
         parse_upload_all_datasets()
     if args.starting_step <= 4:
         build_mongo_index()
-    if args.starting_step <= 5 and not args.keep_tmp:
+    if args.del_tmp:
         clean_up()
 
 if __name__ == "__main__":

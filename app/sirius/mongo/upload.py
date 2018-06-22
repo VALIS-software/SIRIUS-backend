@@ -1,5 +1,6 @@
 def update_insert_many(dbCollection, nodes, update=True):
     if not nodes: return
+    print(f"Uploading {dbCollection.name:12s}", end='', flush=True)
     prefix = dbCollection.name[0]
     all_ids = []
     for node in nodes:
@@ -30,15 +31,23 @@ def update_insert_many(dbCollection, nodes, update=True):
             print('Error: ', bwe.details)
     for node in update_nodes:
         filt = {'_id': node.pop('_id')}
-        update = {'$push': {'source': node.pop('source')}}
-        # merge the info key instead of overwrite
-        if 'info' in node and isinstance(node['info'], dict):
-            info_dict = node.pop('info')
-            for key, value in info_dict.items():
-                node['info.'+key] = value
+        update = {'$addToSet': {'source': node.pop('source')}}
+        # take out the info key to treat later
+        info_dict = node.pop('info')
+        # overwrite the rest of the node
         update['$set'] = node
+        # for info, we overwrite the single value, but merge the arrays
+        for key, value in info_dict.items():
+            update_key = 'info.'+key
+            if isinstance(value, list):
+                if len(value) == 1:
+                    update['$addToSet'][update_key] = value[0]
+                else:
+                    update['$addToSet'][update_key] = {'$each': value}
+            else:
+                update['$set'][update_key] = value
         try:
             dbCollection.update_one(filt, update, upsert=True)
         except Exception as bwe:
             print('Error: ', bwe.details)
-    print("%s finished. Updated: %d  Inserted: %d" % (dbCollection.name, len(update_nodes), len(insert_nodes)))
+    print(f" finished. Updated: {len(update_nodes):10d} | Inserted: {len(insert_nodes):10d}" )
