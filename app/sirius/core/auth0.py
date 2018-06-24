@@ -53,7 +53,7 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.route('/dashboard')
+@app.route('/user_profile')
 @requires_auth
 def dashboard():
     return json.dumps(session['profile'])
