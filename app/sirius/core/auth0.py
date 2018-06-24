@@ -56,7 +56,7 @@ def requires_auth(f):
 @app.route('/user_profile')
 @requires_auth
 def dashboard():
-    return json.dumps(session['profile'])
+    return json.dumps(session.get('profile', 'Not Logged in'))
 
 @app.route('/logout')
 def logout():
