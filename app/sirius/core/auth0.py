@@ -6,12 +6,14 @@ from authlib.flask.client import OAuth
 
 from sirius.main import app
 
+app.secret_key = 'qydsecretkey'
+
 oauth = OAuth(app)
 
 auth0 = oauth.register(
     'auth0',
-    client_id='68qRTp9Vji5X6Cu0Pxn0Kprax51WzHOb',
-    client_secret='ZZ2oZFeNFiiqhEz7h5JAcY_Pt8hRwSMM766wsvNvJi-Ar83u5pQDC_eZ3QBU_tah',
+    client_id='UHugP5v627feBCWA6h4bLP3g__VCNGyL',
+    client_secret='CzVyAa9Kk3Tt-ogjxYeHwYqbKAub1Rk5OISryB4krOBh4AXXr4r9GY136CqILyTk',
     api_base_url='https://valis-dev.auth0.com',
     access_token_url='https://valis-dev.auth0.com/oauth/token',
     authorize_url='https://valis-dev.auth0.com/authorize',
@@ -34,20 +36,22 @@ def callback_handling():
         'name': userinfo['name'],
         'picture': userinfo['picture']
     }
-    return redirect('/dashboard')
+    return redirect('/')
 
 @app.route('/login')
 def login():
     return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback', audience='https://valis-dev.auth0.com/userinfo')
 
 def requires_auth(f):
-  @wraps(f)
-  def decorated(*args, **kwargs):
-    if 'profile' not in session:
-      # Redirect to Login page here
-      return redirect('/')
-    return f(*args, **kwargs)
-  return decorated
+    # skip auth if in dev mode
+    if os.environ.get('VALIS_DEV_MODE', None): return f
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'profile' not in session:
+            # Redirect to Login page here
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route('/dashboard')
 @requires_auth
@@ -59,5 +63,8 @@ def logout():
     # Clear session stored data
     session.clear()
     # Redirect user to logout endpoint
-    params = {'returnTo': url_for('home', _external=True), 'client_id': 'UHugP5v627feBCWA6h4bLP3g__VCNGyL'}
-    return redirect(auth0.base_url + '/v2/logout?' + urlencode(params))
+    # params = {'returnTo': url_for('login', _external=True), 'client_id': 'UHugP5v627feBCWA6h4bLP3g__VCNGyL'}
+    return redirect(auth0.api_base_url + '/v2/logout')#?' + urlencode(params))
+
+
+

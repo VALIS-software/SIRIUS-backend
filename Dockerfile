@@ -34,3 +34,5 @@ ENV TILEDB_ROOT /cache/tiledb
 WORKDIR /app/sirius
 CMD ["/start.sh"]
 
+# DEV MODE to skip auth
+ENV VALIS_DEV_MODE 1

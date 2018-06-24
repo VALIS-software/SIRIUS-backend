@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__, static_folder='valis-dist/static')
 CORS(app)
 
-from sirius.core import views
+from sirius.core import views, auth0
 
 if __name__ == "__main__":
     # Only for debugging while developing
