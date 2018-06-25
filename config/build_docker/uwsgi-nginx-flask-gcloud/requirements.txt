@@ -11,3 +11,4 @@ pyBigWig
 biopython
 nltk
 sklearn
+authlib

@@ -18,6 +18,7 @@ from sirius.core.annotationtrack import get_annotation_query
 from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
 from sirius.core.graphsearch import get_suggestions
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
+from sirius.core.auth0 import requires_auth
 
 #**************************
 #*     static urls        *
@@ -25,10 +26,12 @@ from sirius.mongo import GenomeNodes, InfoNodes, Edges
 # These urls will be served by Nginx if possible
 @app.route('/')
 @app.route('/index')
+@requires_auth
 def index():
     return send_from_directory("valis-dist", "index.html")
 
 @app.route('/<path:path>')
+@requires_auth
 def send_file(path):
     return app.send_static_file(path)
 
@@ -39,6 +42,7 @@ def send_file(path):
 #**************************
 
 @app.route("/contig_info")
+@requires_auth
 def contig_info():
     """
     Endpoint for frontend to pre-fetch the available contigs and their dimensions
@@ -75,6 +79,7 @@ def contig_info():
 #**************************
 
 @app.route("/track_info")
+@requires_auth
 def track_info():
     """
     Endpoint for rendering the selections in DataBrowser side panel.
@@ -123,6 +128,7 @@ def track_info():
 #**************************
 
 @app.route("/annotations/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
+@requires_auth
 def get_annotationtrack_data(annotation_id, contig, start_bp, end_bp):
     """
     Endpoint for rendering the selections in DataBrowser side panel.
@@ -153,12 +159,14 @@ def get_annotationtrack_data(annotation_id, contig, start_bp, end_bp):
 from sirius.mockData.mock_util import getMockData, get_mock_track_data
 
 @app.route("/tracks")
+@requires_auth
 def tracks():
     """Return a list of all track_ids"""
     MOCK_DATA = getMockData()
     return json.dumps(list(MOCK_DATA.values()))
 
 @app.route("/tracks/<string:track_id>")
+@requires_auth
 def track(track_id):
     MOCK_DATA = getMockData()
     """Return the track metadata"""
@@ -168,6 +176,7 @@ def track(track_id):
         abort(404, "Track not found")
 
 @app.route("/tracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
+@requires_auth
 def get_track_data(track_id, contig, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
     track_height_px = int(request.args.get('track_height_px', default=0))
@@ -181,6 +190,7 @@ def get_track_data(track_id, contig, start_bp, end_bp):
 #**************************
 
 @app.route("/datatracks")
+@requires_auth
 def datatracks():
     """
     Endpoint for getting all available data tracks
@@ -195,6 +205,7 @@ def datatracks():
     return json.dumps([{'id': t['id'], 'name': t['name']} for t in loaded_data_tracks])
 
 @app.route("/datatracks/<string:track_id>")
+@requires_auth
 def datatrack_info_by_id(track_id):
     """
     Endpoint for getting all available data tracks
@@ -215,6 +226,7 @@ def datatrack_info_by_id(track_id):
     return json.dumps(track_info)
 
 @app.route("/datatracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
+@requires_auth
 def datatrack_get_data(track_id, contig, start_bp, end_bp):
     """Return the data for the given track and base pair range"""
     if start_bp > end_bp:
@@ -232,10 +244,12 @@ def datatrack_get_data(track_id, contig, start_bp, end_bp):
 #**************************
 
 @app.route("/graphs")
+@requires_auth
 def graphs():
     return json.dumps(["ld_score"])
 
 @app.route("/graphs/<string:graph_id>/<string:annotation_id1>/<string:annotation_id2>/<int:start_bp>/<int:end_bp>")
+@requires_auth
 def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
     start_bp = int(start_bp)
     end_bp = int(end_bp)
@@ -295,6 +309,7 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
 #**************************
 
 @app.route("/distinct_values/<string:index>", methods=['POST'])
+@requires_auth
 def distinct_values(index):
     """ Return all possible values for a certain index for certain query """
     query = request.get_json()
@@ -326,6 +341,7 @@ def get_query_distinct_values(query, index):
 #*******************************
 
 @app.route("/details/<string:data_id>")
+@requires_auth
 def details(data_id):
     if not data_id: return
     data = get_data_with_id(data_id)
@@ -399,6 +415,7 @@ def edge_relations(edge):
 #*       /search           *
 #**************************
 @app.route('/search', methods=['POST'])
+@requires_auth
 def search():
     """ Returns results for a query, with only basic information, useful for search """
     query_json = request.get_json()
@@ -450,6 +467,7 @@ class QueryResultsCache:
             self.load_finished = True
 
 @app.route('/query/full', methods=['POST'])
+@requires_auth
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
     result_start = request.args.get('result_start', default=None)
@@ -487,6 +505,7 @@ def get_query_full_results(query):
     return QueryResultsCache(query)
 
 @app.route('/query/basic', methods=['POST'])
+@requires_auth
 def query_basic():
     """ Returns results for a query, with only basic information, useful for search """
     result_start = request.args.get('result_start', default=None)
@@ -518,6 +537,7 @@ def query_basic():
     return json.dumps(return_dict)
 
 @lru_cache(maxsize=1000)
+@requires_auth
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
