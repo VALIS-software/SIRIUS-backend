@@ -40,7 +40,7 @@ def callback_handling():
 
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback', audience='https://valis-dev.auth0.com/userinfo')
+    return auth0.authorize_redirect(redirect_uri=url_for('callback_handling', _external=True), audience='https://valis-dev.auth0.com/userinfo')
 
 def requires_auth(f):
     # skip auth if in dev mode
