@@ -317,7 +317,7 @@ def distinct_values(index):
         return abort(404, 'no query posted')
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
     allowed_query_indices = {
-        QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets', 'info.variant_tags', 'info.type', 'info.source'},
+        QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets', 'info.variant_tags', 'info.source'},
         QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype'},
         QUERY_TYPE_EDGE: {'type', 'source'}
     }
