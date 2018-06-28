@@ -119,6 +119,9 @@ Logical operators can also be used at any level in filter. e.g. `"start": {"$or"
 Supported logical operators: (Check MongoDB query operators for more)
 
 ```["$and", "$or", "$not", "$nor"]```
+
+For text fields, where you need to check equality to one of a set of values the `$in` operator may be used:
+```"type": {"$in": ["variant", "SNP"]}```
     
 ------------------
 
