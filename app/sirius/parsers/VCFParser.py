@@ -837,23 +837,28 @@ class VCFParser_dbSNP(VCFParser):
             "info": {
                 "filename": "test_dbSNP.vcf",
                 "INFO": {
-                "RS": {
-                    "Type": "Integer",
-                    "Description": "dbSNP ID (i.e. rs number)"
-                },
-                "RSPOS": {
-                    "Type": "Integer",
-                    "Description": "Chr position reported in dbSNP"
-                },
-                "RV": {
-                    "Type": "Flag",
-                    "Description": "RS orientation is reversed"
-                },
-                "VP": {
-                    "Type": "String",
-                    "Description": "Variation Property.  Documentation is at ftp://ftp.ncbi.nlm.nih.gov/snp/specs/dbSNP_BitField_latest.pdf"
-                },
-                ...
+                    "RS": {
+                        "Type": "Integer",
+                        "Description": "dbSNP ID (i.e. rs number)"
+                    },
+                    "RSPOS": {
+                        "Type": "Integer",
+                        "Description": "Chr position reported in dbSNP"
+                    },
+                    "RV": {
+                        "Type": "Flag",
+                        "Description": "RS orientation is reversed"
+                    },
+                    "VP": {
+                        "Type": "String",
+                        "Description": "Variation Property.  Documentation is at ftp://ftp.ncbi.nlm.nih.gov/snp/specs/dbSNP_BitField_latest.pdf"
+                    },
+                    ...
+                    ,
+                    "variant_tags": [
+                        "is_common"
+                    ]
+                }
             }
         }
 
@@ -874,6 +879,7 @@ class VCFParser_dbSNP(VCFParser):
         }
         info_nodes.append(info_node)
         known_vid = set()
+        all_variant_tags = set()
         for variant in self.variants:
             d = variant.copy()
             contig = 'chr' + d['CHROM']
@@ -910,6 +916,7 @@ class VCFParser_dbSNP(VCFParser):
             variant_tags = []
             if d['INFO'].pop("COMMON", None) == 1:
                 variant_tags.append('is_common')
+                all_variant_tags.add('is_common')
             if variant_id not in known_vid:
                 known_vid.add(variant_id)
                 gnode = {
@@ -933,6 +940,7 @@ class VCFParser_dbSNP(VCFParser):
                     'variant_affected_genes': variant_affected_genes
                 })
                 genome_nodes.append(gnode)
+        info_nodes[0]['info']['variant_tags'] = list(all_variant_tags)
         return genome_nodes, info_nodes, edges
 
 class VCFParser_ExAC(VCFParser):
@@ -1072,6 +1080,7 @@ class VCFParser_ExAC(VCFParser):
         }
         info_nodes.append(info_node)
         # create genome_nodes for each variant
+        all_variant_tags = set()
         for d in self.variants:
             alleles = d['ALT'].split(',')
             allele_frequencies = dict(zip(alleles, d['INFO']['AF']))
@@ -1127,4 +1136,6 @@ class VCFParser_ExAC(VCFParser):
                 }
             }
             genome_nodes.append(gnode)
+            all_variant_tags.update(variant_tags)
+        info_nodes[0]['info']['variant_tags'] = list(all_variant_tags)
         return genome_nodes, info_nodes, edges

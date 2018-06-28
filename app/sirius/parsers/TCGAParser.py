@@ -538,6 +538,7 @@ class TCGA_MAFParser(Parser):
                 gid = 'Gv_' + self.hash(variant_key_string)
                 gtype = 'variant'
             gene_name = d['Hugo_Symbol']
+            patient_barcode = '-'.join(d['Tumor_Sample_Barcode'].split('-',3)[:3])
             if gid in gid_idx_dict:
                 # aggregate results into existing gnode
                 gnode = genome_nodes[gid_idx_dict[gid]]
@@ -546,6 +547,7 @@ class TCGA_MAFParser(Parser):
                 gnode['info']['variant_affected_feature_types'].append(d['Feature_type'])
                 gnode['info']['variant_affected_bio_types'].append(d['BIOTYPE'])
                 gnode['info']['Tumor_Sample_Barcodes'].append(d['Tumor_Sample_Barcode'])
+                gnode['info']['patient_barcodes'].append(patient_barcode)
                 gnode['info']['Transcript_IDs'].append(d['Transcript_ID'])
             else:
                 gid_idx_dict[gid] = len(genome_nodes)
@@ -571,6 +573,7 @@ class TCGA_MAFParser(Parser):
                         'variant_affected_feature_types': [d['Feature_type']],
                         'variant_affected_bio_types': [d['BIOTYPE']],
                         'Tumor_Sample_Barcodes': [d['Tumor_Sample_Barcode']],
+                        'patient_barcodes': [patient_barcode],
                         'Mutation_Status': d['Mutation_Status'],
                         'Transcript_IDs': [d['Transcript_ID']],
                         'CCDS': d['CCDS'],
@@ -591,8 +594,7 @@ class TCGA_MAFParser(Parser):
         if patient_barcode_tumor_site != None:
             for gnode in genome_nodes:
                 tumor_sites = set()
-                for tumor_barcode in gnode['info']['Tumor_Sample_Barcodes']:
-                    patient_barcode = '-'.join(tumor_barcode.split('-',3)[:3])
+                for patient_barcode in gnode['info']['patient_barcodes']:
                     tumor_sites.add(patient_barcode_tumor_site.get(patient_barcode, 'N/A'))
                 gnode['info']['tumor_tissue_sites'] = list(tumor_sites)
         return genome_nodes, info_nodes, edges
@@ -721,7 +723,7 @@ class TCGA_CNVParser(Parser):
             cnv = dict(zip(labels, ls))
             self.cnvs.append(cnv)
 
-    def get_mongo_nodes(self, tumor_tissue_site='Unknown'):
+    def get_mongo_nodes(self, extra_info={}):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
 
@@ -735,7 +737,7 @@ class TCGA_CNVParser(Parser):
         -----
         1. This method should be called after self.parse(), because this method will read from self.metadata and self.cnvs, which are contents of self.data.
         2. GenomeNodes generated are of type 'copy_number_variation'.
-        3. The tumor_tissue_site is passed as a parameter to add as `info.tumor_tissue_site` for each genome node.
+        3. The extra_info is passed as a parameter to add `info.tumor_tissue_site` and `info.patient_barcode` for each genome node.
         4. No Infonode is generated.
         5. No Edge is generated.
 
@@ -766,7 +768,8 @@ class TCGA_CNVParser(Parser):
                 "cnv_n_probes": 11494,
                 "cnv_seg_mean": 0.0219,
                 "GDC_Aliquot": "370a1c0f-78d2-4330-a6fb-f644064b8ed7",
-                "tumor_tissue_site": "Lung"
+                "tumor_tissue_site": "Lung",
+                "patient_barcode":
             }
         }
 
@@ -802,8 +805,8 @@ class TCGA_CNVParser(Parser):
                     'cnv_n_probes': num_probes,
                     'cnv_seg_mean': segment_mean,
                     'GDC_Aliquot': d['GDC_Aliquot'],
-                    'tumor_tissue_site': tumor_tissue_site
                 }
             }
+            gnode['info'].update(extra_info)
             genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges
