@@ -554,7 +554,7 @@ def reference_annotation_track(contig, start_bp, end_bp):
     include_transcript = bool(request.args.get('include_transcript', default=False))
     # get data from cache
     if include_transcript == True:
-        data = get_reference_hirachy_data(contig)
+        data = get_reference_hierarchy_data(contig)
     else:
         data = get_reference_gene_data(contig)
     # filter the ones out of range
@@ -570,8 +570,7 @@ def reference_annotation_track(contig, start_bp, end_bp):
     }
     return json.dumps(result)
 
-
-@lru_cache(maxsize=30)
+@lru_cache(maxsize=1000)
 def get_reference_gene_data(contig):
     """ Find all genes in a contig """
     result = []
@@ -585,9 +584,9 @@ def get_reference_gene_data(contig):
         gene['strand'] = gene.pop('info').pop('strand')
     return all_genes
 
-@lru_cache(maxsize=30)
-def get_reference_hirachy_data(contig):
-    """ Find all genes in a contig, then build the gene->transcript->exon hirachy """
+@lru_cache(maxsize=1000)
+def get_reference_hierarchy_data(contig):
+    """ Find all genes in a contig, then build the gene->transcript->exon hierarchy """
     # First we find all the genes
     gene_types = ['gene', 'pseudogene']
     gene_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand']
