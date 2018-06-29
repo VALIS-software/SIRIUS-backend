@@ -560,8 +560,8 @@ def reference_annotation_track(contig, start_bp, end_bp):
     # filter the ones out of range
     result_data = [g for g in data if g['start'] <= end_bp and g['start'] + g['length'] >= start_bp]
     if len(result_data) > 0:
-        start_bp = result_data[0]['start']
-        end_bp = result_data[-1]['start'] + result_data[-1]['length'] - 1
+        start_bp = min(start_bp, result_data[0]['start'])
+        end_bp = max(end_bp, result_data[-1]['start'] + result_data[-1]['length'] - 1)
     result = {
         'contig': contig,
         'start_bp': start_bp,
