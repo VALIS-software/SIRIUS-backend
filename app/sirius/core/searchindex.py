@@ -1,5 +1,6 @@
 import nltk
 import collections
+from functools import lru_cache
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 import fuzzyset
