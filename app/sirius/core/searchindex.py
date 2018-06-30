@@ -96,17 +96,17 @@ class SearchIndex:
 
 def buildIndex(arr):
 	data = {}
-    for idx, suggestion in enumerate(arr):
-        data[idx] = { 'text': suggestion, 'id' : idx }
-    return SearchIndex(data, 'text')
+	for idx, suggestion in enumerate(arr):
+		data[idx] = { 'text': suggestion, 'id' : idx }
+	return SearchIndex(data, 'text')
 
 @lru_cache(maxsize=1)
 def load_suggestions():
-    return {
-        'GENE': buildIndex(loaded_gene_names),
-        'TRAIT': buildIndex(loaded_trait_names),
-        'CELL_TYPE': buildIndex(loaded_cell_types),
-    }
+	return {
+		'GENE': buildIndex(loaded_gene_names),
+		'TRAIT': buildIndex(loaded_trait_names),
+		'CELL_TYPE': buildIndex(loaded_cell_types),
+	}
 
 def get_suggestions(term, search_text, max_results):
 	suggestions = load_suggestions()
