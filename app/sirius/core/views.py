@@ -425,7 +425,7 @@ def suggestions():
         return abort(500, 'no search_text')
     max_results = 100
     if "max_results" in query_json:
-        max_results = query_json["max_results"]
+        max_results = int(query_json["max_results"])
     results = { 
         "results": get_suggestions(query_json["term_type"], query_json["search_text"], max_results)
     }
