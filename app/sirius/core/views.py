@@ -16,7 +16,7 @@ from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL,
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
 from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
-from sirius.core.graphsearch import get_suggestions
+from sirius.core.searchindex import get_suggestions
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.core.auth0 import requires_auth
 
@@ -412,16 +412,23 @@ def edge_relations(edge):
 
 
 #**************************
-#*       /search           *
+#*       /suggestions     *
 #**************************
-@app.route('/search', methods=['POST'])
+@app.route('/suggestions', methods=['POST'])
 @requires_auth
-def search():
+def suggestions():
     """ Returns results for a query, with only basic information, useful for search """
     query_json = request.get_json()
-    if not query_json or not "query" in query_json:
-        return abort(404, 'no query posted')
-    results = get_suggestions(query_json["query"])
+    if not query_json or not "term_type" in query_json:
+        return abort(500, 'no term_type')
+    if not query_json or not "search_text" in query_json:
+        return abort(500, 'no search_text')
+    max_results = 100
+    if "max_results" in query_json:
+        max_results = query_json["max_results"]
+    results = { 
+        "results": get_suggestions(query_json["term_type"], query_json["search_text"], max_results)
+    }
     return json.dumps(results)
 
 #**************************

@@ -1,9 +1,12 @@
-
 import nltk
 import collections
+from functools import lru_cache
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 import fuzzyset
+
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types
+
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -91,3 +94,26 @@ class SearchIndex:
 			return [x[1] for x in result[:max_hits]]
 		else:
 			return [x[1] for x in result]
+
+def buildIndex(arr):
+	data = {}
+	for idx, suggestion in enumerate(arr):
+		data[idx] = { 'text': suggestion, 'id' : idx }
+	return SearchIndex(data, 'text')
+
+@lru_cache(maxsize=1)
+def load_suggestions():
+	return {
+		'GENE': buildIndex(loaded_gene_names),
+		'TRAIT': buildIndex(loaded_trait_names),
+		'CELL_TYPE': buildIndex(loaded_cell_types),
+	}
+
+def get_suggestions(term, search_text, max_results):
+	suggestions = load_suggestions()
+	if not term in suggestions:
+		results = []
+	else:
+		results = suggestions[term].get_results(search_text, max_results)
+	return results
+
