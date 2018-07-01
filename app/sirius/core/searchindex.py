@@ -49,7 +49,10 @@ class SearchIndex:
 	def get_fuzzy_results(self, tokens):
 		final_tokens = []
 		for token in tokens:
-			final_tokens += [x[1] for x in self.fuzzyset.get(token)]
+			result = self.fuzzyset.get(token)
+			if not result:
+				continue
+			final_tokens += [x[1] for x in result]
 		return self.get_token_results(final_tokens)
 
 	def score_result(self, result, query):
