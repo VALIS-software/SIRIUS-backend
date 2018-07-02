@@ -112,6 +112,7 @@ def load_suggestions():
 		'CELL_TYPE': buildIndex(loaded_cell_types),
 	}
 
+@lru_cache(maxsize=1000)
 def get_suggestions(term, search_text, max_results):
 	suggestions = load_suggestions()
 	if not term in suggestions:

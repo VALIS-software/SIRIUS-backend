@@ -416,7 +416,6 @@ def edge_relations(edge):
 #**************************
 @app.route('/suggestions', methods=['POST'])
 @requires_auth
-@lru_cache(maxsize=1000)
 def suggestions():
     """ Returns results for a query, with only basic information, useful for search """
     query_json = request.get_json()
