@@ -118,6 +118,6 @@ def get_suggestions(term, search_text, max_results):
 	if not term in suggestions:
 		results = []
 	else:
-		results = suggestions[term].get_results(search_text, max_results)
+		results = suggestions[term].get_results(search_text, max_results, enable_fuzzy=False)
 	return results
 
