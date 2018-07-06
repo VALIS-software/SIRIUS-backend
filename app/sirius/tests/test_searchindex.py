@@ -6,51 +6,27 @@ from sirius.core.searchindex import SearchIndex
 
 
 class SearchIndexTest(TimedTestCase):
-    def build_index(self):
-        data = {}
-        strings = []
-
-        strings.append(['foo', 'bar'])
-        strings.append(['foo', 'baz'])
-        strings.append(['foo', 'baz', 'bar'])
-        strings.append(['foo', 'foo'])
-        strings.append(['baz', 'bar'])
-        strings.append(['baz', 'baz'])
-        strings.append(['bar', 'bar'])
-        
-
-        for x, string in enumerate(strings):
-            data[x] = {'id': x, 'text': " ".join(string)}
-        return SearchIndex(data, 'text')
+    def setUp(self):
+        super(SearchIndexTest, self).setUp()
+        strings = ['foo bar','foo baz','foo baz bar','foo foo','baz bar','baz baz','bar bar']
+        self.search_index = SearchIndex(strings)
 
     def test_basic_search(self):
-        """ Test basic matching works """
-        index = self.build_index()
-        results = index.get_results('foo', enable_fuzzy=False)
+        """ Test matching works """
+        results = self.search_index.get_suggestions('foo')
         self.assertEqual(len(results), 4)
 
-        results = index.get_results('bar', enable_fuzzy=False)
+        results = self.search_index.get_suggestions('bar')
         self.assertEqual(len(results), 4)
 
-        results = index.get_results('baz', enable_fuzzy=False)
-        self.assertEqual(len(results), 4)
-
-    def test_fuzzy_search(self):
-        """ Test fuzzy matching works """
-        index = self.build_index()
-        results = index.get_results('bazz')
-        self.assertEqual(len(results), 4)
-
-        results = index.get_results('faz')
+        results = self.search_index.get_suggestions('baz')
         self.assertEqual(len(results), 4)
 
     def test_tfidf_ranking(self):
         """ Test ordering of matching """
-        index = self.build_index()
-        results = index.get_results('baz')
+        results = self.search_index.get_suggestions('baz')
         # the one with more mentions of 'baz' should be first
         self.assertEqual(results[0], 'baz baz')
-
         # the one with the most other words should be last
         self.assertEqual(results[-1], 'foo baz bar')
 
