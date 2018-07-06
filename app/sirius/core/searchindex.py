@@ -1,7 +1,7 @@
 import string
 import nltk
 import collections
-from functools import lru_cache
+import operator
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 import fuzzyset
@@ -14,16 +14,36 @@ nltk.download('stopwords')
 nltk.download('punkt')
 stop_word_set = set(stopwords.words('english') + list(string.punctuation))
 
+def get_all(self, value):
+    ''' Extend the fuzzyset.FuzzySet.__getitem__ method, to get all matching strings '''
+    lvalue = value.lower()
+    matches = collections.defaultdict(float)
+    for gram_size in range(self.gram_size_upper, self.gram_size_lower - 1, -1):
+        grams = fuzzyset._gram_counter(lvalue, gram_size)
+        items = self.items[gram_size]
+        norm = sum(x**2 for x in grams.values())**0.5
+        for gram, occ in grams.items():
+            for idx, other_occ in self.match_dict.get(gram, ()):
+                matches[idx] += occ * other_occ
+        if not matches:
+            continue
+        results = [(match_score / (norm * items[idx][0]), items[idx][1])
+                   for idx, match_score in matches.items()]
+        results.sort(reverse=True, key=operator.itemgetter(0))
+        return [(score, self.exact_set[lval]) for score, lval in results]
+    raise KeyError(value)
+
+fuzzyset.FuzzySet.get_all = get_all
+
 class SearchIndex:
-    def __init__(self, documents, enable_fuzzy=True):
+    def __init__(self, documents):
         self.documents = np.array(documents)
-        all_tokens = set(nltk.wordpunct_tokenize(' '.join(documents))) - stop_word_set
-        self.fuzzyset = fuzzyset.FuzzySet(all_tokens, use_levenshtein=False)
         self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words=stop_word_set)
         self.tfs = self.tfidf.fit_transform(self.documents)
+        self.fuzzyset = fuzzyset.FuzzySet(self.tfidf.get_feature_names(), use_levenshtein=False)
 
     def tokenize_document(self, doc):
-        tokens = [x.lower() for x in nltk.word_tokenize(doc) if x not in stop_word_set]
+        tokens = [x.lower() for x in nltk.wordpunct_tokenize(doc) if x not in stop_word_set]
         return tokens
 
     def get_suggestions(self, query, max_hits=100):
@@ -43,7 +63,7 @@ class SearchIndex:
         # aggregate the fuzzy-matched token values
         fuzzy_matched_token_values = collections.defaultdict(float)
         for t in tokens:
-            for v, s in self.fuzzyset.get(t):
+            for v, s in self.fuzzyset.get_all(t):
                 fuzzy_matched_token_values[s] += v
         matched_tokens, fuzzy_matching_score = zip(*fuzzy_matched_token_values.items())
         # compute the score of each matched token
@@ -53,10 +73,12 @@ class SearchIndex:
         weighted_summed_scores = np.array(token_feature_scores.multiply(fuzzy_matching_weight).sum(axis=0))[0]
         # compute the dot product
         document_matching_scores = self.tfs.dot(weighted_summed_scores)
-        # adjust max_hits to number of the positive values
-        max_hits = min(max_hits, len(document_matching_scores.nonzero()[0]))
-        # get the heighest matching document indices
-        best_matching_doc_idxs = (-document_matching_scores).argsort()[:max_hits]
+        # sort the nonzero results
+        nonzero_idxs = document_matching_scores.nonzero()[0]
+        nonzero_values = document_matching_scores[nonzero_idxs]
+        nonzero_sorted = np.argsort(-nonzero_values)[:max_hits]
+        best_matching_doc_idxs = nonzero_idxs[nonzero_sorted]
+        # get the best suggestions
         suggestions = self.documents[best_matching_doc_idxs].tolist()
         return suggestions
 
