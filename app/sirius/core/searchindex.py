@@ -17,7 +17,7 @@ stop_word_set = set(stopwords.words('english') + list(string.punctuation))
 class SearchIndex:
     def __init__(self, documents, enable_fuzzy=True):
         self.documents = np.array(documents)
-        all_tokens = set(nltk.word_tokenize(' '.join(documents))) - stop_word_set
+        all_tokens = set(nltk.wordpunct_tokenize(' '.join(documents))) - stop_word_set
         self.fuzzyset = fuzzyset.FuzzySet(all_tokens, use_levenshtein=False)
         self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words=stop_word_set)
         self.tfs = self.tfidf.fit_transform(self.documents)
