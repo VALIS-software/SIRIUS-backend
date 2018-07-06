@@ -13,14 +13,18 @@ class SearchIndexTest(TimedTestCase):
 
     def test_search(self):
         """ Test matching works """
-        results = self.search_index.get_suggestions('foo')
+        results = self.search_index.get_suggestions('foo', 4)
         self.assertEqual(len(results), 4)
+        self.assertEqual(results[0], 'foo foo')
+        self.assertEqual(results[3], 'foo baz bar')
 
-        results = self.search_index.get_suggestions('bar')
-        self.assertEqual(len(results), 6)
+        results = self.search_index.get_suggestions('bar', 4)
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results[0], 'bar bar')
+        self.assertEqual(results[3], 'foo baz bar')
 
-        results = self.search_index.get_suggestions('baz')
-        self.assertEqual(len(results), 6)
+        results = self.search_index.get_suggestions('baz', 4)
+        self.assertEqual(len(results), 4)
 
     def test_tfidf_ranking(self):
         """ Test ordering of matching """
@@ -28,7 +32,7 @@ class SearchIndexTest(TimedTestCase):
         # the one with more mentions of 'baz' should be first
         self.assertEqual(results[0], 'baz baz')
         # the one with the most other words should be last
-        self.assertEqual(results[-1], 'foo bar')
+        self.assertEqual(results[-1], 'foo baz bar')
 
 if __name__ == "__main__":
     unittest.main()

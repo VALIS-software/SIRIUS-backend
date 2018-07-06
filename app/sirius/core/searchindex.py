@@ -17,6 +17,9 @@ stop_word_set = set(stopwords.words('english') + list(string.punctuation))
 def get_all(self, value):
     ''' Extend the fuzzyset.FuzzySet.__getitem__ method, to get all matching strings '''
     lvalue = value.lower()
+    result = self.exact_set.get(lvalue)
+    if result:
+        return [(1, result)]
     matches = collections.defaultdict(float)
     for gram_size in range(self.gram_size_upper, self.gram_size_lower - 1, -1):
         grams = fuzzyset._gram_counter(lvalue, gram_size)
