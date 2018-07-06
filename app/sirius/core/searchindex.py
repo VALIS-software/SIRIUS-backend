@@ -89,7 +89,7 @@ loaded_SearchIndex = {
     'GENE': SearchIndex(loaded_gene_names),
     'TRAIT': SearchIndex(loaded_trait_names),
     'CELL_TYPE': SearchIndex(loaded_cell_types),
-    'TUMOR_SITES': SearchIndex(loaded_patient_tumor_sites)
+    'TUMOR_SITE': SearchIndex(loaded_patient_tumor_sites)
 }
 
 def get_suggestions(term, search_text, max_results=15):
