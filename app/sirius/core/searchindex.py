@@ -1,123 +1,98 @@
+import string
 import nltk
 import collections
-from functools import lru_cache
+import operator
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 import fuzzyset
+import numpy as np
 
-from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types, loaded_patient_tumor_sites
 
 
 nltk.download('stopwords')
 nltk.download('punkt')
-stop = set(stopwords.words('english'))
+stop_word_set = set(stopwords.words('english') + list(string.punctuation))
+
+def get_all(self, value):
+    ''' Extend the fuzzyset.FuzzySet.__getitem__ method, to get all matching strings '''
+    lvalue = value.lower()
+    result = self.exact_set.get(lvalue)
+    if result:
+        return [(1, result)]
+    matches = collections.defaultdict(float)
+    for gram_size in range(self.gram_size_upper, self.gram_size_lower - 1, -1):
+        grams = fuzzyset._gram_counter(lvalue, gram_size)
+        items = self.items[gram_size]
+        norm = sum(x**2 for x in grams.values())**0.5
+        for gram, occ in grams.items():
+            for idx, other_occ in self.match_dict.get(gram, ()):
+                matches[idx] += occ * other_occ
+        if not matches:
+            continue
+        results = [(match_score / (norm * items[idx][0]), items[idx][1])
+                   for idx, match_score in matches.items()]
+        results.sort(reverse=True, key=operator.itemgetter(0))
+        return [(score, self.exact_set[lval]) for score, lval in results]
+    raise KeyError(value)
+
+fuzzyset.FuzzySet.get_all = get_all
 
 class SearchIndex:
-	def __init__(self, data, dataKey):
-		self.inverted_index = {}
-		self.ngram_index = {}
-		self.data = data
-		self.dataKey = dataKey
-		self.fuzzyset = fuzzyset.FuzzySet(use_levenshtein=False)
-		self.documents = []
-		for doc_id in self.data.keys():
-			self.add_document(doc_id, self.data[doc_id])
-			self.documents.append(self.data[doc_id][dataKey])
-		
-		self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words='english')
-		self.tfs = self.tfidf.fit_transform(self.documents)
-	
-	def add_document(self, doc_id, doc):
-		tokens = self.tokenize_document(doc[self.dataKey])
-		for token in tokens:
-			if not token in self.inverted_index:
-				self.inverted_index[token] = []
-			self.inverted_index[token].append(doc_id)
-			self.fuzzyset.add(token)
+    def __init__(self, documents):
+        self.documents = np.array(documents)
+        self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words=stop_word_set)
+        self.tfs = self.tfidf.fit_transform(self.documents)
+        self.fuzzyset = fuzzyset.FuzzySet(self.tfidf.get_feature_names(), use_levenshtein=False)
 
-	def tokenize_document(self, doc):
-		tokens = [x.lower() for x in nltk.word_tokenize(doc) if x not in stop]
-		return tokens
+    def tokenize_document(self, doc):
+        tokens = [x.lower() for x in nltk.wordpunct_tokenize(doc) if x not in stop_word_set]
+        return tokens
 
-	def get_token_results(self, tokens, seen=None):
-		results = []
-		for token in tokens:
-			if token in self.inverted_index:
-				results += self.inverted_index[token]
-		return collections.Counter(results)
+    def get_suggestions(self, query, max_hits=100):
+        """
+        Input
+        -----
+        query: string, like 'alz dis'
 
-	def get_fuzzy_results(self, tokens):
-		final_tokens = []
-		for token in tokens:
-			result = self.fuzzyset.get(token)
-			if not result:
-				continue
-			final_tokens += [x[1] for x in result]
-		return self.get_token_results(final_tokens)
+        Output
+        ------
+        suggestions: list of strings
+        The suggestions are the best matching strings in self.documents
+        """
+        tokens = self.tokenize_document(query)
+        if len(tokens) == 0:
+            return self.documents[:max_hits].tolist()
+        # aggregate the fuzzy-matched token values
+        fuzzy_matched_token_values = collections.defaultdict(float)
+        for t in tokens:
+            for v, s in self.fuzzyset.get_all(t):
+                fuzzy_matched_token_values[s] += v
+        matched_tokens, fuzzy_matching_score = zip(*fuzzy_matched_token_values.items())
+        # compute the score of each matched token
+        token_feature_scores = self.tfidf.transform(matched_tokens)
+        # weighted sum the scores
+        fuzzy_matching_weight = np.array(fuzzy_matching_score)[:, np.newaxis]
+        weighted_summed_scores = np.array(token_feature_scores.multiply(fuzzy_matching_weight).sum(axis=0))[0]
+        # compute the dot product
+        document_matching_scores = self.tfs.dot(weighted_summed_scores)
+        # sort the nonzero results
+        nonzero_idxs = document_matching_scores.nonzero()[0]
+        nonzero_values = document_matching_scores[nonzero_idxs]
+        nonzero_sorted = np.argsort(-nonzero_values)[:max_hits]
+        best_matching_doc_idxs = nonzero_idxs[nonzero_sorted]
+        # get the best suggestions
+        suggestions = self.documents[best_matching_doc_idxs].tolist()
+        return suggestions
 
-	def score_result(self, result, query):
-		tokens = self.tokenize_document(query)
-		query_tokens = []
-		for token in tokens:
-			query_tokens += [x[1] for x in self.fuzzyset.get(token)]
-		
-		result_tokens = self.tokenize_document(result)
+loaded_SearchIndex = {
+    'GENE': SearchIndex(loaded_gene_names),
+    'TRAIT': SearchIndex(loaded_trait_names),
+    'CELL_TYPE': SearchIndex(loaded_cell_types),
+    'TUMOR_SITE': SearchIndex(loaded_patient_tumor_sites)
+}
 
-		tfidf1 = self.tfidf.transform([" ".join(result_tokens)])
-		tfidf2 = self.tfidf.transform([" ".join(query_tokens)])
-
-		feature_names = self.tfidf.get_feature_names()
-		
-		tf1scores = tfidf1.nonzero()[1]
-		tf2scores = tfidf2.nonzero()[1]
-		total = 0
-
-		for col in tf1scores:
-			if col in tf2scores:
-				total += tfidf1[0, col] * tfidf2[0, col]
-
-		return (total, result)
-
-	def get_results(self, query, max_hits=100, enable_fuzzy=True):
-		tokens = self.tokenize_document(query)
-		if (len(tokens) == 0):
-			return self.documents[:max_hits]
-		results = set()
-		token_results = self.get_token_results(tokens)
-		
-		if enable_fuzzy:
-			fuzzy_results = self.get_fuzzy_results(tokens) 
-		else:
-			fuzzy_results = collections.Counter([])
-
-		a = [self.data[x[0]][self.dataKey] for x in (token_results).most_common()]
-		b = [self.data[x[0]][self.dataKey] for x in (fuzzy_results).most_common()]
-		result = sorted([self.score_result(x, query) for x in set(a).union(set(b))], key=lambda x : x[0], reverse=True)
-		if max_hits != None:
-			return [x[1] for x in result[:max_hits]]
-		else:
-			return [x[1] for x in result]
-
-def buildIndex(arr):
-	data = {}
-	for idx, suggestion in enumerate(arr):
-		data[idx] = { 'text': suggestion, 'id' : idx }
-	return SearchIndex(data, 'text')
-
-@lru_cache(maxsize=1)
-def load_suggestions():
-	return {
-		'GENE': buildIndex(loaded_gene_names),
-		'TRAIT': buildIndex(loaded_trait_names),
-		'CELL_TYPE': buildIndex(loaded_cell_types),
-	}
-
-@lru_cache(maxsize=1000)
-def get_suggestions(term, search_text, max_results):
-	suggestions = load_suggestions()
-	if not term in suggestions:
-		results = []
-	else:
-		results = suggestions[term].get_results(search_text, max_results, enable_fuzzy=False)
-	return results
-
+def get_suggestions(term, search_text, max_results=15):
+    searchIdx = loaded_SearchIndex.get(term, None)
+    if searchIdx is None: return []
+    return searchIdx.get_suggestions(search_text, max_results)

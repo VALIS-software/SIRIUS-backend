@@ -396,12 +396,12 @@ def suggestions():
         return abort(500, 'no term_type')
     if not query_json or not "search_text" in query_json:
         return abort(500, 'no search_text')
-    max_results = 100
-    if "max_results" in query_json:
-        max_results = int(query_json["max_results"])
-    results = { 
+    max_results = int(query_json.get('max_results', 100))
+    results = {
         "results": get_suggestions(query_json["term_type"], query_json["search_text"], max_results)
     }
+    print(query_json)
+    print(results['results'])
     return json.dumps(results)
 
 #**************************
