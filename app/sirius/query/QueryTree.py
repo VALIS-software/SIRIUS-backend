@@ -27,7 +27,8 @@ class QueryTree(object):
             resultNode = InfoQueryNode.InfoQueryNode(qfilter, edges, edgeRule, limit)
         elif typ == QUERY_TYPE_EDGE:
             nextnode = self.build_recur(query.get('toNode', None))
-            resultNode = QueryEdge.QueryEdge(qfilter, nextnode, limit)
+            reverse = query.get('reverse', False)
+            resultNode = QueryEdge.QueryEdge(qfilter, nextnode, reverse, limit)
         else:
             raise NotImplementedError("Query with type %s not implemented yet." % query['type'])
         resultNode.verbose = self.verbose
