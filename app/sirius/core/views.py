@@ -463,8 +463,8 @@ def query_full():
         if result_end <= result_start:
             return abort(404, 'result_end should > result_start')
     results_cache = get_query_full_results(HashableDict(query))
-    print(f"full query {query} cache_info: {get_query_full_results.cache_info()}")
     results = results_cache[result_start:result_end]
+    print(f"full query {query} {len(results)} cache_info: {get_query_full_results.cache_info()}")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
@@ -501,8 +501,8 @@ def query_basic():
         if result_end <= result_start:
             return abort(404, 'result_end should > result_start')
     results_cache = get_query_basic_results(HashableDict(query))
-    print(f"full query {query} cache_info: {get_query_full_results.cache_info()}")
     results = results_cache[result_start:result_end]
+    print(f"basic query {query} {len(results)} cache_info: {get_query_full_results.cache_info()}")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
