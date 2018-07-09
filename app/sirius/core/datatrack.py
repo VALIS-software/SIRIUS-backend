@@ -18,6 +18,17 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
         return abort(404, f'contig {contig} not found')
     if sampling_rate < 1:
         return abort(404, f'sampling_rate {sampling_rate} should be at least 1')
+    if start_bp > contig_info['length'] or end_bp <= 0:
+        # return empty result if range out of scope
+        return json.dumps({
+            'trackID': track_id,
+            'contig': contig,
+            'startBp': start_bp,
+            'endBp': end_bp,
+            'samplingRate': sampling_rate,
+            'numSamples': 0,
+            'aggregations': ['p_a', 'p_t', 'p_g', 'p_c']
+        })
     # find the best resolution data
     best_resolution = 0
     best_res_data = None
@@ -32,6 +43,7 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
     i_start = int(np.floor(start_bp / best_resolution))
     i_end = int(np.ceil(end_bp / best_resolution))
     # load the data from tiledb
+    print(i_start, i_end)
     dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
     t2 = time.time()
     # prepare the return data
@@ -268,3 +280,4 @@ def old_signal_get_contig_data(track_id, contig, start_bp, end_bp, track_height_
     if verbose:
         print(f"Load {t1-t0:.2f}s; Parse {t2-t1:.2f}s; Format {t3-t2:.2f}s")
     return json.dumps(response)
+
