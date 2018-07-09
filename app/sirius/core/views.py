@@ -292,7 +292,7 @@ def distinct_values(index):
     allowed_query_indices = {
         QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets', 'info.variant_tags', 'info.source'},
         QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags'},
-        QUERY_TYPE_EDGE: {'type', 'source'}
+        QUERY_TYPE_EDGE: {'type', 'source', 'info.biosample'}
     }
     if index not in allowed_query_indices[query['type']]:
         return abort(404, f"Query of {index} is not allowed for {query['type']}")
