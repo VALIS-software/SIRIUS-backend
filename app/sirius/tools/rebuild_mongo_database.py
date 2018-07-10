@@ -249,17 +249,25 @@ def parse_upload_GTEx_files():
     print(f"Decompressing {filename}")
     subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
     foldername = filename.split('.',1)[0]
+    # aggregate all biosamples
+    distinct_biosamples = set()
     for f in os.listdir(foldername):
         if f.endswith('egenes.txt.gz'):
             fname = os.path.join(foldername, f)
             print(f"Parsing and uploading from {fname}")
             parser = EQTLParser_GTEx(fname, verbose=True)
             parser.parse()
-            genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+            # the first word in filename is parsed as the biosample
+            biosample = f.split('.', 1)[0]
+            # reformat to be consistent with ENCODE dataset
+            biosample = ' '.join(biosample.lower().split('_'))
+            distinct_biosamples.add(biosample)
+            genome_nodes, info_nodes, edges = parser.get_mongo_nodes({'biosample': biosample})
             # we only insert the edges here for each file
             update_insert_many(Edges, edges)
     # change the filename to the big tar.gz file
     info_nodes[0]['info']['filename'] = filename
+    info_nodes[0]['info']['biosample'] = list(distinct_biosamples)
     # insert one infonode for the GTEx dataSource
     update_insert_many(InfoNodes, info_nodes)
 

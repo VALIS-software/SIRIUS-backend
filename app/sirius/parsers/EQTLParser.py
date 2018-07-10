@@ -158,7 +158,7 @@ class EQTLParser(Parser):
                     print("%d data parsed" % len(self.eqtls), end='\r')
 
 class EQTLParser_GTEx(EQTLParser):
-    def get_mongo_nodes(self):
+    def get_mongo_nodes(self, extra_info=None):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
 
@@ -240,10 +240,6 @@ class EQTLParser_GTEx(EQTLParser):
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         known_edge_ids = set()
-        # the first word in filename is parsed as the biosample
-        biosample = self.filename.split('.', 1)[0]
-        # reformat to be consistent with ENCODE dataset
-        biosample = ' '.join(biosample.lower().split('_'))
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
         for d in self.eqtls:
             # create EdgeNode
@@ -255,7 +251,6 @@ class EQTLParser_GTEx(EQTLParser):
                     'source': DATA_SOURCE_GTEX,
                     'name': d['gene_name'] + ' Expression',
                     'info': {
-                        'biosample': biosample,
                         'p-value': float(d['pval_true_df']),
                         'true_df': float(d['true_df']),
                         'pval_nominal': float(d['pval_nominal']),
@@ -266,6 +261,8 @@ class EQTLParser_GTEx(EQTLParser):
                         'log2_aFC_upper': float(d.get('log2_aFC_upper', 'nan')),
                     }
             }
+            if extra_info is not None:
+                edge['info'].update(extra_info)
             edge['_id'] = 'E'+self.hash(str(edge))
             if edge['_id'] not in known_edge_ids:
                 known_edge_ids.add(edge['_id'])
