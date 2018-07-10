@@ -179,8 +179,8 @@ class TCGA_XMLParser(Parser):
             'source': DATA_SOURCE_TCGA,
             'info': {
                 'patient_id': p['patient_id'],
-                'bcr_patient_uuid': p['bcr_patient_uuid'].lower(),
-                'bcr_patient_barcode': p['bcr_patient_barcode'],
+                'patient_uuid': p['bcr_patient_uuid'].lower(),
+                'patient_barcode': p['bcr_patient_barcode'],
                 'days_to_birth': p['days_to_birth'],
                 'gender': p['gender'],
                 'biosample': p.get('tumor_tissue_site', 'None'),
