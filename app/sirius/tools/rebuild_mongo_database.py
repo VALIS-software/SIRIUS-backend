@@ -288,10 +288,10 @@ def parse_upload_TCGA_files():
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         # record the tumor site for each patient barcode
         info = info_nodes[0]['info']
-        patient_barcode = info['bcr_patient_barcode']
-        patient_barcode_tumor_site[patient_barcode] = info['tumor_tissue_site']
-        patient_uuid = info['bcr_patient_uuid']
-        patient_uuid_tumor_site[patient_uuid] = info['tumor_tissue_site']
+        patient_barcode = info['patient_barcode']
+        patient_barcode_tumor_site[patient_barcode] = info['biosample']
+        patient_uuid = info['patient_uuid']
+        patient_uuid_tumor_site[patient_uuid] = info['biosample']
         patient_uuid_barcode[patient_uuid] = patient_barcode
         # collection individual info_nodes for each patient
         all_patient_infonodes += info_nodes
@@ -311,7 +311,7 @@ def parse_upload_TCGA_files():
         print(f"{i:3d} ", end='', flush=True)
         parser = TCGA_MAFParser(f)
         parser.parse()
-        # provide the patient_barcode_tumor_site so the gnode will have 'info.tumor_tissue_sites'
+        # provide the patient_barcode_tumor_site so the gnode will have 'info.biosample'
         patient_barcode_tumor_site = patient_barcode_tumor_site
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes(patient_barcode_tumor_site)
         # aggregate variant tags
@@ -344,12 +344,12 @@ def parse_upload_TCGA_files():
             parser = TCGA_CNVParser(f)
             filebasename = os.path.basename(f)
             patient_uuid = cnv_file_caseIDs[filebasename]
-            tumor_tissue_site = patient_uuid_tumor_site.get(patient_uuid, None)
+            biosample = patient_uuid_tumor_site.get(patient_uuid, None)
             patient_barcode = patient_uuid_barcode.get(patient_uuid, None)
             # some patient data are not available because they are in the "controlled access" catogory
-            if tumor_tissue_site == None or patient_barcode == None: continue
+            if biosample == None or patient_barcode == None: continue
             parser.parse()
-            extra_info = {'patient_barcode': patient_barcode, 'tumor_tissue_site': tumor_tissue_site}
+            extra_info = {'patient_barcode': patient_barcode, 'biosample': biosample}
             genome_nodes, info_nodes, edges = parser.get_mongo_nodes(extra_info)
             batch_genome_nodes += genome_nodes
         update_insert_many(GenomeNodes, batch_genome_nodes)
@@ -377,7 +377,7 @@ def build_mongo_index():
     print("Creating compound index for 'type' and 'info.biosample'")
     GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
     print("InfoNodes")
-    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags', 'info.tumor_tissue_site']:
+    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
     print("Creating text index 'name'")

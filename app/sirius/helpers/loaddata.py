@@ -94,5 +94,5 @@ loaded_cell_types = InfoNodes.distinct('info.biosample', {'type': 'ENCODE_access
 print(f'Loaded {len(loaded_cell_types)} cell types')
 
 # store all loaded tumor_tissue_sites
-loaded_patient_tumor_sites = [s for s in InfoNodes.distinct('info.tumor_tissue_site', {'type':'patient'}) if s]
+loaded_patient_tumor_sites = [s for s in InfoNodes.distinct('info.biosample', {'type':'patient'}) if s]
 print(f'Loaded {len(loaded_patient_tumor_sites)} patient tumor sites')

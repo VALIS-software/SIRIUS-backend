@@ -153,11 +153,11 @@ class TCGA_XMLParser(Parser):
             "source": "TCGA",
             "info": {
                 "patient_id": "6561",
-                "bcr_patient_uuid": "46f35964-bd43-47e6-83fe-40da33828c94",
-                "bcr_patient_barcode": "TCGA-85-6561",
+                "patient_uuid": "46f35964-bd43-47e6-83fe-40da33828c94",
+                "patient_barcode": "TCGA-85-6561",
                 "days_to_birth": -24234,
                 "gender": "MALE",
-                "tumor_tissue_site": "Lung",
+                "biosample": "Lung",
                 "ethnicity": "NOT HISPANIC OR LATINO",
                 "diagnosis": "Lung Squamous Cell Carcinoma"
             }
@@ -183,7 +183,7 @@ class TCGA_XMLParser(Parser):
                 'bcr_patient_barcode': p['bcr_patient_barcode'],
                 'days_to_birth': p['days_to_birth'],
                 'gender': p['gender'],
-                'tumor_tissue_site': p.get('tumor_tissue_site', 'None'),
+                'biosample': p.get('tumor_tissue_site', 'None'),
                 'ethnicity': p['ethnicity']
             }
         }]
@@ -481,32 +481,34 @@ class TCGA_MAFParser(Parser):
             "source": "TCGA",
             "name": "SNP of SLC6A9",
             "info": {
-            "genes": [
-                "SLC6A9"
-            ],
-            "strand": "+",
-            "score": "",
-            "filter": "PASS",
-            "variant_ref": "G",
-            "variant_alt": "A",
-            "variant_tags": [
-                "synonymous_variant"
-            ],
-            "variant_affected_feature_types": [
-                "Transcript"
-            ],
-            "variant_affected_bio_types": [
-                "protein_coding"
-            ],
-            "Tumor_Sample_Barcodes": [
-                "TCGA-N6-A4VD-01A-11D-A28R-08"
-            ],
-            "Mutation_Status": "Somatic",
-            "Transcript_IDs": [
-                "ENST00000360584"
-            ],
-            "CCDS": "CCDS41317.1",
-            "ENSP": "ENSP00000353791"
+                "genes": [
+                    "SLC6A9"
+                ],
+                "strand": "+",
+                "score": "",
+                "filter": "PASS",
+                "variant_ref": "G",
+                "variant_alt": "A",
+                "variant_tags": [
+                    "synonymous_variant"
+                ],
+                "variant_affected_feature_types": [
+                    "Transcript"
+                ],
+                "variant_affected_bio_types": [
+                    "protein_coding"
+                ],
+                "Tumor_Sample_Barcodes": [
+                    "TCGA-N6-A4VD-01A-11D-A28R-08"
+                ],
+                "Mutation_Status": "Somatic",
+                "Transcript_IDs": [
+                    "ENST00000360584"
+                ],
+                "CCDS": "CCDS41317.1",
+                "ENSP": "ENSP00000353791",
+                "biosample": ['Stomach'],
+                "patient_barcodes": ['TCGA-BR-7715'],
             }
         }
 
@@ -596,7 +598,7 @@ class TCGA_MAFParser(Parser):
                 tumor_sites = set()
                 for patient_barcode in gnode['info']['patient_barcodes']:
                     tumor_sites.add(patient_barcode_tumor_site.get(patient_barcode, 'N/A'))
-                gnode['info']['tumor_tissue_sites'] = list(tumor_sites)
+                gnode['info']['biosample'] = list(tumor_sites)
         return genome_nodes, info_nodes, edges
 
 class TCGA_CNVParser(Parser):
@@ -661,7 +663,7 @@ class TCGA_CNVParser(Parser):
 
     >>> parser.save_json('data.json')
 
-    Get the Mongo nodes, pass the tumor_tissue_site string as an input argument
+    Get the Mongo nodes, pass the extra_info dict as an input argument
 
     >>> mongo_nodes = parser.get_mongo_nodes("Lung")
 
@@ -737,7 +739,7 @@ class TCGA_CNVParser(Parser):
         -----
         1. This method should be called after self.parse(), because this method will read from self.metadata and self.cnvs, which are contents of self.data.
         2. GenomeNodes generated are of type 'copy_number_variation'.
-        3. The extra_info is passed as a parameter to add `info.tumor_tissue_site` and `info.patient_barcode` for each genome node.
+        3. The extra_info is passed as a parameter to add `info.biosample` and `info.patient_barcode` for each genome node.
         4. No Infonode is generated.
         5. No Edge is generated.
 
@@ -750,7 +752,7 @@ class TCGA_CNVParser(Parser):
 
         Get the Mongo nodes:
 
-        >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes("Lung")
+        >>> genome_nodes, info_nodes, edges = parser.get_mongo_nodes({'biosample': 'Lung', 'patient_barcode': 'TCGA-85-6561'})
 
         GenomeNodes generated here are of type "copy_number_variation"
 
@@ -768,8 +770,8 @@ class TCGA_CNVParser(Parser):
                 "cnv_n_probes": 11494,
                 "cnv_seg_mean": 0.0219,
                 "GDC_Aliquot": "370a1c0f-78d2-4330-a6fb-f644064b8ed7",
-                "tumor_tissue_site": "Lung",
-                "patient_barcode":
+                "biosample": "Lung",
+                "patient_barcode": "TCGA-85-6561"
             }
         }
 
