@@ -41,9 +41,10 @@ fuzzyset.FuzzySet.get_all = get_all
 class SearchIndex:
     def __init__(self, documents):
         self.documents = np.array(documents)
-        self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words=stop_word_set)
-        self.tfs = self.tfidf.fit_transform(self.documents)
-        self.fuzzyset = fuzzyset.FuzzySet(self.tfidf.get_feature_names(), use_levenshtein=False)
+        if documents:
+            self.tfidf = TfidfVectorizer(tokenizer=self.tokenize_document, stop_words=stop_word_set)
+            self.tfs = self.tfidf.fit_transform(self.documents)
+            self.fuzzyset = fuzzyset.FuzzySet(self.tfidf.get_feature_names(), use_levenshtein=False)
 
     def tokenize_document(self, doc):
         tokens = [x.lower() for x in nltk.wordpunct_tokenize(doc) if x not in stop_word_set]
