@@ -1,6 +1,6 @@
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.helpers.constants import DATA_SOURCE_GENOME, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ENCODE
-from sirius.helpers.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE
+from sirius.helpers.constants import TRACK_TYPE_GENOME, TRACK_TYPE_GWAS, TRACK_TYPE_EQTL, TRACK_TYPE_ENCODE, ENSEMBL_GENE_SUBTYPES
 
 #----------------------------------------------
 # Load all available types of tracks
@@ -82,7 +82,7 @@ loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
 loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
 
 # store all loaded genes
-loaded_gene_names = GenomeNodes.distinct('name', {'type': {'$in': ['gene', 'pseudogene']}})
+loaded_gene_names = GenomeNodes.distinct('name', {'type': {'$in': ENSEMBL_GENE_SUBTYPES}})
 print(f'Loaded {len(loaded_gene_names)} genes')
 
 # store all loaded traits

@@ -395,6 +395,11 @@ def build_mongo_index():
         print("Creating index %s" % idx)
         Edges.create_index(idx)
 
+def patch_additional_info():
+    print("\n\n#5. Patching additional information")
+    from sirius.tools import patch_gene_info
+    patch_gene_info.patch_gene_ID_info()
+
 def clean_up():
     shutil.rmtree('gene_data_tmp')
 
@@ -408,6 +413,7 @@ Steps:
 2. Delete all data from existing database
 3. Parse each data sets and upload to MongoDB
 4. Build index in data base
+5. Patch additional information
 '''
 
 def main():
@@ -425,6 +431,8 @@ def main():
         parse_upload_all_datasets()
     if args.starting_step <= 4:
         build_mongo_index()
+    if args.starting_step <= 5:
+        patch_additional_info()
     if args.del_tmp:
         clean_up()
 

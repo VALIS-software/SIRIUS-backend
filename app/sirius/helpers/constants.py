@@ -78,3 +78,4 @@ SEQ_CONTIG = {
 for name in CHROMO_NAMES:
     SEQ_CONTIG[name] = 'chr' + name
 
+ENSEMBL_GENE_SUBTYPES = ['gene', 'pseudogene', 'ncRNA_gene']
