@@ -32,8 +32,6 @@ def parse_refseq_gene_info(filename):
             if feature['type'] in ('gene', 'pseudogene'):
                 name = feature['attributes'].get('Name', None)
                 if name is None: continue
-                if feature['seqid'][:6] != 'NC_000':
-                    name = "MT-" + name
                 info = dict()
                 dbxref = feature['attributes'].get('Dbxref', '')
                 for ref in dbxref.split(','):
@@ -60,6 +58,10 @@ def update_existing_genes(gene_name_extra_info, existing_gene_name_id):
     not_updated = set(existing_gene_name_id.keys())
     for genename, info in gene_name_extra_info.items():
         existing_id = existing_gene_name_id.get(genename, None)
+        # try to find MT- names
+        if existing_id is None:
+            genename = 'MT-' + genename
+            existing_id = existing_gene_name_id.get(genename, None)
         if existing_id is not None:
             filt = {'_id': existing_id}
             update = {

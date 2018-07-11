@@ -1,6 +1,6 @@
 import os, copy
 from sirius.parsers.Parser import Parser
-from sirius.helpers.constants import DATA_SOURCE_GWAS, DATA_SOURCE_ENCODEbigwig
+from sirius.helpers.constants import DATA_SOURCE_GWAS, DATA_SOURCE_ENCODEbigwig, DATA_SOURCE_HGNC
 
 class TSVParser(Parser):
     """
@@ -360,4 +360,47 @@ class TSVParser_ENCODEbigwig(TSVParser):
                 'fileurl': fileurl
             })
             info_nodes.append(info_node)
+        return genome_nodes, info_nodes, edges
+
+class TSVParser_HGNC(TSVParser):
+    """ Subclass of TSVParser to parse the HGNC txt file """
+    def get_mongo_nodes(self):
+        genome_nodes, info_nodes, edges = [], [], []
+        # add dataSource into InfoNodes
+        info_node = {"_id": 'I'+DATA_SOURCE_HGNC, "type": "dataSource", "name": DATA_SOURCE_HGNC, "source": DATA_SOURCE_HGNC}
+        info_node['info'] = self.metadata.copy()
+        info_nodes.append(info_node)
+        # parse the file to get GenomeNodes for genes with more information
+        known_gids = set()
+        for d in copy.deepcopy(self.studies):
+            ensembl_gene_id = d['ensembl_gene_id']
+            if not ensembl_gene_id: continue
+            # we have an imcomplete gnode because this dataset is only used to patch the ENSEMBL
+            gid = 'G' + ensembl_gene_id
+            if gid not in known_gids:
+                gnode = {
+                    '_id': gid,
+                    'source': DATA_SOURCE_HGNC,
+                    'info': {
+                        'description': d['name'],
+                        'GeneID': d['entrez_id'],
+                        'locus_group': d['locus_group'],
+                        'locus_type': d['locus_type'],
+                        'entrez_id': d['entrez_id'],
+                        'hgnc_id': d['hgnc_id'],
+                        'omim_id': d['omim_id'],
+                        'ucsc_id': d['ucsc_id'],
+                        'vega_id': d['vega_id'],
+
+                        'mgd_id': d['mgd_id'],
+                        'rgd_id': d['rgd_id'],
+                        'orphanet': d['orphanet'],
+                        'cosmic': d['cosmic'],
+                    }
+                }
+                if d['alias_symbol']:
+                    gnode['info']['alias'] = d['alias_symbol'][1:-1].split('|')
+                if d['pubmed_id']:
+                    gnode['info']['pubmed_ids'] = d['pubmed_id'][1:-1].split('|')
+                genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges

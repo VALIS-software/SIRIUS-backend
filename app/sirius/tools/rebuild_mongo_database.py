@@ -2,11 +2,11 @@
 
 import os, shutil, subprocess, json
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
-from sirius.mongo.upload import update_insert_many
+from sirius.mongo.upload import update_insert_many, update_skip_insert
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.BigWigParser import BigWigParser
-from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
+from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
 from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
@@ -23,6 +23,7 @@ EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
 TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
+HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
 
 def mkchdir(dir):
     if not os.path.isdir(dir):
@@ -98,6 +99,11 @@ def download_genome_data():
     print("Downloading TCGA data in TCGA folder")
     mkchdir("TCGA")
     download_not_exist(TCGA_URL)
+    os.chdir('..')
+    # HGNC
+    print("Downloading HGNC data in HGNC folder")
+    mkchdir("HGNC")
+    download_not_exist(HGNC_URL)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -180,6 +186,11 @@ def parse_upload_all_datasets():
     print("\n*** TCGA ***")
     os.chdir('TCGA')
     parse_upload_TCGA_files()
+    os.chdir('..')
+    # HGNC
+    print("\n*** HGNC ***")
+    os.chdir('HGNC')
+    parse_upload_HGNC()
     os.chdir('..')
     # Finish
     print("All parsing and uploading finished!")
@@ -375,6 +386,16 @@ def parse_upload_TCGA_files():
     # finish
     os.chdir('..')
 
+def parse_upload_HGNC():
+    filename = os.path.basename(HGNC_URL)
+    parser = TSVParser_HGNC(filename)
+    parser.parse()
+    genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+    # patch the gene GenomeNodes
+    update_skip_insert(GenomeNodes, genome_nodes)
+    # upload the dataSource info node
+    update_insert_many(InfoNodes, info_nodes)
+
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
@@ -396,9 +417,11 @@ def build_mongo_index():
         Edges.create_index(idx)
 
 def patch_additional_info():
-    print("\n\n#5. Patching additional information")
-    from sirius.tools import patch_gene_info
-    patch_gene_info.patch_gene_ID_info()
+    # print("\n\n#5. Patching additional information")
+    # from sirius.tools import patch_gene_info
+    # patch_gene_info.patch_gene_ID_info()
+    # we skip this becasue HGNC dataset can do a better job
+    pass
 
 def clean_up():
     shutil.rmtree('gene_data_tmp')

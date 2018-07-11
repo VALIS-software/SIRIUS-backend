@@ -1,30 +1,31 @@
 #!/usr/bin/env python
 
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
-from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig
+from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
 from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.BEDParser import BEDParser_ENCODE
 from sirius.parsers.FASTAParser import FASTAParser
 from sirius.parsers.OBOParser import OBOParser_EFO
 from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
-from sirius.mongo.upload import update_insert_many
+from sirius.mongo.upload import update_insert_many, update_skip_insert
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
     parser.add_argument('datatype', choices=['ensembl', 'gwas', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac',
-                                             'gtex', 'bcrxml', 'maf', 'cnv'], help='What data are we parsing?')
+                                             'gtex', 'bcrxml', 'maf', 'cnv', 'hgnc'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
+    parser.add_argument("--skip_insert", action='store_true', help='Only update existing docs in MongoDB')
     args = parser.parse_args()
 
     ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
                    'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'gtex': EQTLParser_GTEx,
-                   'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser}
+                   'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser, 'hgnc': TSVParser_HGNC}
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 
@@ -48,10 +49,16 @@ def main():
     if args.upload == True:
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         from sirius.mongo import GenomeNodes, InfoNodes, Edges
-        print("Uploading to MongoDB")
-        update_insert_many(GenomeNodes, genome_nodes)
-        update_insert_many(InfoNodes, info_nodes)
-        update_insert_many(Edges, edges)
+        if not args.skip_insert:
+            print("Uploading to MongoDB")
+            update_insert_many(GenomeNodes, genome_nodes)
+            update_insert_many(InfoNodes, info_nodes)
+            update_insert_many(Edges, edges)
+        else:
+            print("Updating existing docs in MongoDB")
+            update_skip_insert(GenomeNodes, genome_nodes)
+            update_skip_insert(InfoNodes, info_nodes)
+            update_skip_insert(Edges, edges)
 
 if __name__ == "__main__":
     main()
