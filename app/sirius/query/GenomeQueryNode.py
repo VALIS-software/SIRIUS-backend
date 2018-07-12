@@ -1,4 +1,5 @@
 import time
+import copy
 from sirius.mongo import GenomeNodes
 from sirius.core.utilities import HashableDict
 from sirius.analysis.Bed import Bed
@@ -27,14 +28,29 @@ def find_gid(mongo_filter, limit=100000):
 
 find_gid.cached_ids, find_gid.max_limit = dict(), dict()
 
+def intersect_id_filter_set(id_filter, id_set):
+    """ Intersect the '_id' field of a mongo filter with a set of ids """
+    assert isinstance(id_set, set)
+    if not id_set:
+        return []
+    elif id_filter is None:
+        return list(id_set)
+    elif isinstance(id_filter, str):
+        return [id_filter] if id_filter in id_set else None
+    elif isinstance(id_filter, dict):
+        if '$in' in id_filter:
+            id_set.intersection(id_filter.pop('$in'))
+        return list(id_set)
+    else:
+        return []
 
 class GenomeQueryNode(object):
-    def __init__(self, qfilter=dict(), edges=None, edge_rule=None, arithmetics=[], limit=0, verbose=False):
-        self.filter = qfilter
-        self.edges = [] if edges == None else edges
+    def __init__(self, qfilter=None, edges=None, edge_rule=0, arithmetics=None, limit=0, verbose=False):
+        self.filter = qfilter if qfilter else dict()
+        self.edges = edges if edges is not None else []
         # edge_rule: 0 means "and", 1 means "or", 2 means "not"
-        self.edge_rule = 0 if edge_rule == None else edge_rule
-        self.arithmetics = arithmetics
+        self.edge_rule = edge_rule
+        self.arithmetics = arithmetics if arithmetics is not None else []
         self.limit = int(limit)
         self.verbose = verbose
 
@@ -45,9 +61,43 @@ class GenomeQueryNode(object):
         """
         if self.verbose:
             print(self.filter, self.edges, self.arithmetics)
-        if not self.edges and not self.arithmetics:
-            for d in GenomeNodes.find(self.filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
-                yield d
+
+        if not self.arithmetics:
+            mongo_filter = copy.deepcopy(self.filter)
+            if len(self.edges) > 0:
+                first_edgenode = self.edges[0]
+                result_id_set = first_edgenode.find_from_id()
+                if len(result_id_set) == 0 and self.edge_rule != 1:
+                    return []
+                for edgenode in self.edges[1:]:
+                    e_ids = edgenode.find_from_id()
+                    if self.edge_rule == 0: # AND
+                        result_id_set &= e_ids
+                        if len(result_id_set) == 0:
+                            return []
+                    elif self.edge_rule == 1: # OR
+                        result_id_set |= e_ids
+                    elif self.edge_rule == 2: # NOT
+                        result_id_set -= e_ids
+                        if len(result_id_set) == 0:
+                            return []
+                # merge the id_filter with the edge ids
+                id_filter = mongo_filter.pop('_id', None)
+                intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
+                if not intersect_ids:
+                    return []
+                elif len(intersect_ids) == 1:
+                    mongo_filter['_id'] = intersect_ids[0]
+                    return [GenomeNodes.find_one(mongo_filter, projection=projection)]
+                else:
+                    batch_size = 100000
+                    for i_batch in range(int(len(intersect_ids) / batch_size)+1):
+                        batch_ids = intersect_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+                        mongo_filter['_id'] = {"$in": batch_ids}
+                        for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
+                            yield d
+            else:
+                return GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
         else:
             t0 = time.time()
             result_ids = list(self.findid())
@@ -62,6 +112,46 @@ class GenomeQueryNode(object):
                 query = {'_id' : {'$in': batch_ids}}
                 for d in GenomeNodes.find(query, limit=self.limit, projection=projection, no_cursor_timeout=True):
                     yield d
+
+    def find_ids_without_arithmetics(self):
+        mongo_filter = copy.deepcopy(self.filter)
+        if len(self.edges) > 0:
+            first_edgenode = self.edges[0]
+            result_id_set = first_edgenode.find_from_id()
+            if len(result_id_set) == 0 and self.edge_rule != 1:
+                return set()
+            for edgenode in self.edges[1:]:
+                e_ids = edgenode.find_from_id()
+                if self.edge_rule == 0: # AND
+                    result_id_set &= e_ids
+                    if len(result_id_set) == 0:
+                        return set()
+                elif self.edge_rule == 1: # OR
+                    result_id_set |= e_ids
+                elif self.edge_rule == 2: # NOT
+                    result_id_set -= e_ids
+                    if len(result_id_set) == 0:
+                        return set()
+            # merge the id_filter with the edge ids
+            id_filter = mongo_filter.pop('_id', None)
+            intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
+            if not intersect_ids:
+                return set()
+            elif len(intersect_ids) == 1:
+                mongo_filter['_id'] = intersect_ids[0]
+                return set([GenomeNodes.find_one(mongo_filter, projection=['_id'])['_id']])
+            else:
+                batch_size = 100000
+                result_ids = set()
+                for i_batch in range(int(len(intersect_ids) / batch_size)+1):
+                    batch_ids = intersect_ids[i_batch*batch_size:(i_batch+1)*batch_size]
+                    mongo_filter['_id'] = {"$in": batch_ids}
+                    for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=['_id']):
+                        result_ids.add(d['_id'])
+                return result_ids
+        else:
+            return find_gid(mongo_filter, limit=self.limit)
+
 
     def distinct(self, key):
         """
@@ -84,28 +174,8 @@ class GenomeQueryNode(object):
         Return a set that contain strings of node['_id']
         """
         # get the results for all edges
-        if len(self.edges) > 0:
-            first_edgenode = self.edges[0]
-            result_ids = first_edgenode.find_from_id()
-            for edgenode in self.edges[1:]:
-                # stop here if we have nothing left
-                if len(result_ids) == 0 and self.edge_rule != 1: return set()
-                # find the from_ids of the next edge
-                e_ids = edgenode.find_from_id()
-                if self.edge_rule == 0: # AND
-                    result_ids &= e_ids
-                elif self.edge_rule == 1: # OR
-                    result_ids |= e_ids
-                elif self.edge_rule == 2: # NOT
-                    result_ids -= e_ids
-            if len(result_ids) == 0: return set()
-            # intersect with the ids for this node
-            if self.filter:
-                result_ids &= find_gid(self.filter, self.limit)
-        else:
-            # the result ids of this filter
-            result_ids = find_gid(self.filter, self.limit)
-        if not self.arithmetics or not result_ids:
+        result_ids = self.find_ids_without_arithmetics()
+        if not self.arithmetics:
             return result_ids
         # Use the bedtools to do arithmics
         # do the arithmetics one by one

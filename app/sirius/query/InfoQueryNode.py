@@ -1,4 +1,21 @@
+import copy
 from sirius.mongo import InfoNodes
+
+def intersect_id_filter_set(id_filter, id_set):
+    """ Intersect the '_id' field of a mongo filter with a set of ids """
+    assert isinstance(id_set, set)
+    if not id_set:
+        return []
+    elif id_filter is None:
+        return list(id_set)
+    elif isinstance(id_filter, str):
+        return [id_filter] if id_filter in id_set else None
+    elif isinstance(id_filter, dict):
+        if '$in' in id_filter:
+            id_set.intersection(id_filter.pop('$in'))
+        return list(id_set)
+    else:
+        return []
 
 class InfoQueryNode(object):
     def __init__(self, qfilter=dict(), edges=None, edge_rule=None, limit=0, verbose=False):
@@ -14,21 +31,32 @@ class InfoQueryNode(object):
         Find all nodes from InfoNodes, based on self.filter and the edge connected.
         Return a cursor of MongoDB.find() query, or an empty list if none found
         """
-        mongo_filter = self.filter.copy()
+        mongo_filter = copy.deepcopy(self.filter)
         if len(self.edges) > 0:
             first_edgenode = self.edges[0]
-            result_ids = set(first_edgenode.find_from_id())
+            result_id_set = first_edgenode.find_from_id()
+            if len(result_id_set) == 0 and self.edge_rule != 1:
+                return []
             for edgenode in self.edges[1:]:
-                if len(result_ids) == 0: break
-                e_ids = set(edgenode.find_from_id())
+                e_ids = edgenode.find_from_id()
                 if self.edge_rule == 0: # AND
-                    result_ids &= e_ids
+                    result_id_set &= e_ids
+                    if len(result_id_set) == 0: return []
                 elif self.edge_rule == 1: # OR
-                    result_ids |= e_ids
+                    result_id_set |= e_ids
                 elif self.edge_rule == 2: # NOT
-                    result_ids -= e_ids
-            if len(result_ids) == 0: return []
-            mongo_filter['_id'] = {"$in": list(result_ids)}
+                    result_id_set -= e_ids
+                    if len(result_id_set) == 0: return []
+            if len(result_id_set) == 0: return []
+            # intersect the ids from edges with the ids from filter
+            id_filter = mongo_filter.pop('_id', None)
+            intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
+            if not intersect_ids:
+                return []
+            elif len(intersect_ids) == 1:
+                mongo_filter['_id'] = intersect_ids[0]
+            else:
+                mongo_filter['_id'] = {"$in": intersect_ids}
         if self.verbose == True:
             print(mongo_filter)
         return InfoNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
@@ -44,20 +72,30 @@ class InfoQueryNode(object):
         mongo_filter = self.filter.copy()
         if len(self.edges) > 0:
             first_edgenode = self.edges[0]
-            result_ids = set(first_edgenode.find_from_id())
+            result_ids = first_edgenode.find_from_id()
+            if len(result_ids) == 0 and self.edge_rule != 1:
+                return set()
             for edgenode in self.edges[1:]:
-                if len(result_ids) == 0: break
-                e_ids = set(edgenode.find_from_id())
+                e_ids = edgenode.find_from_id()
                 if self.edge_rule == 0: # AND
                     result_ids &= e_ids
+                    if len(result_ids) == 0:
+                        return set()
                 elif self.edge_rule == 1: # OR
                     result_ids |= e_ids
                 elif self.edge_rule == 2: # NOT
                     result_ids -= e_ids
-            if len(result_ids) == 0: return set()
-            mongo_filter['_id'] = {"$in": list(result_ids)}
+                    if len(result_ids) == 0:
+                        return set()
+            # intersect the ids from edges with the ids from filter
+            id_filter = mongo_filter.pop('_id', None)
+            intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
+            if not intersect_ids:
+                return set()
+            elif len(intersect_ids) == 1:
+                mongo_filter['_id'] = intersect_ids[0]
+            else:
+                mongo_filter['_id'] = {"$in": intersect_ids}
         if self.verbose == True:
             print(mongo_filter)
-        # this is faster but do not have the limit option
-        # return set(InfoNodes.distinct('_id', mongo_filter)
         return set(d['_id'] for d in InfoNodes.find(mongo_filter, {'_id':1}, limit=self.limit))
