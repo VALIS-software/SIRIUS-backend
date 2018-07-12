@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, shutil
+from google.cloud import storage
 
 def download_pyensembl_cache():
     cachedir = os.environ['PYENSEMBL_CACHE_DIR']
