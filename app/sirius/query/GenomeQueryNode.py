@@ -68,27 +68,27 @@ class GenomeQueryNode(object):
                 first_edgenode = self.edges[0]
                 result_id_set = first_edgenode.find_from_id()
                 if len(result_id_set) == 0 and self.edge_rule != 1:
-                    return []
+                    return
                 for edgenode in self.edges[1:]:
                     e_ids = edgenode.find_from_id()
                     if self.edge_rule == 0: # AND
                         result_id_set &= e_ids
                         if len(result_id_set) == 0:
-                            return []
+                            return
                     elif self.edge_rule == 1: # OR
                         result_id_set |= e_ids
                     elif self.edge_rule == 2: # NOT
                         result_id_set -= e_ids
                         if len(result_id_set) == 0:
-                            return []
+                            return
                 # merge the id_filter with the edge ids
                 id_filter = mongo_filter.pop('_id', None)
                 intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
                 if not intersect_ids:
-                    return []
+                    return
                 elif len(intersect_ids) == 1:
                     mongo_filter['_id'] = intersect_ids[0]
-                    return [GenomeNodes.find_one(mongo_filter, projection=projection)]
+                    yield GenomeNodes.find_one(mongo_filter, projection=projection)
                 else:
                     batch_size = 100000
                     for i_batch in range(int(len(intersect_ids) / batch_size)+1):
@@ -97,7 +97,8 @@ class GenomeQueryNode(object):
                         for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
                             yield d
             else:
-                return GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
+                for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
+                    yield d
         else:
             t0 = time.time()
             result_ids = list(self.findid())
