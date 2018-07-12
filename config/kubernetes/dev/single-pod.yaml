@@ -17,3 +17,4 @@ spec:
       path: "/mnt/disks/ssd0"
   nodeSelector:
     cloud.google.com/gke-local-ssd: "true"
+    sirius: dev

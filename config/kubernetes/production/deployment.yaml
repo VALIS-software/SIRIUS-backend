@@ -22,16 +22,10 @@ spec:
         volumeMounts:
         - mountPath: "/cache"
           name: "local-ssd"
-        - mountPath: "/pd"
-          name: "sirius-cache"
       volumes:
       - name: "local-ssd"
         hostPath:
           path: "/mnt/disks/ssd0"
-      - name: "sirius-cache"
-        gcePersistentDisk:
-          pdName: sirius-cache
-          fsType: ext4
-          readOnly: true
       nodeSelector:
         cloud.google.com/gke-local-ssd: "true"
+        sirius: prod
