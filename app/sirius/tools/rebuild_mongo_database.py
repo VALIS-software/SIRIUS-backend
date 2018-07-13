@@ -19,10 +19,10 @@ GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
-EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
 TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
+EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
 
 def mkchdir(dir):
@@ -80,11 +80,6 @@ def download_genome_data():
     mkchdir('dbSNP')
     download_not_exist(DBSNP_URL)
     os.chdir('..')
-    # EFO
-    print("Downloading the EFO Ontology data file")
-    mkchdir("EFO")
-    download_not_exist(EFO_URL)
-    os.chdir('..')
     # ExAC
     print("Downloading ExAC data file into ExAC folder")
     mkchdir('ExAC')
@@ -99,6 +94,11 @@ def download_genome_data():
     print("Downloading TCGA data in TCGA folder")
     mkchdir("TCGA")
     download_not_exist(TCGA_URL)
+    os.chdir('..')
+    # EFO
+    print("Downloading the EFO Ontology data file")
+    mkchdir("EFO")
+    download_not_exist(EFO_URL)
     os.chdir('..')
     # HGNC
     print("Downloading HGNC data in HGNC folder")
@@ -166,12 +166,6 @@ def parse_upload_all_datasets():
     os.chdir('dbSNP')
     parse_upload_dbSNP_chunk()
     os.chdir('..')
-    # EFO
-    print("\n*** EFO ***")
-    os.chdir('EFO')
-    parser = OBOParser_EFO('efo.obo', verbose=True)
-    parse_upload_data(parser, {"sourceurl": EFO_URL})
-    os.chdir('..')
     # ExAC
     print("\n*** ExAC ***")
     os.chdir('ExAC')
@@ -186,6 +180,13 @@ def parse_upload_all_datasets():
     print("\n*** TCGA ***")
     os.chdir('TCGA')
     parse_upload_TCGA_files()
+    os.chdir('..')
+    ## The following dataset should be parsed in the end
+    ## Because they only "Patch" the existing data
+    # EFO
+    print("\n*** EFO ***")
+    os.chdir('EFO')
+    parse_upload_EFO()
     os.chdir('..')
     # HGNC
     print("\n*** HGNC ***")
@@ -386,9 +387,17 @@ def parse_upload_TCGA_files():
     # finish
     os.chdir('..')
 
+def parse_upload_EFO():
+    filename = os.path.basename(EFO_URL)
+    parser = OBOParser_EFO(filename, verbose=True)
+    parser.parse()
+    genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+    # upload the dataSource info node
+    update_skip_insert(InfoNodes, info_nodes)
+
 def parse_upload_HGNC():
     filename = os.path.basename(HGNC_URL)
-    parser = TSVParser_HGNC(filename)
+    parser = TSVParser_HGNC(filename, verbose=True)
     parser.parse()
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
     # patch the gene GenomeNodes
