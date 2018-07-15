@@ -12,7 +12,7 @@ class TileHelper(object):
     config["vfs.s3.use_virtual_addressing"] = "true"
     ctx = tiledb.Ctx(config)
 
-    def __init__(self, backend=None, tile_size=1000000):
+    def __init__(self, backend=None, tile_size=1000000, compressor='lz4'):
         if backend == None:
             self.root = os.environ.get('TILEDB_ROOT', os.path.realpath('./tiledb/'))
             if not os.path.isdir(self.root):
@@ -23,6 +23,10 @@ class TileHelper(object):
         elif backend == 's3':
             self.root = 's3://sirius-tiledb/'
         self.tile_size = tile_size
+        if isinstance(compressor, str):
+            self.compressor = (compressor, -1)
+        elif isinstance(compressor, tuple):
+            self.compressor = compressor
 
     def create_dense_array(self, arrayID, data):
         assert isinstance(data, np.ndarray), "data should be an np.ndarray"
@@ -33,17 +37,18 @@ class TileHelper(object):
             tiledim = tiledb.Dim(self.ctx, name=name, domain=(0, dim_size-1), tile=tile)
             tile_dims.append(tiledim)
         domain = tiledb.Domain(self.ctx, *tile_dims)
-        #print(domain.dump())
-        attr = tiledb.Attr(self.ctx, "value", compressor=('lz4',-1), dtype=data.dtype)
+        attr = tiledb.Attr(self.ctx, compressor=self.compressor, dtype=data.dtype)
+        schema = tiledb.ArraySchema(self.ctx, domain=domain, sparse=False, attrs=[attr])
         tile_array_id = os.path.join(self.root, arrayID)
-        dense_array = tiledb.DenseArray(self.ctx, tile_array_id, domain=domain, attrs=[attr])
+        tiledb.DenseArray.create(tile_array_id, schema)
+        dense_array = tiledb.DenseArray(self.ctx, tile_array_id, mode='w')
         dense_array[:] = data
         return dense_array
 
     def load_dense_array(self, arrayID):
         tile_array_id = os.path.join(self.root, arrayID)
         try:
-            return tiledb.DenseArray.load(self.ctx, tile_array_id)
+            return tiledb.DenseArray(self.ctx, tile_array_id)
         except tiledb.TileDBError as e:
             print(e)
             return np.array([])

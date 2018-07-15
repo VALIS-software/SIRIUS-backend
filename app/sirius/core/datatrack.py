@@ -42,13 +42,12 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
     end_bp = min(end_bp, contig_info['length'])
     i_start = int(np.floor(start_bp / best_resolution))
     i_end = int(np.ceil(end_bp / best_resolution))
-    # load the data from tiledb
-    print(i_start, i_end)
-    dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
-    t2 = time.time()
-    # prepare the return data
     num_bins = int((end_bp - start_bp) / sampling_rate)
     if sampling_rate == 1:
+        # load the data from tiledb
+        dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]
+        t2 = time.time()
+        # prepare the return data
         # the atgc array is different, so we calc the distribution here
         sampledata = np.zeros([num_bins, 4], dtype=np.float32)
         # put the atgc in place
@@ -56,13 +55,18 @@ def get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate, verbose
             sampledata[:, i] = (dataarray == i+1)
         # add 'n' as [1/4, 1/4, 1/4, 1/4]
         sampledata += (dataarray == 5)[:, np.newaxis] * 0.25
-    elif best_resolution == sampling_rate:
-        sampledata = dataarray
     else:
-        # re-sample to the nearest neighbor
-        sample_bps = np.arange(num_bins) * sampling_rate + start_bp
-        closest_idxs = (sample_bps / best_resolution).astype(int) - i_start
-        sampledata = dataarray[closest_idxs]
+        # load the data from tiledb
+        dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[:, i_start: i_end].T
+        t2 = time.time()
+        # prepare the return data
+        if best_resolution == sampling_rate:
+            sampledata = dataarray
+        else:
+            # re-sample to the nearest neighbor
+            sample_bps = np.arange(num_bins) * sampling_rate + start_bp
+            closest_idxs = (sample_bps / best_resolution).astype(int) - i_start
+            sampledata = dataarray[closest_idxs]
     t3 = time.time()
     # make the return data
     header = {
@@ -181,7 +185,7 @@ def old_sequence_get_contig_data(track_id, contig, start_bp, end_bp, track_heigh
     i_start = int(np.floor(start_bp / best_resolution))
     i_end = int(np.ceil(end_bp / best_resolution))
     # load the data from tiledb
-    dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]['value']
+    dataarray = tilehelper.load_dense_array(best_res_data['tiledbID'])[i_start: i_end]
     t2 = time.time()
     # prepare the return data
     if sampling_rate == 1:
