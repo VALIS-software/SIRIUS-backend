@@ -240,11 +240,16 @@ class EQTLParser_GTEx(EQTLParser):
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         known_edge_ids = set()
+        # these might be later used to patch existing documents in the database
+        self.parsed_snp_ids = set()
+        self.parsed_gene_ids = set()
         # the eQTL data entries does not provide any useful information about the SNPs, so we will not add GenomeNodes
         for d in self.eqtls:
             # create EdgeNode
             from_id = 'Gsnp_' + d['rs_id_dbSNP147_GRCh37p13']
+            self.parsed_snp_ids.add(from_id)
             to_id = 'G' + d['gene_id'].split('.',1)[0]
+            self.parsed_gene_ids.add(to_id)
             edge = {
                     'from_id': from_id, 'to_id': to_id,
                     'type': 'association:SNP:gene',
