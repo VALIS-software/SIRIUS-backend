@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, shutil, subprocess, json
+import os, shutil, subprocess, json, time
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many, update_skip_insert
 from sirius.parsers.GFFParser import GFFParser_ENSEMBL
@@ -10,8 +10,12 @@ from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSV
 from sirius.parsers.EQTLParser import EQTLParser_GTEx
 from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.OBOParser import OBOParser_EFO
-from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser, DATA_SOURCE_TCGA
+from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX
 from sirius.helpers.tiledb import tilehelper
+
+# By default we will build a small version of the database for dev only
+FULL_DATABASE = False
 
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
@@ -24,6 +28,9 @@ GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_d
 TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
+
+if FULL_DATABASE:
+    DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/All_20180418.vcf.gz'
 
 def mkchdir(dir):
     if not os.path.isdir(dir):
@@ -73,7 +80,10 @@ def download_genome_data():
     print("Downloading ENCODE data files into ENCODE folder")
     mkchdir("ENCODE")
     from sirius.tools import automate_encode_upload
-    automate_encode_upload.download_search_files()
+    if FULL_DATABASE:
+        automate_encode_upload.download_search_files(0, 1070)
+    else:
+        automate_encode_upload.download_search_files()
     os.chdir('..')
     #dbSNP
     print("Downloading dbSNP dataset in dbSNP folder")
@@ -143,12 +153,6 @@ def parse_upload_all_datasets():
     os.chdir('GRCh38_gff')
     parse_upload_gff_chunk()
     os.chdir('..')
-    # GWAS
-    print("\n*** GWAS ***")
-    os.chdir('gwas')
-    parser = TSVParser_GWAS('gwas.tsv', verbose=True)
-    parse_upload_data(parser, {"sourceurl": GWAS_URL})
-    os.chdir('..')
     # ClinVar
     print("\n*** ClinVar ***")
     os.chdir('ClinVar')
@@ -159,7 +163,10 @@ def parse_upload_all_datasets():
     print("\n*** ENCODE ***")
     os.chdir('ENCODE')
     from sirius.tools import automate_encode_upload
-    automate_encode_upload.parse_upload_files()
+    if FULL_DATABASE:
+        automate_encode_upload.parse_upload_files(0, 1070)
+    else:
+        automate_encode_upload.parse_upload_files()
     os.chdir('..')
     # dbSNP
     print("\n*** dbSNP ***")
@@ -171,18 +178,23 @@ def parse_upload_all_datasets():
     os.chdir('ExAC')
     parse_upload_ExAC_chunk()
     os.chdir('..')
-    # GTEx
-    print("\n*** GTEx ***")
-    os.chdir('GTEx')
-    parse_upload_GTEx_files()
-    os.chdir('..')
     # TCGA
     print("\n*** TCGA ***")
     os.chdir('TCGA')
     parse_upload_TCGA_files()
     os.chdir('..')
     ## The following dataset should be parsed in the end
-    ## Because they only "Patch" the existing data
+    ## Because they "Patch" the existing data
+    # GWAS
+    print("\n*** GWAS ***")
+    os.chdir('gwas')
+    parse_upload_GWAS()
+    os.chdir('..')
+    # GTEx
+    print("\n*** GTEx ***")
+    os.chdir('GTEx')
+    parse_upload_GTEx_files()
+    os.chdir('..')
     # EFO
     print("\n*** EFO ***")
     os.chdir('EFO')
@@ -253,34 +265,6 @@ def parse_upload_ExAC_chunk():
         if finished == True:
             break
     # we only insert the infonode for ExAC dataSource once
-    update_insert_many(InfoNodes, info_nodes)
-
-def parse_upload_GTEx_files():
-    filename = os.path.basename(GTEx_URL)
-    # the big tar.gz file contains many individual data files
-    print(f"Decompressing {filename}")
-    subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
-    foldername = filename.split('.',1)[0]
-    # aggregate all biosamples
-    distinct_biosamples = set()
-    for f in os.listdir(foldername):
-        if f.endswith('egenes.txt.gz'):
-            fname = os.path.join(foldername, f)
-            print(f"Parsing and uploading from {fname}")
-            parser = EQTLParser_GTEx(fname, verbose=True)
-            parser.parse()
-            # the first word in filename is parsed as the biosample
-            biosample = f.split('.', 1)[0]
-            # reformat to be consistent with ENCODE dataset
-            biosample = ' '.join(biosample.lower().split('_'))
-            distinct_biosamples.add(biosample)
-            genome_nodes, info_nodes, edges = parser.get_mongo_nodes({'biosample': biosample})
-            # we only insert the edges here for each file
-            update_insert_many(Edges, edges)
-    # change the filename to the big tar.gz file
-    info_nodes[0]['info']['filename'] = filename
-    info_nodes[0]['info']['biosample'] = list(distinct_biosamples)
-    # insert one infonode for the GTEx dataSource
     update_insert_many(InfoNodes, info_nodes)
 
 def parse_upload_TCGA_files():
@@ -387,6 +371,51 @@ def parse_upload_TCGA_files():
     # finish
     os.chdir('..')
 
+def parse_upload_GWAS():
+    filename = os.path.basename(GWAS_URL)
+    parser = TSVParser_GWAS(filename, verbose=True)
+    parser.parse()
+    genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+    # upload the dataSource info node
+    update_insert_many(InfoNodes, info_nodes)
+    update_insert_many(Edges, edges)
+    # patch the GenomeNodes with the data source
+    gids = list(parser.parsed_snp_ids)
+    uresult = GenomeNodes.update_many({'_id': {'$in': gids}}, {'$addToSet': {'source': DATA_SOURCE_GWAS}})
+    print(f"Prepared {len(gids)} and updated {uresult.matched_count} GenomeNodes with source {DATA_SOURCE_GWAS}")
+
+def parse_upload_GTEx_files():
+    filename = os.path.basename(GTEx_URL)
+    # the big tar.gz file contains many individual data files
+    print(f"Decompressing {filename}")
+    subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
+    foldername = filename.split('.',1)[0]
+    # aggregate all biosamples
+    distinct_biosamples = set()
+    for f in os.listdir(foldername):
+        if f.endswith('egenes.txt.gz'):
+            fname = os.path.join(foldername, f)
+            print(f"Parsing and uploading from {fname}")
+            parser = EQTLParser_GTEx(fname, verbose=True)
+            parser.parse()
+            # the first word in filename is parsed as the biosample
+            biosample = f.split('.', 1)[0]
+            # reformat to be consistent with ENCODE dataset
+            biosample = ' '.join(biosample.lower().split('_'))
+            distinct_biosamples.add(biosample)
+            genome_nodes, info_nodes, edges = parser.get_mongo_nodes({'biosample': biosample})
+            # we only insert the edges here for each file
+            update_insert_many(Edges, edges)
+            # patch the SNPs with the data source
+            gids = list(parser.parsed_snp_ids) + list(parser.parsed_gene_ids)
+            GenomeNodes.update_many({'_id': {'$in': gids}}, {'$addToSet': {'source': DATA_SOURCE_GTEX}})
+            print(f"Prepared {len(gids)} and updated {uresult.matched_count} GenomeNodes with source {DATA_SOURCE_GTEX}")
+    # change the filename to the big tar.gz file
+    info_nodes[0]['info']['filename'] = filename
+    info_nodes[0]['info']['biosample'] = list(distinct_biosamples)
+    # insert one infonode for the GTEx dataSource
+    update_insert_many(InfoNodes, info_nodes)
+
 def parse_upload_EFO():
     filename = os.path.basename(EFO_URL)
     parser = OBOParser_EFO(filename, verbose=True)
@@ -454,7 +483,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
     parser.add_argument('-d', '--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
+    parser.add_argument('--full', action='store_true', help='Build the full database (100x larger).')
     args = parser.parse_args()
+    t0 = time.time()
+    global FULL_DATABASE
+    FULL_DATABASE = args.full
     if args.starting_step <= 1:
         download_genome_data()
     if args.starting_step <= 2:
@@ -467,6 +500,13 @@ def main():
         patch_additional_info()
     if args.del_tmp:
         clean_up()
+    t1 = time.time()
+
+    hours, rem = divmod(t1 - t0, 3600)
+    minutes, seconds = divmod(rem, 60)
+
+    print("\n*** Congratulations! Rebuilding Entire Database Finished! ***")
+    print(f"*** Total time cost:  {hours} hours {minutes} minutes {seconds} seconds ***")
 
 if __name__ == "__main__":
     main()
