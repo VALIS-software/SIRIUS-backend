@@ -77,13 +77,13 @@ class FASTAParser(Parser):
         stride = TILE_DB_FASTA_DOWNSAMPLE_RESOLUTIONS[0]
         n_bins = int(len(data) / stride)
         fit_size = n_bins * stride
-        m_distri = np.zeros([n_bins,4], dtype=np.float32)
+        m_distri = np.zeros([4, n_bins], dtype=np.float32)
         fit_data = data[:fit_size].reshape(n_bins, stride)
-        m_distri[:,0] = np.mean(fit_data == 1, axis=-1) # 'a'
-        m_distri[:,1] = np.mean(fit_data == 2, axis=-1) # 't'
-        m_distri[:,2] = np.mean(fit_data == 3, axis=-1) # 'g'
-        m_distri[:,3] = np.mean(fit_data == 4, axis=-1) # 'c'
-        m_distri += (np.mean(fit_data == 5, axis=-1) * 0.25)[:, np.newaxis] # 'n'
+        m_distri[0] = np.mean(fit_data == 1, axis=-1) # 'a'
+        m_distri[1] = np.mean(fit_data == 2, axis=-1) # 't'
+        m_distri[2] = np.mean(fit_data == 3, axis=-1) # 'g'
+        m_distri[3] = np.mean(fit_data == 4, axis=-1) # 'c'
+        m_distri += (np.mean(fit_data == 5, axis=-1) * 0.25) # 'n'
         t2 = time.time()
         if self.verbose:
             print(f"stride {stride:<8d} | nBins {n_bins:<9d} | fromStride {1:<8d} | {t2-t1:.2f} s")
@@ -94,9 +94,9 @@ class FASTAParser(Parser):
             best_prev_stride = max(s for s in distri_mats if stride % s == 0)
             width = int(stride / best_prev_stride)
             prev_m = distri_mats[best_prev_stride]
-            n_bins = int(prev_m.shape[0] / width)
+            n_bins = int(prev_m.shape[1] / width)
             fit_size = n_bins * width
-            distri_mats[stride] = prev_m[:fit_size].reshape(n_bins, width, 4).mean(axis=1)
+            distri_mats[stride] = prev_m[:, :fit_size].reshape(4, n_bins, width).mean(axis=2)
             if self.verbose:
                 t = time.time() - t_start
                 print(f"stride {stride:<8d} | nBins {n_bins:<9d} | fromStride {best_prev_stride:<8d} | {t:.2f} s")
@@ -104,7 +104,7 @@ class FASTAParser(Parser):
             if n_bins < 100: break
         t3 = time.time()
         if self.verbose:
-            print(f"Down-sampling finished; {t3-t2:.2f} s")
+            print(f"Down-sampling finished; {t3-t1:.2f} s")
         # write the down sampled data to tiledb
         for stride, mat in distri_mats.items():
             arrayID = f'fasta_distri_mat_{contig}_{stride}'

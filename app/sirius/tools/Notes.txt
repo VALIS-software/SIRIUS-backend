@@ -12,3 +12,10 @@ Steps for building a full database.
 
 Finishing all steps will end up with a MongoDB potentially taking 100GB or more.
 
+
+2018.7: Added production_rebuild_mongo_database.py
+
+This script is a duplication of the rebuild_mongo_database.py, with 2 modifications:
+
+1. The dbSNP data is 10x larger, because we import all dbSNP instead of just the common ones
+2. All the 1067 ENCODE bed files are imported into the Mongo database, instead of just the first 5.
