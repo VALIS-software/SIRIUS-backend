@@ -35,10 +35,7 @@ def get_data_with_id(data_id):
         data = Edges.find_one({'_id': data_id})
     else:
         print("Invalid data_id %s, ID should start with G, I or E" % data_id)
-    # format source into string
-    if data != None:
-        data['source'] = '/'.join(data['source'])
-    else:
+    if data == None:
         print("Data not found for _id %s" % data_id)
     return data
 
