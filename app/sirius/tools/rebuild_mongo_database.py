@@ -372,7 +372,7 @@ def parse_upload_TCGA_files():
     os.chdir('..')
 
 def parse_upload_GWAS():
-    filename = os.path.basename(GWAS_URL)
+    filename = 'gwas.tsv'
     parser = TSVParser_GWAS(filename, verbose=True)
     parser.parse()
     genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
@@ -408,7 +408,7 @@ def parse_upload_GTEx_files():
             update_insert_many(Edges, edges)
             # patch the SNPs with the data source
             gids = list(parser.parsed_snp_ids) + list(parser.parsed_gene_ids)
-            GenomeNodes.update_many({'_id': {'$in': gids}}, {'$addToSet': {'source': DATA_SOURCE_GTEX}})
+            uresult = GenomeNodes.update_many({'_id': {'$in': gids}}, {'$addToSet': {'source': DATA_SOURCE_GTEX}})
             print(f"Prepared {len(gids)} and updated {uresult.matched_count} GenomeNodes with source {DATA_SOURCE_GTEX}")
     # change the filename to the big tar.gz file
     info_nodes[0]['info']['filename'] = filename
