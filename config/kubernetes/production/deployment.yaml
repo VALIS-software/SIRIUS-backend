@@ -22,6 +22,10 @@ spec:
         volumeMounts:
         - mountPath: "/cache"
           name: "local-ssd"
+        resources:
+          requests:
+            cpu: "7"
+            memory: "40Gi"
       volumes:
       - name: "local-ssd"
         hostPath:

@@ -58,6 +58,10 @@ spec:
             - name: secrets-volume
               readOnly: true
               mountPath: /etc/secrets-volume
+          resources:
+            requests:
+              cpu: "7"
+              memory: "40Gi"
       nodeSelector:
           sirius: prod
   volumeClaimTemplates:
