@@ -502,7 +502,7 @@ def main():
         clean_up()
     t1 = time.time()
 
-    hours, rem = divmod(t1 - t0, 3600)
+    hours, rem = divmod(int(t1 - t0), 3600)
     minutes, seconds = divmod(rem, 60)
 
     print("\n*** Congratulations! Rebuilding Entire Database Finished! ***")
