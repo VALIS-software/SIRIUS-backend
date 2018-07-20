@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, shutil
+import os, shutil, subprocess
 from google.cloud import storage
 
 def download_pyensembl_cache():
