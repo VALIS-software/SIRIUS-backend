@@ -44,14 +44,15 @@ def login():
 
 def requires_auth(f):
     # skip auth if in dev mode
-    if os.environ.get('VALIS_DEV_MODE', None): return f
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if 'profile' not in session:
-            # Redirect to Login page here
-            return redirect('/login')
-        return f(*args, **kwargs)
-    return decorated
+    return f
+    # if os.environ.get('VALIS_DEV_MODE', None): return f
+    # @wraps(f)
+    # def decorated(*args, **kwargs):
+    #     if 'profile' not in session:
+    #         # Redirect to Login page here
+    #         return redirect('/login')
+    #     return f(*args, **kwargs)
+    # return decorated
 
 @app.route('/user_profile')
 @requires_auth
