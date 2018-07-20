@@ -332,7 +332,6 @@ def details(data_id):
 def node_relations(data_id):
     result = []
     for edge in Edges.find({'from_id': data_id}, limit=100):
-        source_str = '/'.join(edge['source'])
         target_data = get_data_with_id(edge['to_id'])
         if target_data:
             description = 'To ' + target_data['type'] + ' ' + target_data['name']
@@ -346,7 +345,6 @@ def node_relations(data_id):
             'id': edge['_id']
         })
     for edge in Edges.find({'to_id': data_id}, limit=100):
-        source_str = '/'.join(edge['source'])
         target_data = get_data_with_id(edge['from_id'])
         if target_data:
             description = 'From ' + target_data['type'] + ' ' + target_data['name']
@@ -450,6 +448,7 @@ class QueryResultsCache:
 @requires_auth
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
+    t0 = time.time()
     result_start = request.args.get('result_start', default=None)
     result_end = request.args.get('result_end', default=None)
     query = request.get_json()
@@ -464,7 +463,8 @@ def query_full():
             return abort(404, 'result_end should > result_start')
     results_cache = get_query_full_results(HashableDict(query))
     results = results_cache[result_start:result_end]
-    print(f"full query {query} {len(results)} cache_info: {get_query_full_results.cache_info()}")
+    t1 = time.time()
+    print(f"full query {query} {len(results)} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
@@ -488,6 +488,7 @@ def get_query_full_results(query):
 @requires_auth
 def query_basic():
     """ Returns results for a query, with only basic information, useful for search """
+    t0 = time.time()
     result_start = request.args.get('result_start', default=None)
     result_end = request.args.get('result_end', default=None)
     query = request.get_json()
@@ -502,7 +503,8 @@ def query_basic():
             return abort(404, 'result_end should > result_start')
     results_cache = get_query_basic_results(HashableDict(query))
     results = results_cache[result_start:result_end]
-    print(f"basic query {query} {len(results)} cache_info: {get_query_full_results.cache_info()}")
+    t1 = time.time()
+    print(f"basic query {query} {len(results)} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
@@ -609,4 +611,9 @@ def get_reference_hierarchy_data(contig):
                 exon['strand'] = exon.pop('info').pop('strand')
                 all_genes[gene_idx]['transcripts'][transcript_idx]['components'].append(exon)
     return all_genes
+
+@app.route('/sleep')
+def sleep():
+    time.sleep(2)
+    return f'waking up at {time.ctime()}'
 

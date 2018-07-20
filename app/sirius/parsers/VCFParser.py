@@ -454,9 +454,9 @@ class VCFParser_ClinVar(VCFParser):
 
         Notes
         -----
-        1. This method should be called after self.parse(), because this method will read from self.metadata and self.varients,
+        1. This method should be called after self.parse(), because this method will read from self.metadata and self.variants,
         which are contents of self.data
-        2. The GenomeNodes generated from this parsing should be Varients. They should all have "_id" started with "G".
+        2. The GenomeNodes generated from this parsing should be Variants. They should all have "_id" started with "G".
         3. If the variant is a SNP, the rs# will be used, like "Gsnp_rs4950928".
         4. If the variant is not a SNP, the content of the variant will be hashed to make the _id like "Gv_28120123ewe129301"
             Duplicated SNPs with the same _id are ignored.
@@ -589,8 +589,10 @@ class VCFParser_ClinVar(VCFParser):
         info_nodes.append(info_node)
         known_vid, known_traits, known_edge_ids = set(), set(), set()
         for d in self.variants:
+            # we will abandon this entry if no trait information found
+            if 'CLNDN' not in d['INFO'] or 'CLNDISDB' not in d['INFO']: continue
+            # create GenomeNode for Variants
             contig = 'chr' + d['CHROM']
-            # create GenomeNode for Varient
             if 'RS' in d['INFO']:
                 rs = str(d["INFO"]["RS"])
                 variant_id = "Gsnp_rs" + rs
@@ -633,8 +635,6 @@ class VCFParser_ClinVar(VCFParser):
                         variant_affected_genes.append(ginfo.split(':')[0])
                 gnode['info']['variant_affected_genes'] = variant_affected_genes
                 genome_nodes.append(gnode)
-            # we will abandon this entry if no trait information found
-            if 'CLNDN' not in d['INFO'] or 'CLNDISDB' not in d['INFO']: continue
             # create InfoNode for trait, one entry could have multiple traits
             this_trait_ids = []
             trait_names = d['INFO']['CLNDN'].split('|')
@@ -765,7 +765,7 @@ class VCFParser_dbSNP(VCFParser):
 
         Notes
         -----
-        1. This method should be called after self.parse(), because this method will read from self.metadata and self.varients,
+        1. This method should be called after self.parse(), because this method will read from self.metadata and self.variants,
         which are contents of self.data
         2. The GenomeNodes generated from this parsing should be SNPs. They should all have "_id" started with "G". The rs# will be used, like "Gsnp_rs4950928".
         3. The InfoNodes generated only contain 1 dataSource. It has "_id" values start with "I", like "IdbSNP".
@@ -883,7 +883,7 @@ class VCFParser_dbSNP(VCFParser):
         for variant in self.variants:
             d = variant.copy()
             contig = 'chr' + d['CHROM']
-            # create GenomeNode for Varient
+            # create GenomeNode for Variants
             if 'RS' in d['INFO']:
                 rs = str(d["INFO"].pop("RS"))
                 variant_id = "Gsnp_rs" + rs
@@ -956,7 +956,7 @@ class VCFParser_ExAC(VCFParser):
 
         Notes
         -----
-        1. This method should be called after self.parse(), because this method will read from self.metadata and self.varients,
+        1. This method should be called after self.parse(), because this method will read from self.metadata and self.variants,
         which are contents of self.data
         2. The GenomeNodes generated from this parsing should be variants. They should all have "_id" started with "G". The rs# will be used, like "Gsnp_rs4950928".
         3. Since ExAC VCF file contains a lot of redundant data, we only pick the ones we're interested.

@@ -25,7 +25,7 @@ def update_insert_many(dbCollection, nodes, update=True):
             all_ids_need_update.add(node['_id'])
     if insert_nodes:
         try:
-            dbCollection.insert_many(insert_nodes)
+            dbCollection.insert_many(insert_nodes, ordered=False)
         except Exception as bwe:
             print('Error: ', bwe.details)
     for node in update_nodes:

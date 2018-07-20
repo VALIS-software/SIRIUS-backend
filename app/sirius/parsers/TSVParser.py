@@ -275,6 +275,7 @@ class TSVParser_GWAS(TSVParser):
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
         known_traits = set()
+        self.parsed_snp_ids = set()
         for study_data in self.studies:
             study = study_data.copy()
             # there might be multiple snps related, therefore we split them
@@ -286,6 +287,7 @@ class TSVParser_GWAS(TSVParser):
                 rs = rs[2:]
                 rs_id = 'Gsnp_rs' + rs
                 snp_ids.append(rs_id)
+                self.parsed_snp_ids.add(rs_id)
             # there might be multiple traits, compute the trait ids from there MAPPED_TRAIT
             mapped_trait = study.pop("MAPPED_TRAIT")
             # we skip the studies with no mapped traits
