@@ -133,78 +133,78 @@ def drop_all_data():
         shutil.rmtree(tilehelper.root)
         os.makedirs(tilehelper.root)
 
-def parse_upload_all_datasets():
+def parse_upload_all_datasets(source_start=1):
     print("\n\n#3. Parsing and uploading each data set")
     os.chdir('gene_data_tmp')
-    # ENCODE bigWig
-    print("*** ENCODE_bigwig ***")
-    os.chdir('encode_bigwig')
-    parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
-    parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
-    os.chdir('..')
-    # GRCh38_fasta
-    print("\n*** GRCh38_fasta ***")
-    os.chdir('GRCh38_fasta')
-    parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-    parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
-    os.chdir('..')
-    # GRCh38_gff
-    print("\n*** GRCh38_gff ***")
-    os.chdir('GRCh38_gff')
-    parse_upload_gff_chunk()
-    os.chdir('..')
-    # ClinVar
-    print("\n*** ClinVar ***")
-    os.chdir('ClinVar')
-    parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
-    parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
-    os.chdir('..')
-    # ENCODE
-    print("\n*** ENCODE ***")
-    os.chdir('ENCODE')
-    from sirius.tools import automate_encode_upload
-    if FULL_DATABASE:
-        automate_encode_upload.parse_upload_files(0, 1070)
-    else:
-        automate_encode_upload.parse_upload_files()
-    os.chdir('..')
-    # dbSNP
-    print("\n*** dbSNP ***")
-    os.chdir('dbSNP')
-    parse_upload_dbSNP_chunk()
-    os.chdir('..')
-    # ExAC
-    print("\n*** ExAC ***")
-    os.chdir('ExAC')
-    parse_upload_ExAC_chunk()
-    os.chdir('..')
-    # TCGA
-    print("\n*** TCGA ***")
-    os.chdir('TCGA')
-    parse_upload_TCGA_files()
-    os.chdir('..')
+    if source_start <= 1:
+        print("*** 3.1 ENCODE_bigwig ***")
+        os.chdir('encode_bigwig')
+        parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+        parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
+        os.chdir('..')
+    if source_start <= 2:
+        print("\n*** 3.2 GRCh38_fasta ***")
+        os.chdir('GRCh38_fasta')
+        parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
+        parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
+        os.chdir('..')
+    if source_start <= 3:
+        print("\n*** 3.3 GRCh38_gff ***")
+        os.chdir('GRCh38_gff')
+        parse_upload_gff_chunk()
+        os.chdir('..')
+    if source_start <= 4:
+        print("\n*** 3.4 ClinVar ***")
+        os.chdir('ClinVar')
+        parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
+        parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
+        os.chdir('..')
+    if source_start <= 5:
+        print("\n*** 3.5 ENCODE ***")
+        os.chdir('ENCODE')
+        from sirius.tools import automate_encode_upload
+        if FULL_DATABASE:
+            automate_encode_upload.parse_upload_files(0, 1070)
+        else:
+            automate_encode_upload.parse_upload_files()
+        os.chdir('..')
+    if source_start <= 6:
+        print("\n*** 3.6 dbSNP ***")
+        os.chdir('dbSNP')
+        parse_upload_dbSNP_chunk()
+        os.chdir('..')
+    if source_start <= 7:
+        print("\n*** 3.7 ExAC ***")
+        os.chdir('ExAC')
+        parse_upload_ExAC_chunk()
+        os.chdir('..')
+    if source_start <= 8:
+        print("\n*** 3.8 TCGA ***")
+        os.chdir('TCGA')
+        parse_upload_TCGA_files()
+        os.chdir('..')
     ## The following dataset should be parsed in the end
     ## Because they "Patch" the existing data
-    # GWAS
-    print("\n*** GWAS ***")
-    os.chdir('gwas')
-    parse_upload_GWAS()
-    os.chdir('..')
-    # GTEx
-    print("\n*** GTEx ***")
-    os.chdir('GTEx')
-    parse_upload_GTEx_files()
-    os.chdir('..')
-    # EFO
-    print("\n*** EFO ***")
-    os.chdir('EFO')
-    parse_upload_EFO()
-    os.chdir('..')
-    # HGNC
-    print("\n*** HGNC ***")
-    os.chdir('HGNC')
-    parse_upload_HGNC()
-    os.chdir('..')
+    if source_start <= 9:
+        print("\n*** 3.9 GWAS ***")
+        os.chdir('gwas')
+        parse_upload_GWAS()
+        os.chdir('..')
+    if source_start <= 10:
+        print("\n*** 3.10 GTEx ***")
+        os.chdir('GTEx')
+        parse_upload_GTEx_files()
+        os.chdir('..')
+    if source_start <= 11:
+        print("\n*** 3.11 EFO ***")
+        os.chdir('EFO')
+        parse_upload_EFO()
+        os.chdir('..')
+    if source_start <= 12:
+        print("\n*** 3.12 HGNC ***")
+        os.chdir('HGNC')
+        parse_upload_HGNC()
+        os.chdir('..')
     # Finish
     print("All parsing and uploading finished!")
     os.chdir('..')
@@ -478,6 +478,20 @@ Steps:
 3. Parse each data sets and upload to MongoDB
 4. Build index in data base
 5. Patch additional information
+
+In Step 3, datasets are parsed and uploaded, in the following order:
+1. ENCODE_bigwig
+2. GRCh38_fasta
+3. GRCh38_gff
+4. ClinVar
+5. ENCODE
+6. dbSNP
+7. ExAC
+8. TCGA
+9. GWAS
+10. GTEx
+11. EFO
+12. HGNC
 '''
 
 def main():
@@ -485,18 +499,21 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
-    parser.add_argument('-d', '--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
+    parser.add_argument('--continue', type=int, help='Choose a dataset to continue parsing and uploading. Will overwrite --starting_step to be 3')
+    parser.add_argument('--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
     parser.add_argument('--full', action='store_true', help='Build the full database (100x larger).')
     args = parser.parse_args()
     t0 = time.time()
     global FULL_DATABASE
     FULL_DATABASE = args.full
+    if args.continue != None:
+        args.starting_step = 3
     if args.starting_step <= 1:
         download_genome_data()
     if args.starting_step <= 2:
         drop_all_data()
     if args.starting_step <= 3:
-        parse_upload_all_datasets()
+        parse_upload_all_datasets(args.continue)
     if args.starting_step <= 4:
         build_mongo_index()
     if args.starting_step <= 5:
