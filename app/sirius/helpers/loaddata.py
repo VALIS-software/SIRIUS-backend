@@ -82,17 +82,17 @@ loaded_data_track_info_dict = dict([(d['id'], d) for d in loaded_data_tracks])
 loaded_genome_contigs = set(GenomeNodes.distinct('contig'))
 
 # store all loaded genes
-loaded_gene_names = GenomeNodes.distinct('name', {'type': {'$in': ENSEMBL_GENE_SUBTYPES}})
+loaded_gene_names = sorted(GenomeNodes.distinct('name', {'type': {'$in': ENSEMBL_GENE_SUBTYPES}}))
 print(f'Loaded {len(loaded_gene_names)} genes')
 
-# store all loaded traits
-loaded_trait_names = InfoNodes.distinct('name', {'type': 'trait'})
+# store all loaded traits (sorted)
+loaded_trait_names = sorted(InfoNodes.distinct('name', {'type': 'trait'}))
 print(f'Loaded {len(loaded_trait_names)} traits')
 
 # store all loaded cell types
-loaded_cell_types = InfoNodes.distinct('info.biosample', {'type': 'ENCODE_accession'})
+loaded_cell_types = sorted(InfoNodes.distinct('info.biosample', {'type': 'ENCODE_accession'}))
 print(f'Loaded {len(loaded_cell_types)} cell types')
 
 # store all loaded tumor_tissue_sites
-loaded_patient_tumor_sites = [s for s in InfoNodes.distinct('info.biosample', {'type':'patient'}) if s]
+loaded_patient_tumor_sites = sorted([s for s in InfoNodes.distinct('info.biosample', {'type':'patient'}) if s])
 print(f'Loaded {len(loaded_patient_tumor_sites)} patient tumor sites')
