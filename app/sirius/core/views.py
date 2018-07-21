@@ -5,9 +5,10 @@
 #==================================#
 
 from flask import abort, request, send_from_directory
-import json, time
+import json
+import time
+import threading
 from functools import lru_cache
-
 from sirius.main import app
 from sirius.core.utilities import get_data_with_id, HashableDict
 from sirius.query.QueryTree import QueryTree
@@ -413,36 +414,39 @@ class QueryResultsCache:
     def __init__(self, query, projection=None):
         self.qt = QueryTree(query)
         self.data_generator = self.qt.find(projection=projection)
-        self.projection = projection
         self.loaded_data = []
         self.load_finished = False
+        self.lock = threading.Lock()
 
     def __getitem__(self, key):
-        if isinstance(key, slice):
-            if key.step != None and key.step <= 0:
+        if self.load_finished is True:
+            return self.loaded_data[key]
+        elif isinstance(key, slice):
+            if key.step is not None and key.step <= 0:
                 raise ValueError("slice step cannot be zero or negative")
             self.load_data_until(key.stop)
             return self.loaded_data[key]
         elif isinstance(key, int):
-            self.load_data_until(slice.stop + 1)
+            self.load_data_until(key + 1)
             return self.loaded_data[key]
         else:
             raise TypeError(f"list indices must be integers or slices, not {type(key)}")
 
     def load_data_until(self, index=None):
         # if we already have that many results
-        if index != None and index <= len(self.loaded_data): return
+        if index is not None and index < len(self.loaded_data): return
         # iteratively load data into cache
-        for data in self.data_generator:
-            # convert "_id" to "id" for frontend
-            data['id'] = data.pop('_id')
-            self.loaded_data.append(data)
-            # here we load one more data than requested, so we know if all data loaded
-            if len(self.loaded_data) == index:
-                break
-        else:
-            # all data loaded
-            self.load_finished = True
+        with self.lock:
+            for data in self.data_generator:
+                # convert "_id" to "id" for frontend
+                data['id'] = data.pop('_id')
+                self.loaded_data.append(data)
+                # here we load one more data than requested, so we know if all data loaded
+                if index is not None and len(self.loaded_data) > index:
+                    break
+            else:
+                # all data loaded
+                self.load_finished = True
 
 @app.route('/query/full', methods=['POST'])
 @requires_auth
