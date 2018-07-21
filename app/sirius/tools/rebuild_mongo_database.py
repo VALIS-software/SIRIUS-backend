@@ -214,15 +214,14 @@ def parse_upload_gff_chunk():
     parser = GFFParser_ENSEMBL(filename, verbose=True)
     parser.metadata['sourceurl'] = GRCH38_URL
     i_chunk = 0
-    while True:
+    finished = False
+    while finished is not True:
         finished = parser.parse_chunk()
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         update_insert_many(GenomeNodes, genome_nodes)
         update_insert_many(InfoNodes, info_nodes[1:])
         print(f"Data of chunk {i_chunk} uploaded")
         i_chunk += 1
-        if finished == True:
-            break
     # we only upload info_nodes[0] once here because all the chunks has the same first info node for the dataSource.
     update_insert_many(InfoNodes, info_nodes[0:1])
     print("InfoNodes uploaded")
@@ -240,14 +239,13 @@ def parse_upload_dbSNP_chunk():
     parser = VCFParser_dbSNP(filename, verbose=True)
     parser.metadata['sourceurl'] = DBSNP_URL
     i_chunk = 0
-    while True:
+    finished = False
+    while finished is not True:
         finished = parser.parse_chunk()
         print(f'Parsing and uploading chunk {i_chunk}')
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         update_insert_many(GenomeNodes, genome_nodes)
         i_chunk += 1
-        if finished == True:
-            break
     # we only insert the infonode for dbSNP dataSource once
     update_insert_many(InfoNodes, info_nodes)
 
@@ -256,14 +254,13 @@ def parse_upload_ExAC_chunk():
     parser = VCFParser_ExAC(filename, verbose=True)
     parser.metadata['sourceurl'] = ExAC_URL
     i_chunk = 0
-    while True:
+    finished = False
+    while finished is not True:
         finished = parser.parse_chunk(100000)
         print(f'Parsing and uploading chunk {i_chunk}')
         genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
         update_insert_many(GenomeNodes, genome_nodes)
         i_chunk += 1
-        if finished == True:
-            break
     # we only insert the infonode for ExAC dataSource once
     update_insert_many(InfoNodes, info_nodes)
 
@@ -279,6 +276,7 @@ def parse_upload_TCGA_files():
         for f in files:
             if f.endswith('.xml'):
                 xml_files.append(os.path.join(root, f))
+    xml_files.sort()
     all_patient_infonodes = []
     # this is used in MAF parser
     patient_barcode_tumor_site = dict()
@@ -310,18 +308,24 @@ def parse_upload_TCGA_files():
         for f in files:
             if f.endswith('.maf.gz'):
                 maf_files.append(os.path.join(root, f))
+    maf_files.sort()
     print(f"Parsing {len(maf_files)} maf files")
     for i, f in enumerate(maf_files):
-        print(f"{i:3d} ", end='', flush=True)
         parser = TCGA_MAFParser(f)
-        parser.parse()
-        # provide the patient_barcode_tumor_site so the gnode will have 'info.biosample'
-        patient_barcode_tumor_site = patient_barcode_tumor_site
-        genome_nodes, info_nodes, edges = parser.get_mongo_nodes(patient_barcode_tumor_site)
-        # aggregate variant tags
-        for gnode in genome_nodes:
-            variant_tags.update(gnode['info']['variant_tags'])
-        update_insert_many(GenomeNodes, genome_nodes)
+        # Parse in chunk since MAF files may be too large to fit in 16G memory
+        i_chunk = 0
+        finished = False
+        while finished is not True:
+            finished = parser.parse_chunk()
+            print(f"{i:3d}-{i_chunk:2d} ", end='', flush=True)
+            # provide the patient_barcode_tumor_site so the gnode will have 'info.biosample'
+            genome_nodes, info_nodes, edges = parser.get_mongo_nodes(patient_barcode_tumor_site)
+            # aggregate variant tags
+            for gnode in genome_nodes:
+                variant_tags.update(gnode['info']['variant_tags'])
+
+            update_insert_many(GenomeNodes, genome_nodes)
+            i_chunk += 1
     os.chdir('..')
     # CNV
     os.chdir('CNV')
@@ -334,6 +338,7 @@ def parse_upload_TCGA_files():
         for f in files:
             if f.endswith('.seg.v2.txt'):
                 cnv_files.append(os.path.join(root, f))
+    cnv_files.sort()
     print(f"Parsing {len(cnv_files)} cnv files")
     # we parse 1000 files each time then upload at once
     i_batch, batch_size = 0, 1000
