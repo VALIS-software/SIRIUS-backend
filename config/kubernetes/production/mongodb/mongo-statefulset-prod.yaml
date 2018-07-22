@@ -60,8 +60,8 @@ spec:
               mountPath: /etc/secrets-volume
           resources:
             requests:
-              cpu: "7"
-              memory: "40Gi"
+              cpu: "15"
+              memory: "50Gi"
       nodeSelector:
           sirius: prod
   volumeClaimTemplates:
