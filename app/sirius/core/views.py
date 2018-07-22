@@ -16,8 +16,7 @@ from sirius.helpers.loaddata import loaded_contig_info, loaded_contig_info_dict,
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, TRACK_TYPE_BOOLEAN, \
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
-from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
-from sirius.core.searchindex import get_suggestions
+
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 from sirius.core.auth0 import requires_auth
 
@@ -96,72 +95,11 @@ def track_info():
 
 
 
-# This endpoint servers the old version of front end
-#**************************
-#*     /annotations       *
-#**************************
-
-@app.route("/annotations/<string:annotation_id>/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['POST'])
-@requires_auth
-def get_annotationtrack_data(annotation_id, contig, start_bp, end_bp):
-    """
-    Endpoint for rendering the selections in DataBrowser side panel.
-
-    Returns
-    -------
-    annotation_data: dictionary (json)
-        The return data for the range of annotation track
-
-    Notes
-    -----
-    The annotation_id is not used at all, but simply returned in the json.
-
-    """
-    sampling_rate = int(request.args.get('sampling_rate', default=1))
-    track_height_px = int(request.args.get('track_height_px', default=0))
-    query = request.get_json()
-    if not query:
-        return abort(404, 'no query posted')
-    return get_annotation_query(annotation_id, contig, start_bp, end_bp, sampling_rate, track_height_px, query)
-
-
-
-# This endpoint is left as mock before front end refactoring is done
-#**************************
-#*       /tracks          *
-#**************************
-from sirius.mockData.mock_util import getMockData, get_mock_track_data
-
-@app.route("/tracks")
-@requires_auth
-def tracks():
-    """Return a list of all track_ids"""
-    MOCK_DATA = getMockData()
-    return json.dumps(list(MOCK_DATA.values()))
-
-@app.route("/tracks/<string:track_id>")
-@requires_auth
-def track(track_id):
-    MOCK_DATA = getMockData()
-    """Return the track metadata"""
-    if track_id in MOCK_DATA:
-        return json.dumps(MOCK_DATA[track_id])
-    else:
-        abort(404, "Track not found")
-
-@app.route("/tracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
-@requires_auth
-def get_track_data(track_id, contig, start_bp, end_bp):
-    """Return the data for the given track and base pair range"""
-    track_height_px = int(request.args.get('track_height_px', default=0))
-    sampling_rate = int(request.args.get('sampling_rate', default=1))
-    aggregations = request.args.get('aggregations', default='none').split(',')
-    return old_api_track_data(track_id, contig, start_bp, end_bp, track_height_px, sampling_rate)
-
 # This is the new endpoint that will replace /tracks to return real data
 #**************************
 #*       /datatracks      *
 #**************************
+from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
 
 @app.route("/datatracks")
 @requires_auth
@@ -211,6 +149,8 @@ def datatrack_get_data(track_id, contig, start_bp, end_bp):
     else:
         aggregations = request.args.get('aggregations', default='none').split(',')
         return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
+
+
 
 # This part is still mock
 #**************************
@@ -313,10 +253,11 @@ def get_query_distinct_values(query, index):
 #*******************************
 #*         /details            *
 #*******************************
+from sirius.core.detail_relations import node_relations, edge_relations
 
 @app.route("/details/<string:data_id>")
 @requires_auth
-def details(data_id):
+def get_details(data_id):
     if not data_id: return
     data = get_data_with_id(data_id)
     if not data:
@@ -330,62 +271,11 @@ def details(data_id):
     result = {'details': data, 'relations': relations}
     return json.dumps(result)
 
-def node_relations(data_id):
-    result = []
-    for edge in Edges.find({'from_id': data_id}, limit=100):
-        target_data = get_data_with_id(edge['to_id'])
-        if target_data:
-            description = 'To ' + target_data['type'] + ' ' + target_data['name']
-        else:
-            description = "data not found"
-        result.append({
-            'title': edge['name'],
-            'type': edge['type'],
-            'source': edge['source'],
-            'description': description,
-            'id': edge['_id']
-        })
-    for edge in Edges.find({'to_id': data_id}, limit=100):
-        target_data = get_data_with_id(edge['from_id'])
-        if target_data:
-            description = 'From ' + target_data['type'] + ' ' + target_data['name']
-        else:
-            description = "data not found"
-        result.append({
-            'title': edge['name'],
-            'type': edge['type'],
-            'source': edge['source'],
-            'description': description,
-            'id': edge['_id']
-        })
-    return result
-
-def edge_relations(edge):
-    result = []
-    from_data = get_data_with_id(edge['from_id'])
-    if from_data:
-        result.append({
-            'title': 'From ' + from_data['type'],
-            'source': from_data['source'],
-            'description': from_data['name'],
-            'id': edge['from_id'],
-            'type': from_data['type']
-        })
-    to_data = get_data_with_id(edge['to_id'])
-    if to_data:
-        result.append({
-            'title': 'To ' + to_data['type'],
-            'source': to_data['source'],
-            'description': to_data['name'],
-            'id': edge['to_id'],
-            'type': to_data['type']
-        })
-    return result
-
-
 #**************************
 #*       /suggestions     *
 #**************************
+from sirius.core.searchindex import get_suggestions
+
 @app.route('/suggestions', methods=['POST'])
 @requires_auth
 def suggestions():
@@ -533,9 +423,10 @@ def get_query_basic_results(query):
 #**************************
 #*       /reference       *
 #**************************
-
+from sirius.core.reference_track import get_reference_gene_data, get_reference_hierarchy_data
 
 @app.route("/reference/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['GET'])
+@requires_auth
 def reference_annotation_track(contig, start_bp, end_bp):
     include_transcript = bool(request.args.get('include_transcript', default=False))
     # get data from cache
@@ -556,67 +447,15 @@ def reference_annotation_track(contig, start_bp, end_bp):
     }
     return json.dumps(result)
 
-@lru_cache(maxsize=1000)
-def get_reference_gene_data(contig):
-    """ Find all genes in a contig """
-    result = []
-    # First we find all the genes
-    gene_types = ['gene', 'pseudogene']
-    gene_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand']
-    all_genes = sorted(GenomeNodes.find({'contig': contig, 'type': {'$in': gene_types}}, projection=gene_projection), key=lambda x: x['start'])
-    # second we convert `_id` to `id`
-    for gene in all_genes:
-        gene['id'] = gene.pop('_id')
-        gene['strand'] = gene.pop('info').pop('strand')
-    return all_genes
 
-@lru_cache(maxsize=1000)
-def get_reference_hierarchy_data(contig):
-    """ Find all genes in a contig, then build the gene->transcript->exon hierarchy """
-    # First we find all the genes
-    gene_types = ['gene', 'pseudogene']
-    gene_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand']
-    all_genes = sorted(GenomeNodes.find({'contig': contig, 'type': {'$in': gene_types}}, projection=gene_projection), key=lambda x: x['start'])
-    # Second store their index
-    gene_idx_dict = dict()
-    for i, gene in enumerate(all_genes):
-        gene['id'] = gid = gene.pop('_id')
-        gene['strand'] = gene.pop('info').pop('strand')
-        gene['transcripts'] = []
-        gene_idx_dict[gid] = i
-    # Third we find all the transcripts
-    transcript_types = ['transcript', 'pseudogenic_transcript', 'miRNA', 'lnc_RNA', 'mRNA']
-    transcript_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand', 'info.Parent']
-    all_transcripts = sorted(GenomeNodes.find({'contig': contig, 'type': {'$in': transcript_types}}, projection=transcript_projection), key=lambda x: x['start'])
-    # Fourth we put the transcripts into genes and store their parent genes
-    gene_transcript_idx_dict = dict()
-    for transcript in all_transcripts:
-        parent = transcript['info'].pop('Parent', None)
-        if parent != None:
-            parent_id = 'G' + parent.split(':')[-1]
-            gene_idx = gene_idx_dict.get(parent_id, None)
-            if gene_idx != None:
-                transcript['id'] = gid = transcript.pop('_id')
-                transcript['strand'] = transcript.pop('info').pop('strand')
-                transcript['components'] = []
-                gene_transcript_idx_dict[gid] = (gene_idx, len(all_genes[gene_idx]['transcripts']))
-                all_genes[gene_idx]['transcripts'].append(transcript)
-    # Fifth we find all the exons
-    exon_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand', 'info.Parent']
-    all_exons = sorted(GenomeNodes.find({'contig': contig, 'type': 'exon'}, projection=exon_projection), key=lambda x: x['start'])
-    # Sixth we put all the exons into their parent transcripts
-    for exon in all_exons:
-        parent = exon['info'].pop('Parent', None)
-        if parent != None:
-            parent_id = 'G' + parent.split(':')[-1]
-            gene_idx, transcript_idx = gene_transcript_idx_dict.get(parent_id, (None, None))
-            if gene_idx != None:
-                exon['id'] = exon.pop('_id')
-                exon['strand'] = exon.pop('info').pop('strand')
-                all_genes[gene_idx]['transcripts'][transcript_idx]['components'].append(exon)
-    return all_genes
+
+#*****************************
+#*   /variant_track_data     *
+#*****************************
+from sirius.core.variant_track import merge_query_range, get_variant_query_results
 
 @app.route('/variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
+@requires_auth
 def get_variant_track_data(contig, start_bp, end_bp):
     t0 = time.time()
     query = request.get_json()
@@ -656,67 +495,46 @@ def get_variant_track_data(contig, start_bp, end_bp):
     print(f'{len(result_data)} variant_data, {query}, {get_variant_query_results.cache_info()}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
     return json.dumps(result)
 
-def merge_query_range(contig, start_bp, end_bp, query):
-    """
-    Merge the contig, start and end range specs into query
-    Taking into account 'contig' 'start' in filters
-    """
-    filters = query['filters']
-    # check the 'contig' filter
-    if 'contig' in filters:
-        if filters['contig'] != contig:
-            return None
-    else:
-        filters['contig'] = contig
-    # merge the 'start' filter
-    if 'start' in filters:
-        fst = filters['start']
-        if isinstance(fst, int):
-            if fst > end_bp:
-                return None
-        elif isinstance(fst, dict):
-            # intersect the start range
-            s_start = fst.pop('>=', None)
-            s_start = fst.pop('$gte', s_start)
-            s_start_1 = fst.pop('>', None)
-            s_start_1 = fst.pop('$gt', s_start_1)
-            if s_start is not None:
-                fst['>='] = max(start_bp, s_start)
-            elif s_start_1 is not None:
-                fst['>='] = max(start_bp, s_start_1 + 1)
-            else:
-                fst['>='] = start_bp
-            # intersect the end range
-            s_end = fst.pop('<=', None)
-            s_end = fst.pop('$lte', s_end)
-            s_end_1 = fst.pop('<', None)
-            s_end_1 = fst.pop('$lt', s_end_1)
-            if s_end is not None:
-                fst['<='] = min(end_bp, s_end)
-            elif s_end_1 is not None:
-                fst['<='] = min(end_bp, s_end_1 - 1)
-            else:
-                fst['<='] = end_bp
-            filters['start'] = fst
-    else:
-        filters['start'] = {'>=': start_bp, '<=': end_bp}
-    if 'end' in filters:
-        print("Warning, merge_query_range don't support filters['end'], please use filters['start']")
-        return None
-    # check if the range still make sense
-    try:
-        if filters['start']['>='] > filters['start']['<=']:
-            return None
-    except KeyError:
-        pass
-    query['filters'] = filters
-    return query
 
-@lru_cache(maxsize=10000)
-def get_variant_query_results(query):
-    qt = QueryTree(query)
-    result = []
-    for d in qt.find(projection=['_id', 'start', 'info.variant_ref', 'info.allele_frequencies']):
-        d['id'] = d.pop('_id')
-        result.append(d)
-    return result
+#******************************
+#*   /interval_track_data     *
+#******************************
+from sirius.core.interval_track import get_intervals_in_range
+
+@app.route('/interval_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
+@requires_auth
+def get_interval_track_data(contig, start_bp, end_bp):
+    t0 = time.time()
+    query = request.get_json()
+    if not query:
+        return abort(404, 'no query specified')
+    if contig not in loaded_contig_info_dict:
+        return abort(404, 'contig not found')
+    if 'type' in query['filters']:
+        if query['filters']['type'] != 'SNP':
+            return abort(404, 'variant_track_data only support query with filter {type: "SNP"}')
+    else:
+        query['filters']['type'] = 'SNP'
+    empty_return = json.dumps({
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': []
+    })
+    total_length = loaded_contig_info_dict[contig]['length']
+    # check start_bp and end_bp
+    if start_bp > total_length or end_bp < 1 or start_bp > end_bp:
+        return empty_return
+    start_bp = max(start_bp, 1)
+    end_bp = min(end_bp, total_length)
+    t1 = time.time()
+    result_data = get_intervals_in_range(contig, start_bp, end_bp, query)
+    result = {
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': result_data
+    }
+    t2 = time.time()
+    print(f'{len(result_data)} interval_data, {query}, {get_interval_query_results.cache_info()}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
+    return json.dumps(result)
