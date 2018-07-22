@@ -10,7 +10,7 @@ from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
 from sirius.helpers.loaddata import loaded_genome_contigs
 
-@threadsafe_lru(max_size=8192)
+@threadsafe_lru(maxsize=8192)
 def get_annotation_query_results(query):
     qt = QueryTree(query)#, verbose=True)
     # we split the results into contigs

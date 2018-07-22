@@ -57,7 +57,7 @@ def merge_query_range(contig, start_bp, end_bp, query):
     query['filters'] = filters
     return query
 
-@threadsafe_lru(max_size=8192)
+@threadsafe_lru(maxsize=8192)
 def get_variant_query_results(query):
     qt = QueryTree(query)
     result = []

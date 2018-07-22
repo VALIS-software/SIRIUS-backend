@@ -1,7 +1,7 @@
 from sirius.mongo import GenomeNodes
 from sirius.core.utilities import threadsafe_lru
 
-@threadsafe_lru(max_size=1024)
+@threadsafe_lru(maxsize=1024)
 def get_reference_gene_data(contig):
     """ Find all genes in a contig """
     result = []
@@ -15,7 +15,7 @@ def get_reference_gene_data(contig):
         gene['strand'] = gene.pop('info').pop('strand')
     return all_genes
 
-@threadsafe_lru(max_size=1024)
+@threadsafe_lru(maxsize=1024)
 def get_reference_hierarchy_data(contig):
     """ Find all genes in a contig, then build the gene->transcript->exon hierarchy """
     # First we find all the genes

@@ -241,7 +241,7 @@ def distinct_values(index):
     print("/distinct_values/%s for query %s returns %d results. " % (index, query, len(result)), get_query_distinct_values.cache_info())
     return json.dumps(result)
 
-@threadsafe_lru(max_size=8192)
+@threadsafe_lru(maxsize=8192)
 def get_query_distinct_values(query, index):
     qt = QueryTree(query)
     result = qt.distinct(index)
@@ -371,7 +371,7 @@ def query_full():
     }
     return json.dumps(return_dict)
 
-@threadsafe_lru(max_size=1024)
+@threadsafe_lru(maxsize=1024)
 def get_query_full_results(query):
     """ Cached function for getting full query results """
     if not query: return []
@@ -411,7 +411,7 @@ def query_basic():
     }
     return json.dumps(return_dict)
 
-@threadsafe_lru(max_size=1024)
+@threadsafe_lru(maxsize=1024)
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
