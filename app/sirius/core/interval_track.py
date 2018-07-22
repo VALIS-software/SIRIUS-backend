@@ -1,7 +1,6 @@
 import numpy as np
 import time
-from functools import lru_cache
-from sirius.core.utilities import HashableDict
+from sirius.core.utilities import HashableDict, threadsafe_lru
 from sirius.query.QueryTree import QueryTree
 from sirius.helpers.loaddata import loaded_genome_contigs
 
@@ -36,8 +35,7 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
         })
     return result
 
-
-@lru_cache(maxsize=10000)
+@threadsafe_lru(maxsize=8192)
 def get_interval_query_results(query):
     qt = QueryTree(query)
     # we split the results into contigs

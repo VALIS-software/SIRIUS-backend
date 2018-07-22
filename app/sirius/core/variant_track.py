@@ -1,4 +1,4 @@
-from functools import lru_cache
+from sirius.core.utilities import threadsafe_lru
 from sirius.query.QueryTree import QueryTree
 
 def merge_query_range(contig, start_bp, end_bp, query):
@@ -57,7 +57,7 @@ def merge_query_range(contig, start_bp, end_bp, query):
     query['filters'] = filters
     return query
 
-@lru_cache(maxsize=10000)
+@threadsafe_lru(max_size=8192)
 def get_variant_query_results(query):
     qt = QueryTree(query)
     result = []

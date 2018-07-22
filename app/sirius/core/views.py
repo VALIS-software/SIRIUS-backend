@@ -8,9 +8,8 @@ from flask import abort, request, send_from_directory
 import json
 import time
 import threading
-from functools import lru_cache
 from sirius.main import app
-from sirius.core.utilities import get_data_with_id, HashableDict
+from sirius.core.utilities import get_data_with_id, HashableDict, threadsafe_lru
 from sirius.query.QueryTree import QueryTree
 from sirius.helpers.loaddata import loaded_contig_info, loaded_contig_info_dict, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, TRACK_TYPE_BOOLEAN, \
@@ -242,7 +241,7 @@ def distinct_values(index):
     print("/distinct_values/%s for query %s returns %d results. " % (index, query, len(result)), get_query_distinct_values.cache_info())
     return json.dumps(result)
 
-@lru_cache(maxsize=10000)
+@threadsafe_lru(max_size=8192)
 def get_query_distinct_values(query, index):
     qt = QueryTree(query)
     result = qt.distinct(index)
@@ -372,7 +371,7 @@ def query_full():
     }
     return json.dumps(return_dict)
 
-@lru_cache(maxsize=1000)
+@threadsafe_lru(max_size=1024)
 def get_query_full_results(query):
     """ Cached function for getting full query results """
     if not query: return []
@@ -412,7 +411,7 @@ def query_basic():
     }
     return json.dumps(return_dict)
 
-@lru_cache(maxsize=1000)
+@threadsafe_lru(max_size=1024)
 def get_query_basic_results(query):
     """ Cached function for getting basic query results """
     if not query: return []
