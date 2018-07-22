@@ -254,11 +254,10 @@ class BEDParser_ENCODE(BEDParser):
             all_types.add(tp) # keep track of the types for this data file
             name = d.pop('name')
             contig = d.pop('chrom')
-            # we convert the 0-based to 1-based
-            start, end = int(d.pop('start'))+1, int(d.pop('end'))+1
+            start, end = int(d.pop('start')), int(d.pop('end'))
             # liftover using pyliftover
             if liftover is True:
-                strand = d.pop('strand', '.')
+                strand = d.get('strand', '.')
                 lo_result = lo.convert_coordinate(contig, start, strand)
                 if len(lo_result) > 0:
                     # here we replace contig and position, but leave the others unchanged
@@ -276,16 +275,18 @@ class BEDParser_ENCODE(BEDParser):
                     continue
                 # check the new results are on the same contig
                 if new_start_contig != new_end_contig:
-                    print(f"Contig become different after liftover for {interval}, skipping")
+                    if self.verbose:
+                        print(f"Contig become different after liftover for {interval}, skipping")
                     continue
                 contig = new_start_contig
+            # we change 0-based pos to 1-based
             gnode = {
                 'source': DATA_SOURCE_ENCODE,
                 'type': tp,
                 'name': name,
                 'contig': contig,
-                'start': start,
-                'end':end,
+                'start': start+1,
+                'end':end+1,
                 'length': end-start+1,
             }
             gnode['info'] = d
