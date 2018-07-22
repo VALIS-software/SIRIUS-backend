@@ -12,3 +12,4 @@ biopython
 nltk
 sklearn
 authlib
+pyliftover

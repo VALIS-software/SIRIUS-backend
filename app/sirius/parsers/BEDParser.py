@@ -1,5 +1,7 @@
 from sirius.parsers.Parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
+import pyliftover
+lo = pyliftover.LiftOver('hg19', 'hg38')
 
 class BEDParser(Parser):
     """
@@ -134,7 +136,7 @@ class BEDParser(Parser):
 
 
 class BEDParser_ENCODE(BEDParser):
-    def get_mongo_nodes(self):
+    def get_mongo_nodes(self, liftover=False):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
 
@@ -252,7 +254,31 @@ class BEDParser_ENCODE(BEDParser):
             all_types.add(tp) # keep track of the types for this data file
             name = d.pop('name')
             contig = d.pop('chrom')
-            start, end = int(d.pop('start')), int(d.pop('end'))
+            # we convert the 0-based to 1-based
+            start, end = int(d.pop('start'))+1, int(d.pop('end'))+1
+            # liftover using pyliftover
+            if liftover is True:
+                strand = d.pop('strand', '.')
+                lo_result = lo.convert_coordinate(contig, start, strand)
+                if len(lo_result) > 0:
+                    # here we replace contig and position, but leave the others unchanged
+                    new_start_contig, start, target_strand, conversion_chain_score = lo_result[0]
+                else:
+                    if self.verbose:
+                        print(f"Warning! liftover failed for {interval}, skipping")
+                    continue
+                lo_result = lo.convert_coordinate(contig, end, strand)
+                if len(lo_result) > 0:
+                    new_end_contig, end, target_strand, conversion_chain_score = lo_result[0]
+                else:
+                    if self.verbose:
+                        print(f"Warning! liftover failed for {interval}, skipping")
+                    continue
+                # check the new results are on the same contig
+                if new_start_contig != new_end_contig:
+                    print(f"Contig become different after liftover for {interval}, skipping")
+                    continue
+                contig = new_start_contig
             gnode = {
                 'source': DATA_SOURCE_ENCODE,
                 'type': tp,
