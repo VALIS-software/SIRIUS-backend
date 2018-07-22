@@ -443,9 +443,12 @@ def build_mongo_index():
         GenomeNodes.create_index(idx)
     print("Creating compound index for 'type' and 'info.biosample'")
     GenomeNodes.create_index([('type', 1), ('info.biosample', 1)])
-    # this compound index is created for the variants query
-    print("Creating compound index for 'type' and 'start'")
-    GenomeNodes.create_index([('type', 1), ('start', 1)])
+    # this compound index is created for the all variants track
+    print("Creating compound index for 'type', 'contig', and 'start'")
+    GenomeNodes.create_index([('type', 1), ('contig', 1), ('start', 1)])
+    # this compound index is created for the ExAC variants selector
+    # print("Creating compound index for 'contig', 'start', and 'info.variant_tags'")
+    GenomeNodes.create_index([('contig',1), ('start',1), ('info.variant_tags', 1)])
     print("InfoNodes")
     for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags']:
         print("Creating index %s" % idx)
