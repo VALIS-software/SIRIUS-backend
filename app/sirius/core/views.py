@@ -12,7 +12,7 @@ from functools import lru_cache
 from sirius.main import app
 from sirius.core.utilities import get_data_with_id, HashableDict
 from sirius.query.QueryTree import QueryTree
-from sirius.helpers.loaddata import loaded_contig_info, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
+from sirius.helpers.loaddata import loaded_contig_info, loaded_contig_info_dict, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, TRACK_TYPE_BOOLEAN, \
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
@@ -468,7 +468,7 @@ def query_full():
     results_cache = get_query_full_results(HashableDict(query))
     results = results_cache[result_start:result_end]
     t1 = time.time()
-    print(f"full query {query} {len(results)} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
+    print(f"{len(results)} results from full query {query} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
@@ -508,7 +508,7 @@ def query_basic():
     results_cache = get_query_basic_results(HashableDict(query))
     results = results_cache[result_start:result_end]
     t1 = time.time()
-    print(f"basic query {query} {len(results)} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
+    print(f"{len(results)} results from basic query {query} cache_info: {get_query_full_results.cache_info()} {t1-t0:.1f} s")
     result_end = result_start + len(results)
     reached_end = False
     if results_cache.load_finished and result_end >= len(results_cache.loaded_data):
@@ -616,8 +616,107 @@ def get_reference_hierarchy_data(contig):
                 all_genes[gene_idx]['transcripts'][transcript_idx]['components'].append(exon)
     return all_genes
 
-@app.route('/sleep')
-def sleep():
-    time.sleep(2)
-    return f'waking up at {time.ctime()}'
+@app.route('/variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
+def get_variant_track_data(contig, start_bp, end_bp):
+    t0 = time.time()
+    query = request.get_json()
+    if not query:
+        return abort(404, 'no query specified')
+    if contig not in loaded_contig_info_dict:
+        return abort(404, 'contig not found')
+    if 'type' in query['filters']:
+        if query['filters']['type'] != 'SNP':
+            return abort(404, 'variant_track_data only support query with filter {type: "SNP"}')
+    else:
+        query['filters']['type'] = 'SNP'
+    empty_return = json.dumps({
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': []
+    })
+    total_length = loaded_contig_info_dict[contig]['length']
+    # check start_bp and end_bp
+    if start_bp > total_length or end_bp < 1 or start_bp > end_bp:
+        return empty_return
+    start_bp = max(start_bp, 1)
+    end_bp = min(end_bp, total_length)
+    query = merge_query_range(contig, start_bp, end_bp, query)
+    if query is None:
+        return empty_return
+    t1 = time.time()
+    result_data = get_variant_query_results(HashableDict(query))
+    result = {
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': result_data
+    }
+    t2 = time.time()
+    print(f'{len(result_data)} variant_data, {query}, {get_variant_query_results.cache_info()}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
+    return json.dumps(result)
 
+def merge_query_range(contig, start_bp, end_bp, query):
+    """
+    Merge the contig, start and end range specs into query
+    Taking into account 'contig' 'start' in filters
+    """
+    filters = query['filters']
+    # check the 'contig' filter
+    if 'contig' in filters:
+        if filters['contig'] != contig:
+            return None
+    else:
+        filters['contig'] = contig
+    # merge the 'start' filter
+    if 'start' in filters:
+        fst = filters['start']
+        if isinstance(fst, int):
+            if fst > end_bp:
+                return None
+        elif isinstance(fst, dict):
+            # intersect the start range
+            s_start = fst.pop('>=', None)
+            s_start = fst.pop('$gte', s_start)
+            s_start_1 = fst.pop('>', None)
+            s_start_1 = fst.pop('$gt', s_start_1)
+            if s_start is not None:
+                fst['>='] = max(start_bp, s_start)
+            elif s_start_1 is not None:
+                fst['>='] = max(start_bp, s_start_1 + 1)
+            else:
+                fst['>='] = start_bp
+            # intersect the end range
+            s_end = fst.pop('<=', None)
+            s_end = fst.pop('$lte', s_end)
+            s_end_1 = fst.pop('<', None)
+            s_end_1 = fst.pop('$lt', s_end_1)
+            if s_end is not None:
+                fst['<='] = min(end_bp, s_end)
+            elif s_end_1 is not None:
+                fst['<='] = min(end_bp, s_end_1 - 1)
+            else:
+                fst['<='] = end_bp
+            filters['start'] = fst
+    else:
+        filters['start'] = {'>=': start_bp, '<=': end_bp}
+    if 'end' in filters:
+        print("Warning, merge_query_range don't support filters['end'], please use filters['start']")
+        return None
+    # check if the range still make sense
+    try:
+        if filters['start']['>='] > filters['start']['<=']:
+            return None
+    except KeyError:
+        pass
+    query['filters'] = filters
+    return query
+
+@lru_cache(maxsize=10000)
+def get_variant_query_results(query):
+    qt = QueryTree(query)
+    result = []
+    for d in qt.find(projection=['_id', 'start', 'info.variant_ref', 'info.allele_frequencies']):
+        d['id'] = d.pop('_id')
+        result.append(d)
+    return result
