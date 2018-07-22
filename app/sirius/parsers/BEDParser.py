@@ -1,7 +1,10 @@
 from sirius.parsers.Parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
 import pyliftover
-lo = pyliftover.LiftOver('hg19', 'hg38')
+import os
+
+this_file_folder = os.path.dirname(os.path.realpath(__file__))
+lo = pyliftover.LiftOver(os.path.join(this_file_folder, 'hg19ToHg38.over.chain.gz'))
 
 class BEDParser(Parser):
     """
