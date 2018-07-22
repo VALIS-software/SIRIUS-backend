@@ -448,25 +448,19 @@ def reference_annotation_track(contig, start_bp, end_bp):
 
 
 
+# this is a special endpoint for the "all variants" track
+# it might needs to be optimized later with the help of TileDB
 #*****************************
-#*   /variant_track_data     *
+#*   /all variant_track_data     *
 #*****************************
-from sirius.core.variant_track import merge_query_range, get_variant_query_results
+from sirius.core.all_variant_track import get_all_variants_in_range
 
-@app.route('/variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
+@app.route('/all_variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['GET'])
 @requires_auth
-def get_variant_track_data(contig, start_bp, end_bp):
+def get_all_variant_track_data(contig, start_bp, end_bp):
     t0 = time.time()
-    query = request.get_json()
-    if not query:
-        return abort(404, 'no query specified')
     if contig not in loaded_contig_info_dict:
         return abort(404, 'contig not found')
-    if 'type' in query['filters']:
-        if query['filters']['type'] != 'SNP':
-            return abort(404, 'variant_track_data only support query with filter {type: "SNP"}')
-    else:
-        query['filters']['type'] = 'SNP'
     empty_return = json.dumps({
         'contig': contig,
         'start_bp': start_bp,
@@ -479,19 +473,15 @@ def get_variant_track_data(contig, start_bp, end_bp):
         return empty_return
     start_bp = max(start_bp, 1)
     end_bp = min(end_bp, total_length)
-    query = merge_query_range(contig, start_bp, end_bp, query)
-    if query is None:
-        return empty_return
-    t1 = time.time()
-    result_data = get_variant_query_results(HashableDict(query))
+    result_data = get_all_variants_in_range(contig, start_bp, end_bp)
     result = {
         'contig': contig,
         'start_bp': start_bp,
         'end_bp': end_bp,
         'data': result_data
     }
-    t2 = time.time()
-    print(f'{len(result_data)} variant_data, {query}, {get_variant_query_results.cache_info()}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
+    t1 = time.time()
+    print(f'{len(result_data)} all_variant_data, {get_all_variants_in_range.cache_info()}; {t1-t0:.2f} s')
     return json.dumps(result)
 
 
@@ -534,3 +524,41 @@ def get_interval_track_data(contig, start_bp, end_bp):
     print(f'{len(result_data)} interval_data, {query}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
     return json.dumps(result)
 
+#******************************
+#*   /variant_track_data     *
+#******************************
+from sirius.core.variant_track import get_variants_in_range
+
+@app.route('/variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
+@requires_auth
+def get_variant_track_data(contig, start_bp, end_bp):
+    t0 = time.time()
+    query = request.get_json()
+    if not query:
+        return abort(404, 'no query specified')
+    if contig not in loaded_contig_info_dict:
+        return abort(404, 'contig not found')
+    empty_return = json.dumps({
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': []
+    })
+    total_length = loaded_contig_info_dict[contig]['length']
+    # check start_bp and end_bp
+    if start_bp > total_length or end_bp < 1 or start_bp > end_bp:
+        print("interval out of range!")
+        return empty_return
+    start_bp = max(start_bp, 1)
+    end_bp = min(end_bp, total_length)
+    t1 = time.time()
+    result_data = get_variants_in_range(contig, start_bp, end_bp, query)
+    result = {
+        'contig': contig,
+        'start_bp': start_bp,
+        'end_bp': end_bp,
+        'data': result_data
+    }
+    t2 = time.time()
+    print(f'{len(result_data)} variants_data, {query}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
+    return json.dumps(result)
