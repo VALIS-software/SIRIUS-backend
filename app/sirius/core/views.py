@@ -510,11 +510,6 @@ def get_interval_track_data(contig, start_bp, end_bp):
         return abort(404, 'no query specified')
     if contig not in loaded_contig_info_dict:
         return abort(404, 'contig not found')
-    if 'type' in query['filters']:
-        if query['filters']['type'] != 'SNP':
-            return abort(404, 'variant_track_data only support query with filter {type: "SNP"}')
-    else:
-        query['filters']['type'] = 'SNP'
     empty_return = json.dumps({
         'contig': contig,
         'start_bp': start_bp,
@@ -524,6 +519,7 @@ def get_interval_track_data(contig, start_bp, end_bp):
     total_length = loaded_contig_info_dict[contig]['length']
     # check start_bp and end_bp
     if start_bp > total_length or end_bp < 1 or start_bp > end_bp:
+        print("interval out of range!")
         return empty_return
     start_bp = max(start_bp, 1)
     end_bp = min(end_bp, total_length)
@@ -536,5 +532,6 @@ def get_interval_track_data(contig, start_bp, end_bp):
         'data': result_data
     }
     t2 = time.time()
-    print(f'{len(result_data)} interval_data, {query}, {get_interval_query_results.cache_info()}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
+    print(f'{len(result_data)} interval_data, {query}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
     return json.dumps(result)
+

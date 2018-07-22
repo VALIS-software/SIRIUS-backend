@@ -1,3 +1,5 @@
+import numpy as np
+import time
 from functools import lru_cache
 from sirius.core.utilities import HashableDict
 from sirius.query.QueryTree import QueryTree
@@ -26,8 +28,7 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
     result = []
     for d in genome_data_in_range:
         result.append({
-            'id': d['id'],
-            'contig': d['contig'],
+            'id': d['_id'],
             'start': d['start'],
             'length': d['length'],
             'type': d['type'],
@@ -36,19 +37,19 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
     return result
 
 
-@lru_cache
+@lru_cache(maxsize=10000)
 def get_interval_query_results(query):
     qt = QueryTree(query)
     # we split the results into contigs
     genome_data = {contig: [] for contig in loaded_genome_contigs}
     # put the results in to cache
     for gnode in qt.find(projection=['_id', 'contig', 'start', 'length', 'type', 'name']):
-        genome_data = (gnode['start'], gnode)
-        genome_data[gnode['contig']].append(genome_data)
+        contig = gnode.pop('contig')
+        genome_data[contig].append(gnode)
     # sort the results based on the start
     start_bps = dict()
-    for contig, genome_data_list in contig_genome_data.items():
-        genome_data_list.sort(key=lambda x: x[0])
+    for contig, genome_data_list in genome_data.items():
+        genome_data_list.sort(key=lambda d: d['start'])
         # save the 1-D array of starting loation
-        start_bps[contig] = np.array([d[0] for d in genome_data_list])
+        start_bps[contig] = np.array([d['start'] for d in genome_data_list])
     return genome_data, start_bps
