@@ -2,6 +2,7 @@ import os, shutil, tempfile
 import sirius.query.QueryTree
 import sirius.query.GenomeQueryNode
 from sirius.mongo import GenomeNodes
+from sirius.mongo.utils import doc_generator
 from pybedtools import BedTool, Interval
 
 # This will let both pybedtools and our Bed class to use this temp folder
@@ -76,10 +77,10 @@ class Bed(object):
 
     def load_from_ids(self, ids):
         projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
-        mongo_filter = { '_id' : {'$in': list(ids)} }
-        cursor = GenomeNodes.find(mongo_filter, projection=projection)
-        iv_iter = (get_inverval(d) for d in cursor)
+        gen = doc_generator(GenomeNodes, ids, projection=projection)
+        iv_iter = (get_inverval(d) for d in gen)
         tmpfn = write_tmp_bed(iv_iter)
+        print(f'data written to bed file {tmpfn}')
         self.bedtool = BedTool(tmpfn)
         self.istmp = True
 
