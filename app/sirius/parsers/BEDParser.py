@@ -258,30 +258,19 @@ class BEDParser_ENCODE(BEDParser):
             name = d.pop('name')
             contig = d.pop('chrom')
             start, end = int(d.pop('start')), int(d.pop('end'))
+            length = end - start
             # liftover using pyliftover
             if liftover is True:
                 strand = d.get('strand', '.')
                 lo_result = lo.convert_coordinate(contig, start, strand)
                 if len(lo_result) > 0:
                     # here we replace contig and position, but leave the others unchanged
-                    new_start_contig, start, target_strand, conversion_chain_score = lo_result[0]
+                    contig, start, target_strand, conversion_chain_score = lo_result[0]
                 else:
                     if self.verbose:
                         print(f"Warning! liftover failed for {interval}, skipping")
                     continue
-                lo_result = lo.convert_coordinate(contig, end, strand)
-                if len(lo_result) > 0:
-                    new_end_contig, end, target_strand, conversion_chain_score = lo_result[0]
-                else:
-                    if self.verbose:
-                        print(f"Warning! liftover failed for {interval}, skipping")
-                    continue
-                # check the new results are on the same contig
-                if new_start_contig != new_end_contig:
-                    if self.verbose:
-                        print(f"Contig become different after liftover for {interval}, skipping")
-                    continue
-                contig = new_start_contig
+                end = start + length - 1
             # we change 0-based pos to 1-based
             gnode = {
                 'source': DATA_SOURCE_ENCODE,
@@ -289,8 +278,8 @@ class BEDParser_ENCODE(BEDParser):
                 'name': name,
                 'contig': contig,
                 'start': start+1,
-                'end':end+1,
-                'length': end-start+1,
+                'end':end,
+                'length': length,
             }
             gnode['info'] = d
             gnode['info'].update({
