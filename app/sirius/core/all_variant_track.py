@@ -12,7 +12,7 @@ def get_all_variants_in_range(contig, start_bp, end_bp):
         }
     }
     result = []
-    for d in GenomeNodes.find(qfilt, projection=['_id', 'start', 'info.variant_ref', 'info.allele_frequencies']):
+    for d in GenomeNodes.find(qfilt, projection=['_id', 'start', 'info.variant_ref', 'info.variant_alt']):
         d['id'] = d.pop('_id')
         result.append(d)
     return result

@@ -42,7 +42,7 @@ def get_variant_query_results(query):
     # we split the results into contigs
     genome_data = {contig: [] for contig in loaded_genome_contigs}
     # put the results in to cache
-    for gnode in qt.find(projection=['_id', 'contig', 'start', 'info.variant_ref', 'info.allele_frequencies']):
+    for gnode in qt.find(projection=['_id', 'contig', 'start', 'info.variant_ref', 'info.variant_alt']):
         contig = gnode.pop('contig')
         genome_data[contig].append(gnode)
     # sort the results based on the start
