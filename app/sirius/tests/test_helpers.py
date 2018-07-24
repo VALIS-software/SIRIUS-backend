@@ -18,7 +18,7 @@ class HelpersTest(TimedTestCase):
     def test_contig_info(self):
         """ Test helpers.loaddata.loaded_track_info """
         for info in loaded_contig_info:
-            assert all((key in info) for key in ('name', 'length', 'chromosome'))
+            assert all((key in info) for key in ('name', 'start', 'length'))
 
     def test_data_track_info(self):
         """ Test helpers.loaddata.load_data_track_information """
