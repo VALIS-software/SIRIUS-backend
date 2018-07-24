@@ -502,7 +502,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
-    parser.add_argument('--cont', type=int, help='Choose a dataset to continue parsing and uploading. Will overwrite --starting_step to be 3')
+    parser.add_argument('--cont', type=int, default=1, help='Choose a dataset to continue parsing and uploading. Will overwrite --starting_step to be 3')
     parser.add_argument('--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
     parser.add_argument('--full', action='store_true', help='Build the full database (100x larger).')
     args = parser.parse_args()
