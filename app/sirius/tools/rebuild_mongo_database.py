@@ -502,21 +502,21 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--starting_step', type=int, default=1, help='Choose a step to start.')
-    parser.add_argument('--continue', type=int, help='Choose a dataset to continue parsing and uploading. Will overwrite --starting_step to be 3')
+    parser.add_argument('--cont', type=int, help='Choose a dataset to continue parsing and uploading. Will overwrite --starting_step to be 3')
     parser.add_argument('--del_tmp', action='store_true', help='Delete gene_data_tmp folder after finish.')
     parser.add_argument('--full', action='store_true', help='Build the full database (100x larger).')
     args = parser.parse_args()
     t0 = time.time()
     global FULL_DATABASE
     FULL_DATABASE = args.full
-    if args.continue != None:
+    if args.cont != None:
         args.starting_step = 3
     if args.starting_step <= 1:
         download_genome_data()
     if args.starting_step <= 2:
         drop_all_data()
     if args.starting_step <= 3:
-        parse_upload_all_datasets(args.continue)
+        parse_upload_all_datasets(args.cont)
     if args.starting_step <= 4:
         build_mongo_index()
     if args.starting_step <= 5:
