@@ -39,22 +39,6 @@ def load_mongo_data_information():
 loaded_track_types_info = load_mongo_data_information()
 
 
-#------------------------------
-# Load contig information
-#------------------------------
-def load_contig_information():
-    loaded_contig_info_dict = dict()
-    for data in InfoNodes.find({'type': 'contig'}):
-        loaded_contig_info_dict[data['name']] = {
-            'name': data['name'],
-            'length': data['info']['length'],
-            'chromosome': data['info'].get('chromosome', 'Unknown')
-        }
-    return loaded_contig_info_dict
-
-loaded_contig_info_dict = load_contig_information()
-loaded_contig_info = list(loaded_contig_info_dict.values())
-
 #-------------------------------
 # Load data track information
 #-------------------------------
@@ -74,6 +58,25 @@ def load_data_track_information():
 
 loaded_data_track_info_dict = load_data_track_information()
 loaded_data_tracks = list(loaded_data_track_info_dict.values())
+
+
+#------------------------------
+# Load contig information
+#------------------------------
+def load_contig_information():
+    loaded_contig_info_dict = dict()
+    # here we load the contig info from the data track info
+    for name, data in loaded_data_track_info_dict['sequence']['contig_info'].items():
+        loaded_contig_info_dict[name] = {
+            'name': data['contig'],
+            'start': data.get('start', 1),
+            'length': data['length'],
+        }
+    return loaded_contig_info_dict
+
+loaded_contig_info_dict = load_contig_information()
+loaded_contig_info = list(loaded_contig_info_dict.values())
+
 
 # Store all possible genome contigs
 # this should be normalized with the InfoNodes in the future

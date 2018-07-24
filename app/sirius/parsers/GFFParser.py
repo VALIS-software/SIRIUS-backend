@@ -453,9 +453,9 @@ class GFFParser_ENSEMBL(GFFParser):
             length = end - start + 1
             attributes = d.pop('attributes')
             if ft == 'chromosome':
-                if start != 1:
-                    # skip contigs that does not start with idx 1
-                    continue
+                # for contig info we assume all start at 1 for now
+                # chrY has a start value of 2781480 which is ignored
+                length = end
                 contig_info_node = {
                     '_id': 'Icontig' + contig,
                     'type': 'contig',
