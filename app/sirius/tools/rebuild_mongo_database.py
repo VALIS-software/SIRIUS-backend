@@ -458,9 +458,16 @@ def build_mongo_index():
     print("Creating text index 'name'")
     InfoNodes.create_index([('name', 'text')], default_language='english')
     print("Edges")
-    for idx in ['source', 'from_id', 'to_id', 'type', 'info.p-value', 'info.biosample']:
+    for idx in ['from_id', 'to_id', 'type', 'info.p-value']:
         print("Creating index %s" % idx)
         Edges.create_index(idx)
+    # this compound index is going to improve the GTEx query performance
+    # Example filter:
+    # {'source': 'GTEx',
+    #  'info.biosample': 'adipose visceral omentum',
+    #  'info.p-value': {'$lt': 0.01}}
+    print("Creating compound index for 'source', and 'info.biosample'")
+    Edges.create_index([('source',1), ('info.biosample',1)])
 
 def patch_additional_info():
     # print("\n\n#5. Patching additional information")
