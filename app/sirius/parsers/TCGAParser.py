@@ -421,23 +421,36 @@ class TCGA_MAFParser(Parser):
         """
         # start from the beginning for reading
         self.filehandle.seek(0)
+        self.labels = None
+        assert self.parse_chunk(size=float('inf')) == True, '.parse_chunk() did not finish parsing the entire file.'
+
+    def parse_chunk(self, size=100000):
         self.mutations = []
-        # read the first line as labels
-        labels = None
-        # read the rest of the lines as data
+        # check if we have read the labels
+        if not hasattr(self, 'labels'):
+            self.labels = None
         for line in self.filehandle:
             line = line.strip()
             if line[0] == '#':
                 key, value = line[1:].split(maxsplit=1)
                 self.metadata[key] = value
             elif line:
-                if labels == None:
-                    labels = line.split('\t')
+                if self.labels == None:
+                    # read the first line as labels
+                    self.labels = line.split('\t')
                 else:
+                    # read the rest of the lines as data
                     ls = line.split('\t')
-                    self.mutations.append(dict(zip(labels, ls)))
-                    if self.verbose and len(self.mutations) % 100000 == 0:
-                        print("%d data parsed" % len(self.mutations), end='\r')
+                    self.mutations.append(dict(zip(self.labels, ls)))
+                    if len(self.mutations) >= size:
+                        if self.verbose:
+                            print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                        break
+        else:
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            return True
+        return False
 
     def get_mongo_nodes(self, patient_barcode_tumor_site=None):
         """
