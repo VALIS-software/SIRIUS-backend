@@ -175,7 +175,10 @@ class GenomeQueryNode(object):
         Return a set that contain strings of node['_id']
         """
         # get the results for all edges
+        #t0 = time.time()
         result_ids = self.find_ids_without_arithmetics()
+        #t1 = time.time()
+        #print(f'find_ids_without_arithmetics returns {len(result_ids)} data in {t1-t0:.3f} s')
         if not self.arithmetics:
             return result_ids
         # Use the bedtools to do arithmics
@@ -186,14 +189,27 @@ class GenomeQueryNode(object):
                 for target in ar['targets']:
                     result_ids |= target.findid()
             elif operator == 'window':
+                if len(result_ids) == 0:
+                    continue
+                #t0 = time.time()
                 bed = Bed()
                 bed.load_from_ids(result_ids)
+                #t1 = time.time()
+                #print(f'Convert self to Bed took {t1-t0:.3f} s')
                 window_size = ar['windowSize']
                 for target in ar['targets']:
                     target_bed = Bed(target)
+                    #t2 = time.time()
+                    #print(f"Convert target to Bed took {t2-t1:.3f} s")
                     bed = bed.window(target_bed, window=window_size)
+                    #t3 = time.time()
+                    #print(f"bed.window took {t3-t2:.3f} s")
                 result_ids = bed.gids()
+                #t4 = time.time()
+                #print(f"Load id back for Bed {len(result_ids)} took {t4-t3:.3f} s")
             elif operator == 'intersect':
+                if len(result_ids) == 0:
+                    continue
                 bed = Bed()
                 bed.load_from_ids(result_ids)
                 for target in ar['targets']:

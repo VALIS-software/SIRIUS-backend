@@ -3,7 +3,9 @@
 #**************************
 
 import json
+from threading import Lock
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
+import functools
 
 def get_data_with_id(data_id):
     """
@@ -42,3 +44,22 @@ def get_data_with_id(data_id):
 class HashableDict(dict):
     def __hash__(self):
         return hash(json.dumps(self, sort_keys=True))
+
+
+import threading
+from collections import defaultdict
+from functools import lru_cache, _make_key
+
+def threadsafe_lru(*lru_args, **lru_kwargs):
+    def real_threadsafe_func(func):
+        func = lru_cache(*lru_args, **lru_kwargs)(func)
+        lock_dict = defaultdict(threading.Lock)
+        def _thread_lru(*args, **kwargs):
+            key = _make_key(args, kwargs, typed=False)  
+            with lock_dict[key]:
+                return func(*args, **kwargs)
+        _thread_lru.cache_info = func.cache_info
+        _thread_lru.cache_clear = func.cache_clear
+        return _thread_lru
+    return real_threadsafe_func
+

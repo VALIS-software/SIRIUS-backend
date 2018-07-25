@@ -24,8 +24,8 @@ spec:
           name: "local-ssd"
         resources:
           requests:
-            cpu: "3"
-            memory: "20Gi"
+            cpu: "7"
+            memory: "25Gi"
       volumes:
       - name: "local-ssd"
         hostPath:

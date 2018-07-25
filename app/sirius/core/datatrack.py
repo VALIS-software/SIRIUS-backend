@@ -1,9 +1,9 @@
 import os, json, time
 import numpy as np
-from functools import lru_cache
 from flask import abort
 import pyBigWig
 
+from sirius.core.utilities import threadsafe_lru
 from sirius.helpers.loaddata import loaded_data_track_info_dict
 from sirius.helpers.tiledb import tilehelper
 
@@ -141,8 +141,7 @@ def get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregati
         print(f"Load {t1-t0:.2f}s; Parse {t2-t1:.2f}s; Format {t3-t2:.2f}s")
     return response
 
-
-@lru_cache(maxsize=10000)
+@threadsafe_lru(maxsize=8192)
 def get_remote_bigwig(track_id):
     encode_url = f'https://www.encodeproject.org/files/{track_id}/@@download/{track_id}.bigWig'
     bw = pyBigWig.open(encode_url)

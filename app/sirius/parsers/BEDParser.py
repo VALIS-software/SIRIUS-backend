@@ -1,5 +1,10 @@
 from sirius.parsers.Parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
+import pyliftover
+import os
+
+this_file_folder = os.path.dirname(os.path.realpath(__file__))
+lo = pyliftover.LiftOver(os.path.join(this_file_folder, 'hg19ToHg38.over.chain.gz'))
 
 class BEDParser(Parser):
     """
@@ -134,7 +139,7 @@ class BEDParser(Parser):
 
 
 class BEDParser_ENCODE(BEDParser):
-    def get_mongo_nodes(self):
+    def get_mongo_nodes(self, liftover=False):
         """
         Parse self.data into three types for Mongo nodes, which are the internal data structure in our MongoDB.
 
@@ -253,14 +258,28 @@ class BEDParser_ENCODE(BEDParser):
             name = d.pop('name')
             contig = d.pop('chrom')
             start, end = int(d.pop('start')), int(d.pop('end'))
+            length = end - start
+            # liftover using pyliftover
+            if liftover is True:
+                strand = d.get('strand', '.')
+                lo_result = lo.convert_coordinate(contig, start, strand)
+                if len(lo_result) > 0:
+                    # here we replace contig and position, but leave the others unchanged
+                    contig, start, target_strand, conversion_chain_score = lo_result[0]
+                else:
+                    if self.verbose:
+                        print(f"Warning! liftover failed for {interval}, skipping")
+                    continue
+                end = start + length - 1
+            # we change 0-based pos to 1-based
             gnode = {
                 'source': DATA_SOURCE_ENCODE,
                 'type': tp,
                 'name': name,
                 'contig': contig,
-                'start': start,
+                'start': start+1,
                 'end':end,
-                'length': end-start+1,
+                'length': length,
             }
             gnode['info'] = d
             gnode['info'].update({

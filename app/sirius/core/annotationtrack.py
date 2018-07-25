@@ -3,14 +3,14 @@ import numpy as np
 from collections import defaultdict
 from scipy.spatial.distance import pdist
 from scipy.cluster import hierarchy
-from functools import lru_cache
 
+from sirius.core.utilities import threadsafe_lru
 from sirius.query.QueryTree import QueryTree
 from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
 from sirius.helpers.loaddata import loaded_genome_contigs
 
-@lru_cache(maxsize=10000)
+@threadsafe_lru(maxsize=8192)
 def get_annotation_query_results(query):
     qt = QueryTree(query)#, verbose=True)
     # we split the results into contigs

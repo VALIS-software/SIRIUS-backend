@@ -135,10 +135,10 @@ def download_gz(fileurl):
 
 def parse_upload_bed(metadata):
     filename = metadata['filename']
-    parser = BEDParser_ENCODE(filename, verbose=True)
+    parser = BEDParser_ENCODE(filename)
     parser.parse()
     parser.metadata.update(metadata)
-    genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+    genome_nodes, info_nodes, edges = parser.get_mongo_nodes(liftover=True)
     print(f'parsing {filename} results in {len(genome_nodes)} GenomeNodes, {len(info_nodes)} InfoNodes, {len(edges)} Edges')
     print("Uploading to MongoDB")
     update_insert_many(GenomeNodes, genome_nodes, update=False)

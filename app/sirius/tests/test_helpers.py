@@ -2,7 +2,7 @@
 
 import unittest
 from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.helpers.loaddata import load_mongo_data_information, load_contig_information, load_data_track_information
+from sirius.helpers.loaddata import loaded_track_types_info, loaded_contig_info, loaded_data_tracks
 
 
 class HelpersTest(TimedTestCase):
@@ -12,17 +12,17 @@ class HelpersTest(TimedTestCase):
 
     def test_track_types_info(self):
         """ Test helpers.loaddata.load_mongo_data_information() """
-        for info in load_mongo_data_information():
+        for info in loaded_track_types_info:
             assert all((key in info) for key in ('track_type', 'title', 'description'))
 
     def test_contig_info(self):
         """ Test helpers.loaddata.loaded_track_info """
-        for info in load_contig_information():
-            assert all((key in info) for key in ('name', 'length', 'chromosome'))
+        for info in loaded_contig_info:
+            assert all((key in info) for key in ('name', 'start', 'length'))
 
     def test_data_track_info(self):
         """ Test helpers.loaddata.load_data_track_information """
-        for info in load_data_track_information():
+        for info in loaded_data_tracks:
             assert info['type'] in ('sequence', 'signal')
 
     def test_tiledb_helper(self):

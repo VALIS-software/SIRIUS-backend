@@ -566,7 +566,7 @@ class TCGA_MAFParser(Parser):
                 gnode['info']['Transcript_IDs'].append(d['Transcript_ID'])
             else:
                 gid_idx_dict[gid] = len(genome_nodes)
-                name = d['Variant_Type'] + ' of ' + gene_name
+                name = rs_number.upper() if gtype == 'SNP' else d['Variant_Type'] + ' of ' + gene_name
                 pos = int(d['Start_Position'])
                 gnode = {
                     "_id": gid,

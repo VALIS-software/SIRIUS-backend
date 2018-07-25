@@ -1105,6 +1105,8 @@ class VCFParser_ExAC(VCFParser):
             contig = 'chr' + d['CHROM']
             pos = int(d['POS'])
             if rs_number != None and rs_number[:2] == 'rs':
+                # this solve bug for rs184649466&COSM3486335&COSM3486336
+                rs_number = rs_number.split('&',1)[0]
                 gid = "Gsnp_" + rs_number
                 gtype = 'SNP'
                 name = rs_number.upper()
