@@ -244,8 +244,9 @@ def distinct_values(index):
 @threadsafe_lru(maxsize=8192)
 def get_query_distinct_values(query, index):
     qt = QueryTree(query)
-    result = qt.distinct(index)
-    return result
+    result = set(qt.distinct(index))
+    result.discard(None)
+    return list(result)
 
 
 

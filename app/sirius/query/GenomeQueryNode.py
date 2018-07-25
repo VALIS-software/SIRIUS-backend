@@ -159,7 +159,7 @@ class GenomeQueryNode(object):
         Find all distinct values for a key
         """
         if not self.edges and not self.arithmetics:
-            return GenomeNodes.distinct(key, self.filter)
+            result = GenomeNodes.distinct(key, self.filter)
         else:
             result_ids = list(self.findid())
             batch_size = 100000
@@ -168,6 +168,8 @@ class GenomeQueryNode(object):
                 batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                 query = {'_id' : {'$in': batch_ids}}
                 result.update(GenomeNodes.distinct(key, query))
+        return list(result)
+
 
     def findid(self):
         """
