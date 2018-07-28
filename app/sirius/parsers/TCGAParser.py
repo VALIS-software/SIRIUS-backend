@@ -557,7 +557,7 @@ class TCGA_MAFParser(Parser):
             if gid in gid_idx_dict:
                 # aggregate results into existing gnode
                 gnode = genome_nodes[gid_idx_dict[gid]]
-                gnode['info']['genes'].append(gene_name)
+                gnode['info']['variant_affected_genes'].append(gene_name)
                 gnode['info']['variant_tags'] += d['Consequence'].split(';')
                 gnode['info']['variant_affected_feature_types'].append(d['Feature_type'])
                 gnode['info']['variant_affected_bio_types'].append(d['BIOTYPE'])
@@ -578,7 +578,7 @@ class TCGA_MAFParser(Parser):
                     "source": DATA_SOURCE_TCGA,
                     "name": name,
                     "info": {
-                        'genes': [gene_name],
+                        'variant_affected_genes': [gene_name],
                         'strand': d['Strand'],
                         'score': d['Score'],
                         'filter': d['FILTER'],
@@ -601,7 +601,7 @@ class TCGA_MAFParser(Parser):
         # final processing for all the genome_nodes generated
         for gnode in genome_nodes:
             # make sure arrays have unique values
-            for k in ('genes', 'variant_tags', 'variant_affected_feature_types', 'variant_affected_bio_types',
+            for k in ('variant_affected_genes', 'variant_tags', 'variant_affected_feature_types', 'variant_affected_bio_types',
                       'Tumor_Sample_Barcodes', 'Transcript_IDs'):
                 if len(gnode['info'][k]) > 1:
                     gnode['info'][k] = list(set(gnode['info'][k]))
