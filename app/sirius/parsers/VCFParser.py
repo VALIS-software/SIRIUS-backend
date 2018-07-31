@@ -659,8 +659,6 @@ class VCFParser_ClinVar(VCFParser):
                         if ':' in nameidx:
                             name, idx = nameidx.split(':', 1)
                             infonode['info'][name] = idx
-                    # The info.description is where we search for trait
-                    # use space here for text search in MongoDB
                     infonode['info']['description'] = trait_desp
                     info_nodes.append(infonode)
                     known_traits.add(trait_id)

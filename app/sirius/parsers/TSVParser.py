@@ -292,8 +292,8 @@ class TSVParser_GWAS(TSVParser):
             mapped_trait = study.pop("MAPPED_TRAIT")
             # we skip the studies with no mapped traits
             if not mapped_trait: continue
-            trait_names = mapped_trait.split(',')
-            trait_ids = ['Itrait' + self.hash(t.strip().lower()) for t in trait_names]
+            trait_names = [name.strip() for name in mapped_trait.split(', ')]
+            trait_ids = ['Itrait' + self.hash(t.lower()) for t in trait_names]
             trait_URIs = study.pop("MAPPED_TRAIT_URI").split(',')
             for traitid, name, uri in zip(trait_ids, trait_names, trait_URIs):
                 if traitid not in known_traits:
