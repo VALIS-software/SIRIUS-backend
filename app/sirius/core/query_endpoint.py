@@ -63,13 +63,49 @@ def get_query_basic_results(query):
 @threadsafe_lru(maxsize=1024)
 def get_query_gwas_results(query):
     """ Cached function for getting gwas query results 
-    The GWAS query are different from regular query in two ways:
+    The GWAS query are different from regular query in these ways:
     1.  Each of the returning SNPs will have a property info.p-value, which is aggregated as "the lowest p-value among all resulting Edges (associations)". 
         Note that for the same SNP this property could be different based on which trait it is searched to be associated to.
     2.  The returning SNPs will be sorted by the info.p-value from lowest to highest. 
         The SNPs that do not have any p-value from associations, they will have info.p-value = None
+    3.  The limit is ignored for the resulting SNPs.
     """
     if not query: return []
-    
-    
-    return QueryResultsCache(query)
+    # build a QueryTree
+    qt = QueryTree(query)
+    # here we manually execute the to_edges in the query tree
+    genome_query_node = qt.head
+    assert len(genome_query_node.arithmetics) == 0, "No arithmetics supported for GWAS SNP query"
+    query_edges = genome_query_node.edges
+    assert len(query_edges) == 1, "GWAS SNP query should have exactly one edge"
+    assert genome_query_node.edge_rule == 0, "The edge rule of GWAP SNP query should be 0 (and)"
+    query_edge = query_edges[0]
+    # build a edges dictionary with their p-value recorded, keep the lowest one
+    gid_score = dict()
+    for edge in query_edge.find(projection=['from_id', 'info.p-value']):
+        if 'p-value' in edge['info']:
+            gid = edge['from_id']
+            pvalue = edge['info']['p-value']
+            if gid in gid_score:
+                gid_score[gid] = min(gid_score[gid], pvalue)
+            else:
+                gid_score[gid] = pvalue
+    # run the SNP genome query and store the lowest p-values
+    gwas_SNP_projection = None # this may be updated later to reduce data transfer
+    result_with_pvalue = []
+    result_no_pvalue = []
+    for gnode in genome_query_node.find(projection=gwas_SNP_projection):
+        # append the lowest p-value to the SNP node
+        gid = gnode.pop('_id')
+        # replace _id by id
+        gnode['id'] = gid
+        if gid in gid_score:
+            gnode['info']['p-value'] = gid_score[gid]
+            result_with_pvalue.append(gnode)
+        else:
+            result_no_pvalue.append(gnode)
+    # sort the resulting gnodes by their p-value
+    result_with_pvalue.sort(key=lambda d: d['info']['p-value'])
+    # append the SNP gnodes without a p-value at the end
+    result = result_with_pvalue + result_no_pvalue
+    return result
