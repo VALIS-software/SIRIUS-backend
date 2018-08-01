@@ -1,8 +1,10 @@
 import time
 import copy
-from sirius.mongo import GenomeNodes
 from sirius.core.utilities import HashableDict
-from sirius.analysis.Bed import Bed
+from sirius.analysis.bed import Bed 
+from sirius.mongo import GenomeNodes
+from sirius.mongo.utils import doc_generator
+
 
 def find_gid(mongo_filter, limit=100000):
     """ Cached funtion to find the GenomeNodes and return their IDs """
@@ -194,13 +196,12 @@ class GenomeQueryNode(object):
                 if len(result_ids) == 0:
                     continue
                 #t0 = time.time()
-                bed = Bed()
-                bed.load_from_ids(result_ids)
+                bed = load_ids_to_bed(result_ids)
                 #t1 = time.time()
                 #print(f'Convert self to Bed took {t1-t0:.3f} s')
                 window_size = ar['windowSize']
                 for target in ar['targets']:
-                    target_bed = Bed(target)
+                    target_bed = target.convert_results_to_Bed()
                     #t2 = time.time()
                     #print(f"Convert target to Bed took {t2-t1:.3f} s")
                     bed = bed.window(target_bed, window=window_size)
@@ -212,10 +213,22 @@ class GenomeQueryNode(object):
             elif operator == 'intersect':
                 if len(result_ids) == 0:
                     continue
-                bed = Bed()
-                bed.load_from_ids(result_ids)
+                bed = load_ids_to_bed(result_ids)
                 for target in ar['targets']:
                     target_bed = Bed(target)
                     bed = bed.intersect(target_bed)
                 result_ids = bed.gids()
         return result_ids
+
+    def convert_results_to_Bed(self):
+        """ Convert the results of GenomeQuery to a Bed object """
+        projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
+        gen = self.find(projection=projection)
+        return Bed(gen)
+
+
+def load_ids_to_bed(result_ids):
+    """ Read information of a set of ids, and load them in to a Bed object """
+    projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
+    gen = doc_generator(GenomeNodes, result_ids, projection=projection)
+    return Bed(gen)

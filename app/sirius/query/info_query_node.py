@@ -89,7 +89,7 @@ class InfoQueryNode(object):
                         return set()
             # intersect the ids from edges with the ids from filter
             id_filter = mongo_filter.pop('_id', None)
-            intersect_ids = intersect_id_filter_set(id_filter, result_id_set)
+            intersect_ids = intersect_id_filter_set(id_filter, result_ids)
             if not intersect_ids:
                 return set()
             elif len(intersect_ids) == 1:

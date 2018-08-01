@@ -2,7 +2,7 @@
 
 import unittest, json
 from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.query.QueryTree import QueryTree
+from sirius.query.query_tree import QueryTree
 from sirius.core.annotationtrack import get_annotation_query
 
 class CoreTest(TimedTestCase):

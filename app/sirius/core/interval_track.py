@@ -1,7 +1,7 @@
 import numpy as np
 import time
 from sirius.core.utilities import HashableDict, threadsafe_lru
-from sirius.query.QueryTree import QueryTree
+from sirius.query.query_tree import QueryTree
 from sirius.helpers.loaddata import loaded_genome_contigs
 
 def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):

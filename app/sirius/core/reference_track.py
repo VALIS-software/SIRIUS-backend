@@ -4,7 +4,6 @@ from sirius.core.utilities import threadsafe_lru
 @threadsafe_lru(maxsize=1024)
 def get_reference_gene_data(contig):
     """ Find all genes in a contig """
-    result = []
     # First we find all the genes
     gene_types = ['gene', 'pseudogene']
     gene_projection = ['_id', 'contig', 'start', 'length', 'name', 'info.strand']
