@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from sirius.tests.TimedTestCase import TimedTestCase
+from sirius.tests.timed_test_case import TimedTestCase
 from sirius.helpers.loaddata import loaded_track_types_info, loaded_contig_info, loaded_data_tracks
 
 

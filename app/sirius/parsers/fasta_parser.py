@@ -2,7 +2,7 @@ import os, time
 import numpy as np
 from Bio import SeqIO
 
-from sirius.parsers.Parser import Parser
+from sirius.parsers.parser import Parser
 from sirius.helpers.tiledb import tilehelper
 from sirius.helpers.constants import SEQ_CONTIG, DATA_SOURCE_FASTA
 

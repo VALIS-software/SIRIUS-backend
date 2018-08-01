@@ -1,4 +1,5 @@
-import os, subprocess
+import os
+import subprocess
 
 tiledb_root = os.environ.get('TILEDB_ROOT', None)
 if tiledb_root != None:

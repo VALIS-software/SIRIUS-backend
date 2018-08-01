@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 
-import os, shutil, subprocess, json, time
+import os
+import shutil
+import subprocess
+import json
+import time
+
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many, update_skip_insert
-from sirius.parsers.GFFParser import GFFParser_ENSEMBL
-from sirius.parsers.FASTAParser import FASTAParser
-from sirius.parsers.BigWigParser import BigWigParser
-from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
-from sirius.parsers.EQTLParser import EQTLParser_GTEx
-from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
-from sirius.parsers.OBOParser import OBOParser_EFO
-from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+
+from sirius.parsers import GFFParser_ENSEMBL
+from sirius.parsers import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
+from sirius.parsers import EQTLParser_GTEx
+from sirius.parsers import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
+from sirius.parsers import BEDParser_ENCODE
+from sirius.parsers import FASTAParser
+from sirius.parsers import OBOParser_EFO
+from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+
 from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX
 from sirius.helpers.tiledb import tilehelper
 

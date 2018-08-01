@@ -1,7 +1,8 @@
-import os, shutil
+import os
+import shutil
 import unittest
-from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.parsers.BEDParser import BEDParser, BEDParser_ENCODE
+from sirius.tests.timed_test_case import TimedTestCase
+from sirius.parsers import BEDParser, BEDParser_ENCODE
 
 this_file_folder = os.path.dirname(os.path.realpath(__file__))
 

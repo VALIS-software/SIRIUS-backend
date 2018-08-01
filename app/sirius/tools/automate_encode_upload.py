@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import os, subprocess, time
+import os
+import subprocess
+import time
 import json
 import requests
-from sirius.parsers.BEDParser import BEDParser_ENCODE
+from sirius.parsers import BEDParser_ENCODE
 from sirius.mongo.upload import update_insert_many
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 

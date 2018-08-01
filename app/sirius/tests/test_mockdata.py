@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+
 import json
 import unittest
-from sirius.tests.TimedTestCase import TimedTestCase
+from sirius.tests.timed_test_case import TimedTestCase
 from sirius.mockData.mock_util import getMockData, get_mock_track_data
 
 class MockDataTest(TimedTestCase):

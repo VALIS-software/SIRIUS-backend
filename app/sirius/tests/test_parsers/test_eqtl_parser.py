@@ -1,7 +1,8 @@
-import os, shutil
+import os
+import shutil
 import unittest
-from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.parsers.EQTLParser import EQTLParser, EQTLParser_exSNP, EQTLParser_GTEx
+from sirius.tests.timed_test_case import TimedTestCase
+from sirius.parsers import EQTLParser, EQTLParser_exSNP, EQTLParser_GTEx
 
 this_file_folder = os.path.dirname(os.path.realpath(__file__))
 

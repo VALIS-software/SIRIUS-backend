@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import unittest, json
-from sirius.tests.TimedTestCase import TimedTestCase
+import unittest
+import json
+from sirius.tests.timed_test_case import TimedTestCase
 from sirius.query.query_tree import QueryTree
 from sirius.core.annotationtrack import get_annotation_query
 
