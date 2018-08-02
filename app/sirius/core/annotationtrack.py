@@ -5,7 +5,7 @@ from scipy.spatial.distance import pdist
 from scipy.cluster import hierarchy
 
 from sirius.core.utilities import threadsafe_lru
-from sirius.query.QueryTree import QueryTree
+from sirius.query.query_tree import QueryTree
 from sirius.core.utilities import HashableDict
 from sirius.helpers.constants import AGGREGATION_THRESH
 from sirius.helpers.loaddata import loaded_genome_contigs

@@ -1,4 +1,4 @@
-from sirius.parsers.Parser import Parser
+from sirius.parsers.parser import Parser
 from sirius.helpers.constants import DATA_SOURCE_GENOME, DATA_SOURCE_ENSEMBL, SEQ_CONTIG
 
 class GFFParser(Parser):

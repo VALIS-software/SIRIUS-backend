@@ -1,4 +1,7 @@
-import os, json, hashlib, gzip
+import os
+import json
+import hashlib
+import gzip
 
 class Parser(object):
     """

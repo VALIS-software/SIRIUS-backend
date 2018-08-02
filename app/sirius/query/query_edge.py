@@ -21,7 +21,7 @@ class QueryEdge(object):
                 return []
             mongo_filter[target_id_key] = {'$in': target_ids}
         if self.verbose == True:
-            print(query)
+            print(mongo_filter)
         return Edges.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
 
     def distinct(self, key):

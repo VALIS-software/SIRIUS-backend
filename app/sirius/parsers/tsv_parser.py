@@ -1,5 +1,5 @@
 import os, copy
-from sirius.parsers.Parser import Parser
+from sirius.parsers.parser import Parser
 from sirius.helpers.constants import DATA_SOURCE_GWAS, DATA_SOURCE_ENCODEbigwig, DATA_SOURCE_HGNC
 
 class TSVParser(Parser):

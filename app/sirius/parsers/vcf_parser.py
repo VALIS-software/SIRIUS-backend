@@ -1,4 +1,4 @@
-from sirius.parsers.Parser import Parser
+from sirius.parsers.parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ExAC
 import re
 
@@ -467,7 +467,6 @@ class VCFParser_ClinVar(VCFParser):
         to improve the text search in MongoDB, and match the descriptions of GWAS data set. Duplicated traits with the same _id are ignored.
         9. The Edges generated are connections between the variants and traits. Each edge should have an "_id" starts with "E", and "from_id" = the variant's _id,
         and "to_id" = the trait's _id. All edges have the type "association" for now. Details of the GWAS studies are put in to the 'info' block of the edges.
-        The 'info.p-value' is set to 0 to enable the query with filters of maximum p-values.
 
         Examples
         --------
@@ -571,7 +570,6 @@ class VCFParser_ClinVar(VCFParser):
             "name": "ClinVar",
             "info": {
                 "CLNREVSTAT": "criteria_provided,_single_submitter",
-                "p-value": 0
             },
             "_id": "E43914e235ff17c98c065db27806ef05cb891905c8736ef7c51c02c33b021c62a"
         }
@@ -673,7 +671,6 @@ class VCFParser_ClinVar(VCFParser):
                     'name': 'ClinVar Study',
                     'info': {
                         'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
-                        'p-value': 0,
                     }
                 }
                 edge['_id'] = 'E'+self.hash(str(edge))

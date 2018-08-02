@@ -1,7 +1,7 @@
 import os
 import unittest
-from sirius.tests.TimedTestCase import TimedTestCase
-from sirius.parsers.GFFParser import GFFParser, GFFParser_RefSeq, GFFParser_ENSEMBL
+from sirius.tests.timed_test_case import TimedTestCase
+from sirius.parsers import GFFParser, GFFParser_RefSeq, GFFParser_ENSEMBL
 
 this_file_folder = os.path.dirname(os.path.realpath(__file__))
 

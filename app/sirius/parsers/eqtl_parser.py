@@ -1,4 +1,4 @@
-from sirius.parsers.Parser import Parser
+from sirius.parsers.parser import Parser
 from sirius.helpers.constants import DATA_SOURCE_GTEX, DATA_SOURCE_EXSNP
 
 class EQTLParser(Parser):

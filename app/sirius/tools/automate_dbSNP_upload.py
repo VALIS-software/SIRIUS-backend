@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, subprocess
-from sirius.parsers.VCFParser import VCFParser_dbSNP
+from sirius.parsers import VCFParser_dbSNP
 from sirius.mongo.upload import update_insert_many
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 

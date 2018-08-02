@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from sirius.parsers.GFFParser import GFFParser_ENSEMBL
-from sirius.parsers.TSVParser import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
-from sirius.parsers.EQTLParser import EQTLParser_GTEx
-from sirius.parsers.VCFParser import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
-from sirius.parsers.BEDParser import BEDParser_ENCODE
-from sirius.parsers.FASTAParser import FASTAParser
-from sirius.parsers.OBOParser import OBOParser_EFO
-from sirius.parsers.TCGAParser import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+from sirius.parsers import GFFParser_ENSEMBL
+from sirius.parsers import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
+from sirius.parsers import EQTLParser_GTEx
+from sirius.parsers import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
+from sirius.parsers import BEDParser_ENCODE
+from sirius.parsers import FASTAParser
+from sirius.parsers import OBOParser_EFO
+from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
 from sirius.mongo.upload import update_insert_many, update_skip_insert
 
 def main():

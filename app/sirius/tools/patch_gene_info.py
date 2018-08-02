@@ -2,7 +2,7 @@
 
 import os, subprocess
 from sirius.mongo import GenomeNodes
-from sirius.parsers.GFFParser import GFFParser_RefSeq
+from sirius.parsers import GFFParser_RefSeq
 from sirius.helpers.constants import ENSEMBL_GENE_SUBTYPES
 
 RefSeq_GFF_URL = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.38_GRCh38.p12/GCF_000001405.38_GRCh38.p12_genomic.gff.gz'

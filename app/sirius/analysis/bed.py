@@ -1,8 +1,7 @@
-import os, shutil, tempfile
-import sirius.query.QueryTree
-import sirius.query.GenomeQueryNode
-from sirius.mongo import GenomeNodes
-from sirius.mongo.utils import doc_generator
+import os
+import shutil
+import tempfile
+import collections
 from pybedtools import BedTool, Interval
 
 # This will let both pybedtools and our Bed class to use this temp folder
@@ -31,15 +30,7 @@ class Bed(object):
             self.bedtool = fn
         elif isinstance(fn, str):
             self.bedtool = BedTool(fn)
-        elif isinstance(fn, dict) or isinstance(fn, sirius.query.QueryTree.QueryTree) or isinstance(fn, sirius.query.GenomeQueryNode.GenomeQueryNode):
-            # if we have a query
-            qt = sirius.query.QueryTree.QueryTree(fn) if isinstance(fn, dict) else fn
-            cursor = qt.find(projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand'])
-            iv_iter = (get_inverval(d) for d in cursor)
-            tmpfn = write_tmp_bed(iv_iter)
-            self.bedtool = BedTool(tmpfn)
-            self.istmp = True
-        elif isinstance(fn, list) or isinstance(fn, tuple):
+        elif isinstance(fn, collections.Iterable):
             tmpfn = write_tmp_bed(fn)
             self.bedtool = BedTool(tmpfn)
             self.istmp = True
@@ -75,22 +66,13 @@ class Bed(object):
         self._delete_tmp()
         del self.bedtool
 
-    def load_from_ids(self, ids):
-        projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
-        gen = doc_generator(GenomeNodes, ids, projection=projection)
-        iv_iter = (get_inverval(d) for d in gen)
-        tmpfn = write_tmp_bed(iv_iter)
-        print(f'data written to bed file {tmpfn}')
-        self.bedtool = BedTool(tmpfn)
-        self.istmp = True
-
     def head(self):
         self.bedtool.head()
 
     def copy(self):
         newfn = tempfile.mkstemp(suffix='.bed', prefix='sirius_')[1]
         shutil.copyfile(self.fn, newfn)
-        newBed = Bed(fn)
+        newBed = Bed(newfn)
         newBed.istmp = True
         return newBed
 
