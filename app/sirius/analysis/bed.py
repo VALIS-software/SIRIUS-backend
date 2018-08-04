@@ -11,11 +11,14 @@ def write_tmp_bed(iterable):
     """ Write an iterable to a temporary bed file, return the filename """
     filename = tempfile.mkstemp(suffix='.bed', prefix='sirius_')[1]
     with open(filename, 'w') as outfile:
-        for iv in iterable:
-            outfile.write('\t'.join(map(str, iv)) + '\n')
+        for d in iterable:
+            if isinstance(d, dict):
+                outfile.write('\t'.join(map(str, get_interval(d))) + '\n')
+            else:
+                outfile.write('\t'.join(map(str, d)) + '\n')
     return filename
 
-def get_inverval(d):
+def get_interval(d):
     """ Convert a gnode dictionary to an interval tuple """
     score = d['info'].get('score', '.')
     strand = d['info'].get('strand', '.')
@@ -35,6 +38,7 @@ class Bed(object):
             self.bedtool = BedTool(tmpfn)
             self.istmp = True
         else:
+            self.bedtool = None
             raise NotImplementedError(f'Initializing with type {type(fn)} is not implemented')
 
     @property

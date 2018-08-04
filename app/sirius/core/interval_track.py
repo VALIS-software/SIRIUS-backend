@@ -37,6 +37,7 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
 
 @threadsafe_lru(maxsize=8192)
 def get_interval_query_results(query):
+    print(f'-----thread running {query}')
     qt = QueryTree(query)
     # we split the results into contigs
     genome_data = {contig: [] for contig in loaded_genome_contigs}
