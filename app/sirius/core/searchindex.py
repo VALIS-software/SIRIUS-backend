@@ -34,7 +34,9 @@ def get_all(self, value):
                    for idx, match_score in matches.items()]
         results.sort(reverse=True, key=operator.itemgetter(0))
         return [(score, self.exact_set[lval]) for score, lval in results]
-    raise KeyError(value)
+    else:
+        print(f'{value} not found in fuzzyset')
+        return []
 
 fuzzyset.FuzzySet.get_all = get_all
 
