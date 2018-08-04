@@ -592,7 +592,7 @@ class VCFParser_ClinVar(VCFParser):
             # create GenomeNode for Variants
             contig = 'chr' + d['CHROM']
             if 'RS' in d['INFO']:
-                rs = str(d["INFO"]["RS"])
+                rs = str(d["INFO"]["RS"]).split('|',1)[0]
                 variant_id = "Gsnp_rs" + rs
                 variant_type = "SNP"
                 name = 'RS' + rs
