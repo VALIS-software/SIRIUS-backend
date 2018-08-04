@@ -24,8 +24,34 @@ def get_interval(d):
     strand = d['info'].get('strand', '.')
     return (d['contig'], d['start'], d['end'], d['_id'], score, strand)
 
-class Bed(object):
+class Bed:
+    """ The Bed class is a wrapper to the pybedtools.BedTool class.
+    It handles the temporary file internally, and provides interface to several BedTool methods.
+
+    Attributes
+    ----------
+    fn: string
+        The temporary filename sitting on disk that holds contents of this Bed() object.
+
+    istmp: bool
+        Flag for whether this Bed() object is temporary. If temporary, self.fn file will be deleted upon destruction.
+
+    __len__: int
+        Number of intervals contained in this Bed() object.
+
+    """
     def __init__(self, fn=None):
+        """ Initializer of Bed class.
+
+        Parameters
+        ----------
+        fn: None, BedTool, string, tuple, list, generator
+        None: Empty Bed() object
+        BedTool: wraps input existing BedTool object.
+        string: filename, wraps the input file with name {fn}.
+        list/tuple/generator: loops over the input fn, writing as an temporary file, wraps it.
+                            Init with this type will automatically set self.istmp=True
+        """
         self.istmp = False # flag, set to true to delete the bed file during destruction
         if fn == None:
             self.bedtool = BedTool()
@@ -71,9 +97,11 @@ class Bed(object):
         del self.bedtool
 
     def head(self):
+        """ Wrapper for BelTool.head() method, which prints the first few intervals. """
         self.bedtool.head()
 
     def copy(self):
+        """ Create a temporary copy of the Bed() object. """
         newfn = tempfile.mkstemp(suffix='.bed', prefix='sirius_')[1]
         shutil.copyfile(self.fn, newfn)
         newBed = Bed(newfn)
@@ -81,10 +109,11 @@ class Bed(object):
         return newBed
 
     def extend(self, d):
+        """ Modify the intervals by extending each to left and right by {d} """
         self.extend_asym(d, d)
 
     def extend_asym(self, dl, dr):
-        """ Extend the range of each feature, by dl to left and dr to right """
+        """ Extend the range of each interval, by dl to left and dr to right """
         # create a new file with extended range
         def gen_iv_ext():
             # we use a generator to
@@ -104,12 +133,41 @@ class Bed(object):
         return set(iv[3] for iv in self.bedtool)
 
     def intersect(self, b, *args, **kwargs):
+        """ intersect method wrapps BedTool.intersect()
+
+        Parameters
+        ----------
+        b: Bed
+            Target Bed() object to be intersected with
+
+        *args, **kwargs: passed to BedTools.intersect() method.
+
+        Returns
+        -------
+        c: Bed
+            Temporary Bed() object that contains all intervals in {self} which intersects with {b}.
+        """
         c = Bed()
         c.bedtool = self.bedtool.intersect(b.bedtool, *args, **kwargs)
         c.istmp = True
         return c
 
     def window(self, b, window=1000):
+        """ window method wrapps BedTool.window()
+
+        Parameters
+        ----------
+        b: Bed
+            Target Bed() object to be windowed with
+
+        window: int, default 1000
+            The window size
+
+        Returns
+        -------
+        c: Bed
+            Temporary Bed() object that contains all intervals in {self} which is within {window} from any interval in {b}.
+        """
         c = Bed()
         c.bedtool = self.bedtool.window(b.bedtool, w=window, u=True)
         c.istmp = True
