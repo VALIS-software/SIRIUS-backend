@@ -215,7 +215,7 @@ class GenomeQueryNode(object):
                     continue
                 bed = load_ids_to_bed(result_ids)
                 for target in ar['targets']:
-                    target_bed = Bed(target)
+                    target_bed = target.convert_results_to_Bed()
                     bed = bed.intersect(target_bed)
                 result_ids = bed.gids()
         return result_ids
