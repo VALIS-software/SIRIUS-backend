@@ -6,6 +6,8 @@ from pybedtools import BedTool, Interval
 
 # This will let both pybedtools and our Bed class to use this temp folder
 tempfile.tempdir = os.environ.get('SIRIUS_TEMP_DIR', None)
+if not os.path.exists(tempfile.tempdir):
+    os.makedirs(tempfile.tempdir)
 
 def write_tmp_bed(iterable):
     """ Write an iterable to a temporary bed file, return the filename """
