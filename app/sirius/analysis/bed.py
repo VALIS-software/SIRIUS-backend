@@ -22,7 +22,7 @@ def get_interval(d):
     """ Convert a gnode dictionary to an interval tuple """
     score = d['info'].get('score', '.')
     strand = d['info'].get('strand', '.')
-    return (d['contig'], d['start'], d['end'], d['_id'], score, strand)
+    return (d['contig'], d['start']-1, d['end'], d['_id'], score, strand)
 
 class Bed:
     """ The Bed class is a wrapper to the pybedtools.BedTool class.
@@ -72,6 +72,8 @@ class Bed:
         return self.bedtool.fn
 
     def __len__(self):
+        if not self.fn:
+            return 0
         with open(self.fn) as fn:
             length = sum(1 for line in fn)
         return length
@@ -84,6 +86,14 @@ class Bed:
 
     def __iter__(self):
         return self.bedtool.__iter__()
+
+    def __eq__(self, target):
+        if len(self) != len(target):
+            return False
+        elif len(self) == len(target) == 0:
+            return True
+        else:
+            return self.bedtool == target.bedtool
 
     def _delete_tmp(self):
         if self.istmp == True:
@@ -132,7 +142,7 @@ class Bed:
         """ Return a set of gnode ids from self.bedtool """
         return set(iv[3] for iv in self.bedtool)
 
-    def intersect(self, b, *args, **kwargs):
+    def intersect(self, b):
         """ intersect method wrapps BedTool.intersect()
 
         Parameters
@@ -140,15 +150,13 @@ class Bed:
         b: Bed
             Target Bed() object to be intersected with
 
-        *args, **kwargs: passed to BedTools.intersect() method.
-
         Returns
         -------
         c: Bed
             Temporary Bed() object that contains all intervals in {self} which intersects with {b}.
         """
         c = Bed()
-        c.bedtool = self.bedtool.intersect(b.bedtool, *args, **kwargs)
+        c.bedtool = self.bedtool.intersect(b.bedtool, u=True)
         c.istmp = True
         return c
 
