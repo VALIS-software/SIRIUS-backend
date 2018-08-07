@@ -71,6 +71,8 @@ class SearchIndex:
         for t in tokens:
             for v, s in self.fuzzyset.get_all(t):
                 fuzzy_matched_token_values[s] += v
+        if len(fuzzy_matched_token_values) == 0:
+            return []
         matched_tokens, fuzzy_matching_score = zip(*fuzzy_matched_token_values.items())
         # compute the score of each matched token
         token_feature_scores = self.tfidf.transform(matched_tokens)
