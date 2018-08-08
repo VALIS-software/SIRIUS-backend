@@ -54,7 +54,7 @@ def load_data_track_information():
             'source': data['source'],
             'contig_info': dict([ (contig['contig'], contig) for contig in data['info']['contigs'] ])
         }
-    return data_track_info_dict 
+    return data_track_info_dict
 
 loaded_data_track_info_dict = load_data_track_information()
 loaded_data_tracks = list(loaded_data_track_info_dict.values())
@@ -100,3 +100,7 @@ print(f'Loaded {len(loaded_cell_types)} cell types')
 # store all loaded tumor_tissue_sites
 loaded_patient_tumor_sites = sorted([s for s in InfoNodes.distinct('info.biosample', {'type':'patient'}) if s])
 print(f'Loaded {len(loaded_patient_tumor_sites)} patient tumor sites')
+
+# store all loaded info.targets
+loaded_info_targets = sorted(InfoNodes.distinct('info.targets'))
+print(f'Loaded {len(loaded_info_targets)} info.targets')
