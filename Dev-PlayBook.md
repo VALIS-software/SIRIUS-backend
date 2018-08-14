@@ -42,7 +42,7 @@
 
     `kubectl exec -ti mongo-0 bash`
 
-    Will open a bash terminal inside the `mongo-0` pod. You can then run the Mongo shell their. (MongoDB authentication needed)
+    Will open a bash terminal inside the `mongo-0` pod. You can then run the Mongo shell there. (MongoDB authentication needed)
 
     `kubectl exec -ti sirius-pod-***** bash`
 
@@ -84,19 +84,19 @@
 
     `kubectl port-forward mongo-0 27017`
 
-    b. Then run the docker container
+    Then run the docker container
 
     `docker run -ti -p 5000:5000 us.gcr.io/valis-194104/sirius:YOUR_TAG bash`
 
-    c. Now you have a terminal at `/app/sirius` running inside the docker container, you can run the tests by
+    b. Now you have a terminal at `/app/sirius` running inside the docker container, you can run the tests by
 
     `python -m unittest discover`
 
-    d. If all tests passed, you can also manually launch the flask server
+    c. If all tests passed, you can also manually launch the flask server
 
     `flask run -h 0.0.0.0`
 
-    e. When the server is running, your webpack frontend launched by `npm run dev` will be able to connect to `localhost:5000`
+    d. When the server is running, your webpack frontend launched by `npm run dev` will be able to connect to `localhost:5000`
 
 5. Deploy to Kubernetes cloud server
 
@@ -140,11 +140,11 @@ Note: During the booting up of the new pod, the service will be unavailable, so 
 
 ### Rebuild the MongoDB Database
 
-The rebuilding of the cloud database is make very simple by the python script `rebuild_mongo_database.py`, but this operation will take quite some time to finish and should be very carefully done. There are in general two ways to do this.
+The rebuilding of the cloud database is made very simple by the python script `rebuild_mongo_database.py`, but this operation will take quite some time to finish and should be very carefully done. There are in general two ways to do this.
 
-#### Delete then rebuild the current database
+#### I. Delete then rebuild the current database
 
-**IMPORTANT** During the rebuilding of MongoDB database, the queries will result in empty or wrong results, and they will take very long time before the database index is built.
+**IMPORTANT** During the rebuilding of MongoDB database, the queries will result in empty or wrong results, and they will take very long time until the rebuilding process finished with building the search index. Therefore, this is generally not recommended.
 
 1. To prevent a deployement update from interupting the building process, we create a single pod
 
@@ -168,7 +168,7 @@ The rebuilding of the cloud database is make very simple by the python script `r
 
     `cd /cache`
 
-    If the `gene_data_tmp` folder exists here, the downloaded datafiles inside it may be used to skip the downloading.
+    This folder is located on a local SSD of the node, which provides the best R/W performance. If the `gene_data_tmp` folder exists here, the downloaded data files inside it will be used to skip the downloading.
 
 5. Run the rebuild script
 
@@ -182,9 +182,9 @@ The rebuilding of the cloud database is make very simple by the python script `r
 
     `kubectl delete pod sirius-pod`
 
-#### Hot-swap the database
+#### II. Hot-swap the database
 
-**Note:** The hot-swap is done by building a new database while the old one is up and running, then swap the backend to use the new database. This will prevent the service to be down during this time, but require more disk spaces and the precedure is more complicated.
+**Note:** The hot-swap is done by building a new database while the old one is up and running, then swap the SIRIUS backend to use the new database. This will allow the running server to be almost untouched, but require more disk space.
 
 Step 1-4 is the same as above.
 
@@ -197,26 +197,28 @@ Step 1-4 is the same as above.
     #db = client.database1
     ```
 
-    Switch the `#` sign at start of line to the other one, e.g.
+    This means `database` is in use. Switch the `#` sign at start of line to the other one, e.g.
 
     ```
     #db = client.database
     db = client.database1
     ```
 
-    Save this change. This will tell the rebuild script to use the other database.
+    Note: If `database1` is in use, you should switch back to use `database`.
+
+    Save this change. This change will tell the rebuild script to use the new database.
 
 6. Run the rebuild script in the `/cache` folder
 
     `/app/sirius/tools/rebuild_mongo_database`
 
-    After this step, a new database (`database1`) is created.
+    After this step, a new database (`database1`) is created. At this point, the old database (`database`) is still up and used by SIRIUS server.
 
 7. Swap the SIRIUS server to use the new database
 
     a. Update the `sirius/mongo/__init__.py` in your local git repository the same way as above.
 
-    b. Push this change to the master branch. Circle-CI should run the tests then deploy the update.
+    b. Deploy this change. For dev server, you can simply push this change to the master branch, Circle-CI will run the tests then deploy the update.
 
     After this step, the SIRIUS server should be connected to the newly built database.
 
