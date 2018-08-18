@@ -32,3 +32,10 @@ db = client.database
 GenomeNodes = db.GenomeNodes
 InfoNodes = db.InfoNodes
 Edges = db.Edges
+
+# The user database for storing user-uploaded private data
+userdb = client.userdb
+UserInfo = userdb.UserInfo
+
+# The analysis database that works with the analysis engine
+analysisdb = client.analysisdb
