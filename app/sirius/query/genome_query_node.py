@@ -1,7 +1,7 @@
 import time
 import copy
 from sirius.core.utilities import HashableDict
-from sirius.analysis.bed import Bed 
+from sirius.analysis.bed import Bed
 from sirius.mongo import GenomeNodes
 from sirius.mongo.utils import doc_generator
 
@@ -47,7 +47,8 @@ def intersect_id_filter_set(id_filter, id_set):
         return []
 
 class GenomeQueryNode(object):
-    def __init__(self, qfilter=None, edges=None, edge_rule=0, arithmetics=None, limit=0, verbose=False):
+    def __init__(self, mongo_collection=None, qfilter=None, edges=None, edge_rule=0, arithmetics=None, limit=0, verbose=False):
+        self.mongo_collection = mongo_collection if mongo_collection else GenomeNodes
         self.filter = qfilter if qfilter else dict()
         self.edges = edges if edges is not None else []
         # edge_rule: 0 means "and", 1 means "or", 2 means "not"
@@ -58,7 +59,7 @@ class GenomeQueryNode(object):
 
     def find(self, projection=None):
         """
-        Find all nodes from GenomeNodes, based on self.filter and the edge connected.
+        Find all nodes from self.mongo_collection, based on self.filter and the edge connected.
         Return a generator for MongoDB.find() query, or an empty list if none found
         """
         if self.verbose:
@@ -90,16 +91,16 @@ class GenomeQueryNode(object):
                     return
                 elif len(intersect_ids) == 1:
                     mongo_filter['_id'] = intersect_ids[0]
-                    yield GenomeNodes.find_one(mongo_filter, projection=projection)
+                    yield self.mongo_collection.find_one(mongo_filter, projection=projection)
                 else:
                     batch_size = 100000
                     for i_batch in range(int(len(intersect_ids) / batch_size)+1):
                         batch_ids = intersect_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                         mongo_filter['_id'] = {"$in": batch_ids}
-                        for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
+                        for d in self.mongo_collection.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
                             yield d
             else:
-                for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
+                for d in self.mongo_collection.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True):
                     yield d
         else:
             t0 = time.time()
@@ -113,7 +114,7 @@ class GenomeQueryNode(object):
             for i_batch in range(int(len(result_ids) / batch_size)+1):
                 batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                 query = {'_id' : {'$in': batch_ids}}
-                for d in GenomeNodes.find(query, limit=self.limit, projection=projection, no_cursor_timeout=True):
+                for d in self.mongo_collection.find(query, limit=self.limit, projection=projection, no_cursor_timeout=True):
                     yield d
 
     def find_ids_without_arithmetics(self):
@@ -142,14 +143,14 @@ class GenomeQueryNode(object):
                 return set()
             elif len(intersect_ids) == 1:
                 mongo_filter['_id'] = intersect_ids[0]
-                return set([GenomeNodes.find_one(mongo_filter, projection=['_id'])['_id']])
+                return set([self.mongo_collection.find_one(mongo_filter, projection=['_id'])['_id']])
             else:
                 batch_size = 100000
                 result_ids = set()
                 for i_batch in range(int(len(intersect_ids) / batch_size)+1):
                     batch_ids = intersect_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                     mongo_filter['_id'] = {"$in": batch_ids}
-                    for d in GenomeNodes.find(mongo_filter, limit=self.limit, projection=['_id']):
+                    for d in self.mongo_collection.find(mongo_filter, limit=self.limit, projection=['_id']):
                         result_ids.add(d['_id'])
                 return result_ids
         else:
@@ -161,7 +162,7 @@ class GenomeQueryNode(object):
         Find all distinct values for a key
         """
         if not self.edges and not self.arithmetics:
-            result = GenomeNodes.distinct(key, self.filter)
+            result = self.mongo_collection.distinct(key, self.filter)
         else:
             result_ids = list(self.findid())
             batch_size = 100000
@@ -169,13 +170,13 @@ class GenomeQueryNode(object):
             for i_batch in range(int(len(result_ids) / batch_size)+1):
                 batch_ids = result_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                 query = {'_id' : {'$in': batch_ids}}
-                result.update(GenomeNodes.distinct(key, query))
+                result.update(self.mongo_collection.distinct(key, query))
         return list(result)
 
 
     def findid(self):
         """
-        Find all nodes from GenomeNodes, based on self.filter and the edge connected
+        Find all nodes from self.mongo_collection, based on self.filter and the edge connected
         Return a set that contain strings of node['_id']
         """
         # get the results for all edges
@@ -196,7 +197,7 @@ class GenomeQueryNode(object):
                 if len(result_ids) == 0:
                     continue
                 #t0 = time.time()
-                bed = load_ids_to_bed(result_ids)
+                bed = self.load_ids_to_bed(result_ids)
                 #t1 = time.time()
                 #print(f'Convert self to Bed took {t1-t0:.3f} s')
                 window_size = ar['windowSize']
@@ -213,7 +214,7 @@ class GenomeQueryNode(object):
             elif operator == 'intersect':
                 if len(result_ids) == 0:
                     continue
-                bed = load_ids_to_bed(result_ids)
+                bed = self.load_ids_to_bed(result_ids)
                 for target in ar['targets']:
                     target_bed = target.convert_results_to_Bed()
                     bed = bed.intersect(target_bed)
@@ -226,9 +227,8 @@ class GenomeQueryNode(object):
         gen = self.find(projection=projection)
         return Bed(gen)
 
-
-def load_ids_to_bed(result_ids):
-    """ Read information of a set of ids, and load them in to a Bed object """
-    projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
-    gen = doc_generator(GenomeNodes, result_ids, projection=projection)
-    return Bed(gen)
+    def load_ids_to_bed(self, result_ids):
+        """ Read information of a set of ids, and load them in to a Bed object """
+        projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
+        gen = doc_generator(self.mongo_collection, result_ids, projection=projection)
+        return Bed(gen)

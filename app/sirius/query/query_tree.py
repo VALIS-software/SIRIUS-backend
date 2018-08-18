@@ -1,8 +1,10 @@
-import os, sys
+import os
+import sys
 from sirius.helpers.constants import QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.query.genome_query_node import GenomeQueryNode
 from sirius.query.info_query_node import InfoQueryNode
 from sirius.query.query_edge import QueryEdge
+from sirius.mongo import userdb
 
 class QueryTree(object):
     Query_operators = {'>':'$gt', '>=':'$gte', '<':'$lt', '<=':'$lte', '=':'$eq', '==':'$eq', '!=':'$ne'}
@@ -17,20 +19,24 @@ class QueryTree(object):
         typ = query['type']
         qfilter = self.build_filter(query['filters'])
         limit = query.get('limit', 100000) # default limit can finish in 1s
+        # redirect to read user database
+        mongo_collection = None
+        if ('userFileID' in query):
+            mongo_collection = userdb.get_collection(query['userFileID'])
         if typ == QUERY_TYPE_GENOME:
             edgeRule = self.EdgeRules[query.get('edgeRule', 'and')]
             edges = [self.build_recur(d) for d in query.get('toEdges', [])]
             # genome arithmetics
             arithmetics = self.build_arithmetics(query.get('arithmetics', []))
-            resultNode = GenomeQueryNode(qfilter, edges, edgeRule, arithmetics, limit)
+            resultNode = GenomeQueryNode(mongo_collection, qfilter, edges, edgeRule, arithmetics, limit)
         elif typ == QUERY_TYPE_INFO:
             edgeRule = self.EdgeRules[query.get('edgeRule', 'and')]
             edges = [self.build_recur(d) for d in query.get('toEdges', [])]
-            resultNode = InfoQueryNode(qfilter, edges, edgeRule, limit)
+            resultNode = InfoQueryNode(mongo_collection, qfilter, edges, edgeRule, limit)
         elif typ == QUERY_TYPE_EDGE:
             nextnode = self.build_recur(query.get('toNode', None))
             reverse = query.get('reverse', False)
-            resultNode = QueryEdge(qfilter, nextnode, reverse, limit)
+            resultNode = QueryEdge(mongo_collection, qfilter, nextnode, reverse, limit)
         else:
             raise NotImplementedError("Query with type %s not implemented yet." % query['type'])
         resultNode.verbose = self.verbose
@@ -76,4 +82,3 @@ class QueryTree(object):
 
     def distinct(self, key):
         return self.head.distinct(key)
-
