@@ -18,8 +18,9 @@ def intersect_id_filter_set(id_filter, id_set):
         return []
 
 class InfoQueryNode(object):
-    def __init__(self, qfilter=dict(), edges=None, edge_rule=None, limit=0, verbose=False):
-        self.filter = qfilter
+    def __init__(self, mongo_collection=None, qfilter=None, edges=None, edge_rule=None, limit=0, verbose=False):
+        self.mongo_collection = mongo_collection if mongo_collection else InfoNodes
+        self.filter = qfilter if qfilter else dict()
         self.edges = [] if edges == None else edges
         # edge_rule: 0 means "and", 1 means "or", 2 means "not"
         self.edge_rule = 0 if edge_rule == None else edge_rule
@@ -28,7 +29,7 @@ class InfoQueryNode(object):
 
     def find(self, projection=None):
         """
-        Find all nodes from InfoNodes, based on self.filter and the edge connected.
+        Find all nodes from self.mongo_collection, based on self.filter and the edge connected.
         Return a cursor of MongoDB.find() query, or an empty list if none found
         """
         mongo_filter = copy.deepcopy(self.filter)
@@ -59,14 +60,14 @@ class InfoQueryNode(object):
                 mongo_filter['_id'] = {"$in": intersect_ids}
         if self.verbose == True:
             print(mongo_filter)
-        return InfoNodes.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
+        return self.mongo_collection.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
 
     def distinct(self, key):
         return self.find().distinct(key)
 
     def findid(self):
         """
-        Find all nodes from InfoNodes, based on self.filter and the edge connected
+        Find all nodes from self.mongo_collection, based on self.filter and the edge connected
         Return a set that contain strings of node['_id']
         """
         mongo_filter = self.filter.copy()
@@ -98,4 +99,4 @@ class InfoQueryNode(object):
                 mongo_filter['_id'] = {"$in": intersect_ids}
         if self.verbose == True:
             print(mongo_filter)
-        return set(d['_id'] for d in InfoNodes.find(mongo_filter, {'_id':1}, limit=self.limit))
+        return set(d['_id'] for d in self.mongo_collection.find(mongo_filter, {'_id':1}, limit=self.limit))

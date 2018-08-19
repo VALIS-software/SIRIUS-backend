@@ -6,7 +6,7 @@ The following work flow has been tested on Ubuntu 16.04, and also the Linux subs
 
 ## 1. Download SIRIUS
 
-``` 
+```
 git clone git@github.com:VALIS-software/SIRIUS-backend.git
 ```
 
@@ -20,7 +20,7 @@ https://www.docker.com/get-docker
 
 ```
 sudo docker run -p 27017:27017 --name some-mongo -d mongo --auth
-``` 
+```
 
 This will download the official `mongo` Docker image and run it in detached mode with auth turned on.
 
@@ -32,7 +32,7 @@ This will download the official `mongo` Docker image and run it in detached mode
 sudo docker exec -it some-mongo bash
 ```
 
-you should get a bash terminal inside the container, like 
+you should get a bash terminal inside the container, like
 
 ```
 root@093275de44e7:/#
@@ -48,7 +48,7 @@ you should get a mongo shell like
 
 ```
 (some message)
-> 
+>
 ```
 
 #### 3.2.3 Create initial admin user
@@ -57,9 +57,9 @@ you should get a mongo shell like
 db.createUser({user: 'admin', pwd: 'password', roles:[{role: 'root', db: 'admin'}] })
 ```
 
-The username and password can be changed here to your own choice. 
+The username and password can be changed here to your own choice.
 
-After this you should see a message like 
+After this you should see a message like
 
 ```
 Successfully added user: {
@@ -87,7 +87,7 @@ Successfully added user: {
 mongo -u admin -p password --authenticationDatabase admin
 ```
 
-If successful, you should get a new mongo shell like 
+If successful, you should get a new mongo shell like
 
 ```
 (some message)
@@ -103,12 +103,12 @@ If successful, you should get a new mongo shell like
 #### 3.3.4 Create the user `sirius` in testdb
 
 ```
-db.createUser({user: 'sirius', pwd: 'valis', roles:[{role: 'readWrite', db: 'testdb'}, {role: 'readWrite', db:'database'}, {role: 'readWrite', db:'database1'}] })
+db.createUser({user: 'sirius', pwd: 'valis', roles:[{role: 'readWrite', db: 'testdb'}, {role: 'readWrite', db:'database'}, {role: 'readWrite', db:'database1'}, {role: 'readWrite', db:'userdb'}, {role: 'readWrite', db:'analysisdb'}] })
 ```
 
 After this step, you should see another `Successfully added user` message, and your MongoDB container is ready to go!
 
-Note: Here the MongoDB does not have any data yet. We will first run SIRIUS in a docker image in the next step, then upload data in there. 
+Note: Here the MongoDB does not have any data yet. We will first run SIRIUS in a docker image in the next step, then upload data in there.
 
 
 
@@ -159,13 +159,13 @@ exit
 ```
 
 
-## 6. Launch sirius in detached mode.
+## 6. Launch sirius in an interactive terminal
 
 If there is an update to the SIRIUS code. You can build a new Docker image
 
 ```
 sudo docker build -t sirius-dev:latest .
-``` 
+```
 
 ```
 sudo docker run  -it -p 5000:5000 --link some-mongo:mongo sirius-dev:latest /bin/bash
@@ -187,12 +187,3 @@ npm run dev
 ```
 
 And it should be able to connect to the SIRIUS server.
-
-
-
-
-
-
-
-
-

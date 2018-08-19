@@ -18,7 +18,7 @@ from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL,
 from sirius.core.annotationtrack import get_annotation_query
 
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.core.auth0 import requires_auth
+from sirius.core.auth0 import requires_auth, get_user_profile
 
 #**************************
 #*     static urls        *
@@ -545,3 +545,34 @@ def get_variant_track_data(contig, start_bp, end_bp):
     t2 = time.time()
     print(f'{len(result_data)} variants_data, {query}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
     return json.dumps(result)
+
+
+#**************************************
+#*       /user_files REST API         *
+#**************************************
+from sirius.core.user_files import upload_user_file, get_user_files_info, delete_user_file
+
+@app.route('/user_files', methods=['POST','GET','DELETE'])
+@requires_auth
+def user_file_api():
+    # upload file with POST method
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return abort(404, "No file part")
+        if 'fileType' not in request.form:
+            return abort(404, "No fileType part")
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == '':
+            return abort(404, "No selected file")
+        file_type = request.form['fileType']
+        ret = upload_user_file(file_type, uploaded_file)
+    elif request.method == 'GET':
+        # get file info for current user
+        ret = get_user_files_info()
+    elif request.method == 'DELETE':
+        # delete file from current user
+        fileID = request.args.get('fileID', None)
+        if fileID is None:
+            return abort(404, "fileID not specified")
+        ret = delete_user_file(fileID)
+    return json.dumps(ret)

@@ -1,10 +1,6 @@
+from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES, KNOWN_CONTIGS
 from sirius.parsers.parser import Parser
-from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES
-import pyliftover
-import os
-
-this_file_folder = os.path.dirname(os.path.realpath(__file__))
-lo = pyliftover.LiftOver(os.path.join(this_file_folder, 'hg19ToHg38.over.chain.gz'))
+from sirius.parsers.liftover import lo
 
 class BEDParser(Parser):
     """
@@ -241,8 +237,6 @@ class BEDParser_ENCODE(BEDParser):
         accession = self.metadata['accession']
         description = self.metadata['description']
         targets = self.metadata['targets']
-        # dict for converting chr in bed file to chromid
-        chr_name_id = dict(('chr'+s, i) for s,i in CHROMO_IDXS.items())
         # start parsing
         genome_nodes, info_nodes, edges = [], [], []
         # add data as GenomeNodes
@@ -271,6 +265,9 @@ class BEDParser_ENCODE(BEDParser):
                         print(f"Warning! liftover failed for {interval}, skipping")
                     continue
                 end = start + length - 1
+            # skip unknown contigs
+            if contig not in KNOWN_CONTIGS:
+                continue
             # we change 0-based pos to 1-based
             gnode = {
                 'source': DATA_SOURCE_ENCODE,

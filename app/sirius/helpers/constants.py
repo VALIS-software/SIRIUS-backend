@@ -1,5 +1,6 @@
-CHROMO_NAMES = [ str(i) for i in list(range(1,23)) ] + ['X','Y']
+CHROMO_NAMES = [ str(i) for i in list(range(1,23)) ] + ['X','Y','MT']
 CHROMO_IDXS = dict([(name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
+KNOWN_CONTIGS = set('chr'+s for s in CHROMO_NAMES)
 
 QUERY_TYPE_GENOME = 'GenomeNode'
 QUERY_TYPE_INFO = 'InfoNode'
@@ -19,6 +20,7 @@ DATA_SOURCE_TCGA = 'TCGA'
 DATA_SOURCE_ENSEMBL = 'ENSEMBL'
 DATA_SOURCE_GTEX = 'GTEx'
 DATA_SOURCE_HGNC = 'HGNC'
+DATA_SOURCE_23ANDME = '23andMe'
 
 TRACK_TYPE_SEQUENCE = 'track_type_sequence'
 TRACK_TYPE_FUNCTIONAL = 'track_type_functional'

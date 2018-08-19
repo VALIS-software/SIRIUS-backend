@@ -57,7 +57,7 @@ def requires_auth(f):
 
 @app.route('/user_profile')
 @requires_auth
-def dashboard():
+def get_user_profile():
     return json.dumps(session.get('profile', {'name':'dev'}))
 
 @app.route('/logout')
@@ -67,6 +67,3 @@ def logout():
     # Redirect user to logout endpoint
     params = {'returnTo': url_for('login', _external=True), 'client_id': 'UHugP5v627feBCWA6h4bLP3g__VCNGyL'}
     return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
-
-
-

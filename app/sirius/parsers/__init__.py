@@ -8,4 +8,5 @@ from sirius.parsers.gff_parser import GFFParser, GFFParser_ENSEMBL, GFFParser_Re
 from sirius.parsers.obo_parser import OBOParser, OBOParser_EFO
 from sirius.parsers.tcga_parser import TCGA_CNVParser, TCGA_MAFParser, TCGA_XMLParser
 from sirius.parsers.tsv_parser import TSVParser, TSVParser_ENCODEbigwig, TSVParser_GWAS, TSVParser_HGNC
+from sirius.parsers.txt_parser import TxtParser, TxtParser_23andme
 from sirius.parsers.vcf_parser import VCFParser, VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
