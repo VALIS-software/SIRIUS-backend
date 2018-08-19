@@ -6,29 +6,29 @@ from sirius.mongo import GenomeNodes
 from sirius.mongo.utils import doc_generator
 
 
-def find_gid(mongo_filter, limit=100000):
-    """ Cached funtion to find the GenomeNodes and return their IDs """
-    mongo_filter = HashableDict(mongo_filter)
-    # if we previously have executed the filter, check previous limit
-    max_limit = find_gid.max_limit.get(mongo_filter, -10000)
-    if limit == max_limit:
-        result_ids = find_gid.cached_ids[mongo_filter]
-    elif limit < max_limit:
-        cached_ids = find_gid.cached_ids[mongo_filter]
-        result_ids = {d for i, d in enumerate(cached_ids) if i < limit}
-    else:
-        result_ids = set(d['_id'] for d in GenomeNodes.find(mongo_filter, {'_id':1}, limit=limit))
-        find_gid.cached_ids[mongo_filter] = result_ids
-        find_gid.max_limit[mongo_filter] = limit
-    # limit the size of the cache to save memory
-    if len(find_gid.cached_ids) > 10000:
-        # we pop the earliest key
-        key = next(iter(find_gid.cached_ids.keys()))
-        find_gid.cached_ids.pop(key)
-        find_gid.max_limit.pop(key)
-    return result_ids.copy()
+# def find_gid(mongo_filter, limit=100000):
+#     """ Cached funtion to find the GenomeNodes and return their IDs """
+#     mongo_filter = HashableDict(mongo_filter)
+#     # if we previously have executed the filter, check previous limit
+#     max_limit = find_gid.max_limit.get(mongo_filter, -10000)
+#     if limit == max_limit:
+#         result_ids = find_gid.cached_ids[mongo_filter]
+#     elif limit < max_limit:
+#         cached_ids = find_gid.cached_ids[mongo_filter]
+#         result_ids = {d for i, d in enumerate(cached_ids) if i < limit}
+#     else:
+#         result_ids = set(d['_id'] for d in GenomeNodes.find(mongo_filter, {'_id':1}, limit=limit))
+#         find_gid.cached_ids[mongo_filter] = result_ids
+#         find_gid.max_limit[mongo_filter] = limit
+#     # limit the size of the cache to save memory
+#     if len(find_gid.cached_ids) > 10000:
+#         # we pop the earliest key
+#         key = next(iter(find_gid.cached_ids.keys()))
+#         find_gid.cached_ids.pop(key)
+#         find_gid.max_limit.pop(key)
+#     return result_ids.copy()
 
-find_gid.cached_ids, find_gid.max_limit = dict(), dict()
+# find_gid.cached_ids, find_gid.max_limit = dict(), dict()
 
 def intersect_id_filter_set(id_filter, id_set):
     """ Intersect the '_id' field of a mongo filter with a set of ids """
@@ -154,8 +154,7 @@ class GenomeQueryNode(object):
                         result_ids.add(d['_id'])
                 return result_ids
         else:
-            return find_gid(mongo_filter, limit=self.limit)
-
+            return set(d['_id'] for d in self.mongo_collection.find(mongo_filter, projection=['_id'], limit=self.limit))
 
     def distinct(self, key):
         """
