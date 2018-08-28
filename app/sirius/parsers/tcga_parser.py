@@ -614,6 +614,62 @@ class TCGA_MAFParser(Parser):
                 gnode['info']['biosample'] = list(tumor_sites)
         return genome_nodes, info_nodes, edges
 
+    def vcf_header(self):
+        ret = '##fileformat=VCFv4.2\n'
+        ret += f'##source={self.filename}\n'
+        ret += '##reference=GRCh38\n'
+        # INFO as row keys
+        ret += '##INFO=<ID=GENE_ID,Number=1,Type=String,Description="Entrez_Gene_Id">\n'
+        # FORMAT as entry keys
+        ret += '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="combined depth across samples, e.g. DP=154"\n'
+        # We use the first Tumor_Sample_Barcode since all should be same in this file
+        sample_id = self.mutations[0]['Tumor_Sample_Barcode']
+        ret += f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{sample_id}'
+        #ret += f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tTumorSample'
+        return ret
+
+    def vcf_generator(self):
+        """ Generate vcf string from self.mutations
+        CHROM   POS   ID   REF   ALT   QUAL   FILTER   INFO   FORMAT   SAMPLE
+        """
+        for d in self.mutations:
+            contig = d['Chromosome']
+            chrom = contig
+            pos = d['Start_Position']
+            ref = d['Reference_Allele']
+            alt = d['Allele']
+            # recover the ref and alt in VCF format, fixing '-'
+            if ref == '-':
+                # insertion
+                context = d['CONTEXT']
+                # context has length 11, the middle one at [5] is the ref
+                ref = context[5]
+                alt = context[5] + alt
+                # pos move left by 1
+                pos = str(int(pos) - 1)
+            elif alt == '-':
+                # deletion
+                context = d['CONTEXT']
+                # add one basepair before ref
+                ref = context[4] + ref
+                alt = context[4]
+                # pos move left by 1
+                pos = str(int(pos) - 1)
+            rs_number = d['dbSNP_RS']
+            if rs_number[:2] == 'rs':
+                gid = rs_number
+            else:
+                variant_key_string = '_'.join([contig, d['Start_Position'], ref, alt])
+                gid = self.hash(variant_key_string)
+            qual = '.'
+            filt = d['FILTER']
+            info = f"GENEID={d['Entrez_Gene_Id']}"
+            fmt = 'DP'
+            sample = d['t_depth']
+            yield '\t'.join((chrom, pos, gid, ref, alt, qual, filt, info, fmt, sample))
+
+
+
 class TCGA_CNVParser(Parser):
     """
     Parser for the TCGA Copy Number Variation (CNV) data format
