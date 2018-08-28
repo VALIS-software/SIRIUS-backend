@@ -46,7 +46,7 @@ def write_hail_TCGA_patient_annotation_file(hail_folder, download_folder):
         # write data in lines
         for d in all_patient_annotations:
             afile.write('\t'.join(map(str, d)) + '\n')
-    print(f"patient annotation file saved as {os.path.join(fullpath, filename)}")
+    print(f"patient annotation file saved as {fullpath}")
 
 def check_download(download_folder):
     current_dir = os.getcwd()
