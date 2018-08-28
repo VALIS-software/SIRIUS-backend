@@ -99,7 +99,8 @@ class TCGA_XMLParser(Parser):
             "new_tumor_events": "\n            ",
             "drugs": "\n            ",
             "radiations": "\n            ",
-            "follow_ups": "\n            "
+            "follow_ups": "\n            ",
+            "disease_code": "CESC"
         }
         """
         self.filehandle.seek(0)
@@ -110,6 +111,13 @@ class TCGA_XMLParser(Parser):
         for data in patient:
             key = data.tag.split('}')[-1]
             self.patientdata[key] = data.text
+
+        # parse out the disease code from the admin tag
+        admin = next(child for child in root if child.tag.endswith('admin'))
+        for data in admin:
+            key = data.tag.split('}')[-1]
+            if key == "disease_code":
+                self.patientdata[key] = data.text
 
     def get_mongo_nodes(self):
         """
