@@ -27,7 +27,7 @@ def write_hail_TCGA_patient_annotation_file(hail_folder, download_folder):
         'vital_status': (lambda p: p['vital_status']),
         'days_to_death': (lambda p: int(p['days_to_death']) if p.get('days_to_death', None) else -1),
         'histological_type': (lambda p: p.get('histological_type', 'None')),
-        'drugs': (lambda p: p.get('drugs')),
+        'drugs': (lambda p: str(p['drugs']).strip()),
         'disease_code' : (lambda p: p['disease_code'])
     }
     # start parsing
@@ -90,7 +90,7 @@ def write_hail_TCGA_VCF(hail_folder, download_folder):
     vcf_data_mat = []
     vcf_id_index = dict()
     sample_ids = []
-    for i_sample, f in enumerate(maf_files[:10]):
+    for i_sample, f in enumerate(maf_files):
         parser = TCGA_MAFParser(f)
         parser.parse()
         sample_ids.append(parser.mutations[0]['Tumor_Sample_Barcode'])
@@ -98,19 +98,19 @@ def write_hail_TCGA_VCF(hail_folder, download_folder):
         for vcf_str in parser.vcf_generator():
             (chrom, pos, gid, ref, alt, qual, filt, info, fmt, sample) = vcf_str.split('\t')
             if gid not in vcf_id_index:
+                vcf_id_index[gid] = len(vcf_data_mat)
                 # insert a new row
                 row_header = [chrom, pos, gid, ref, alt, qual, filt, info, fmt]
                 vcf_row_headers.append('\t'.join(row_header))
-                row_data = np.full(n_sample, '.', dtype='|U6') # string limited to length 6
-                row_data[i_sample] = sample
+                row_data = [(i_sample, sample)]
                 vcf_data_mat.append(row_data)
-                vcf_id_index[gid] = len(vcf_data_mat)
                 n_new += 1
             else:
                 # update the data
-                vcf_data_mat[vcf_id_index[gid]][i_sample] = sample
+                vcf_data_mat[vcf_id_index[gid]].append((i_sample, sample))
                 n_exist += 1
-        print(f"{i_sample:3d}| new {n_new:10d} | exist {n_exist:10d} | accu {len(vcf_data_mat)}")
+        print(f"{i_sample:3d}| new {n_new:10d} | exist {n_exist:10d} | total {n_new+n_exist:10d}")
+    print(f'parsing finished, total {len(vcf_data_mat)} variants and {n_sample} samples')
     # make the header
     header_lines = parser.vcf_header().split('\n')
     label_line = header_lines[-1]
@@ -124,8 +124,12 @@ def write_hail_TCGA_VCF(hail_folder, download_folder):
     fullpath = os.path.join(hail_folder, filename)
     with open(fullpath, "w") as afile:
         afile.write(header)
-        for rowh, data in zip(vcf_row_headers, vcf_data_mat):
-            afile.write(rowh + '\t' + '\t'.join(data) + '\n')
+        for rowh, row_data in zip(vcf_row_headers, vcf_data_mat):
+            #afile.write(rowh + '\t' + '\t'.join(data) + '\n')
+            sample_data_list = ['.'] * n_sample
+            for i_sample, sample_data in row_data:
+                sample_data_list[i_sample] = sample_data
+            afile.write(rowh + '\t' + '\t'.join(sample_data_list) + '\n')
     print(f"Writing {fullpath} finished.")
 
 
