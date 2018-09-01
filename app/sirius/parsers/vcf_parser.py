@@ -661,14 +661,14 @@ class VCFParser_ClinVar(VCFParser):
                     info_nodes.append(infonode)
                     known_traits.add(trait_id)
             # create EdgeNode for each trait in this entry
-            for trait_id in this_trait_ids:
+            for trait_id, trait_name in zip(this_trait_ids, trait_names):
                 # add study to edges
                 edge = {
                     'from_id': variant_id,
                     'to_id': trait_id,
                     'type': f'association:{variant_type}:trait',
                     'source': DATA_SOURCE_CLINVAR,
-                    'name': 'ClinVar Study',
+                    'name': trait_name,
                     'info': {
                         'CLNREVSTAT': d['INFO']["CLNREVSTAT"],
                     }
