@@ -178,23 +178,23 @@ class TCGA_XMLParser(Parser):
 
         """
         genome_nodes, info_nodes, edges = [], [], []
-        p = self.patientdata
+        p = self.patientdata.copy()
         # create one infonode for this patient
-        info_nodes = [{
+        info_node = {
             '_id': 'Ipatient' + p['bcr_patient_barcode'],
             'type': 'patient',
             'name': 'Patient ' + p['patient_id'],
             'source': DATA_SOURCE_TCGA,
             'info': {
-                'patient_id': p['patient_id'],
-                'patient_uuid': p['bcr_patient_uuid'].lower(),
-                'patient_barcode': p['bcr_patient_barcode'],
-                'days_to_birth': p['days_to_birth'],
-                'gender': p['gender'],
-                'biosample': p.get('tumor_tissue_site', 'None'),
-                'ethnicity': p['ethnicity']
+                'patient_id': p.pop('patient_id'),
+                'patient_uuid': p.pop('bcr_patient_uuid').lower(),
+                'patient_barcode': p.pop('bcr_patient_barcode'),
+                'biosample': p.pop('tumor_tissue_site', 'None'),
             }
-        }]
+        }
+        # load all other fields into info node
+        info_node['info'].update(p)
+        info_nodes.append(info_node)
         return genome_nodes, info_nodes, edges
 
 
