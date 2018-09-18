@@ -190,6 +190,7 @@ class TCGA_XMLParser(Parser):
                 'patient_uuid': p.pop('bcr_patient_uuid').lower(),
                 'patient_barcode': p.pop('bcr_patient_barcode'),
                 'biosample': p.pop('tumor_tissue_site', 'None'),
+                'age': -float(p['days_to_birth'])/365.0 if p.get('days_to_birth', None) else -1.0,
             }
         }
         # load all other fields into info node
