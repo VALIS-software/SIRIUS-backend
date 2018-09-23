@@ -628,7 +628,8 @@ class TCGA_MAFParser(Parser):
         ret += f'##source={self.filename}\n'
         ret += '##reference=GRCh38\n'
         # INFO as row keys
-        ret += '##INFO=<ID=GENE_ID,Number=1,Type=String,Description="Entrez_Gene_Id">\n'
+        ret += '##INFO=<ID=GENEID,Number=1,Type=String,Description="Entrez_Gene_Id">\n'
+        ret += '##INFO=<ID=GENE,Number=1,Type=String,Description="Hugo_Symbol">\n'
         # FORMAT as entry keys
         ret += '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="combined depth across samples, e.g. DP=154"\n'
         # We use the first Tumor_Sample_Barcode since all should be same in this file
@@ -672,7 +673,7 @@ class TCGA_MAFParser(Parser):
                 gid = self.hash(variant_key_string)
             qual = '.'
             filt = d['FILTER']
-            info = f"GENEID={d['Entrez_Gene_Id']}"
+            info = f"GENEID={d['Entrez_Gene_Id']};GENE={d['Hugo_Symbol']}"
             fmt = 'DP'
             sample = d['t_depth']
             yield '\t'.join((chrom, pos, gid, ref, alt, qual, filt, info, fmt, sample))

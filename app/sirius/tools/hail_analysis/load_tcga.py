@@ -21,11 +21,12 @@ def write_hail_TCGA_patient_annotation_file(hail_folder, download_folder):
         'patient_id': (lambda p: p['patient_id']),
         'patient_uuid': (lambda p: p['bcr_patient_uuid'].lower()),
         'patient_barcode': (lambda p: p['bcr_patient_barcode']),
-        'age': (lambda p: -float(p['days_to_birth'])/365.0 if p.get('days_to_birth', None) else -1.0),
+        'age': (lambda p: -float(p['days_to_birth'])/365.0 if p.get('days_to_birth', None) != None else -1.0),
         'gender': (lambda p: p['gender']),
         'biosample': (lambda p: p.get('tumor_tissue_site', 'None')),
         'vital_status': (lambda p: p['vital_status']),
-        'days_to_death': (lambda p: int(p['days_to_death']) if p.get('days_to_death', None) else -1),
+        'days_to_death': (lambda p: int(p['days_to_death']) if p.get('days_to_death', None) != None else -1),
+        'days_to_last_followup': (lambda p: int(p['days_to_last_followup']) if p.get('days_to_last_followup', None) != None else -1),
         'histological_type': (lambda p: p.get('histological_type', 'None')),
         'drugs': (lambda p: str(p['drugs']).strip()),
         'disease_code' : (lambda p: p['disease_code'])
@@ -137,8 +138,8 @@ def main():
     hail_folder = create_hail_tmp_folder()
     download_folder = find_tcga_folder()
     check_download(download_folder)
-    #write_hail_TCGA_patient_annotation_file(hail_folder, download_folder)
-    write_hail_TCGA_VCF(hail_folder, download_folder)
+    write_hail_TCGA_patient_annotation_file(hail_folder, download_folder)
+    #write_hail_TCGA_VCF(hail_folder, download_folder)
 
 if __name__ == '__main__':
     main()
