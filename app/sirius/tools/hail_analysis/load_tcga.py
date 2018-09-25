@@ -144,9 +144,9 @@ def main():
     hail_folder = create_hail_tmp_folder()
     download_folder = find_tcga_folder()
     check_download(download_folder)
-    if not parser.skip_xml:
+    if not args.skip_xml:
         write_hail_TCGA_patient_annotation_file(hail_folder, download_folder)
-    if not parser.skip_maf:
+    if not args.skip_maf:
         write_hail_TCGA_VCF(hail_folder, download_folder)
 
 if __name__ == '__main__':
