@@ -9,6 +9,7 @@ import json
 import time
 import threading
 import random
+import subprocess
 from sirius.main import app
 from sirius.core.utilities import get_data_with_id, HashableDict, threadsafe_lru
 from sirius.query.query_tree import QueryTree
@@ -576,3 +577,34 @@ def user_file_api():
             return abort(404, "fileID not specified")
         ret = delete_user_file(fileID)
     return json.dumps(ret)
+
+#**************************************
+#*       /export_query API            *
+#**************************************
+
+@app.route('/export_query', methods=['POST'])
+@requires_auth
+def export_query():
+    """ run a query then export the result """
+    # get input and check valid
+    jsondata = request.get_json()
+    query = jsondata.get('query', None)
+    file_format = jsondata.get('fileFormat', 'bed')
+    upload_url = jsondata.get('uploadUrl',None)
+    if not query:
+        return abort(404, 'query field not found in jsondata')
+    if not upload_url:
+        return abort(404, 'uploadUrl field not found in jsondata')
+    # export as bed
+    if file_format == 'bed':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as bed file')
+        qt = QueryTree(query)
+        bed = qt.head.convert_results_to_Bed()
+        try:
+            subprocess.run(f'gsutil cp {bed.fn} {upload_url}', shell=True, check=True)
+        except Exception as e:
+            return abort(404, f'Export failed with error:\n{e}')
+    else:
+        return abort(404, f'fileFormat {file_format} not implemented')
+    return json.dumps("Success")
