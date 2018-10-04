@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import json
 import time
+import collections
 
 from sirius.mongo import GenomeNodes, InfoNodes, Edges, db
 from sirius.mongo.upload import update_insert_many, update_skip_insert
@@ -17,8 +18,10 @@ from sirius.parsers import BEDParser_ENCODE
 from sirius.parsers import FASTAParser
 from sirius.parsers import OBOParser_EFO
 from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+from sirius.parsers import KEGG_XMLParser
 
-from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX
+from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX, \
+    DATA_SOURCE_KEGG, ENSEMBL_GENE_SUBTYPES
 from sirius.helpers.tiledb import tilehelper
 
 # By default we will build a small version of the database for dev only
@@ -35,6 +38,7 @@ GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_d
 TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
+KEGG_URL = 'https://storage.googleapis.com/sirius_data_source/KEGG/kegg_pathways.tar.gz'
 
 if FULL_DATABASE:
     DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/All_20180418.vcf.gz'
@@ -121,6 +125,11 @@ def download_genome_data():
     print("Downloading HGNC data in HGNC folder")
     mkchdir("HGNC")
     download_not_exist(HGNC_URL)
+    os.chdir('..')
+    # KEGG
+    print("Downloading KEGG data in KEGG folder")
+    mkchdir("KEGG")
+    download_not_exist(KEGG_URL)
     os.chdir('..')
     # Finish
     print("All downloads finished")
@@ -212,6 +221,11 @@ def parse_upload_all_datasets(source_start=1):
         print("\n*** 3.12 HGNC ***")
         os.chdir('HGNC')
         parse_upload_HGNC()
+        os.chdir('..')
+    if source_start <= 13:
+        print("\n*** 3.13 KEGG ***")
+        os.chdir('KEGG')
+        parse_upload_KEGG()
         os.chdir('..')
     # Finish
     print("All parsing and uploading finished!")
@@ -447,10 +461,48 @@ def parse_upload_HGNC():
     # upload the dataSource info node
     update_insert_many(InfoNodes, info_nodes)
 
+def parse_upload_KEGG():
+    filename = os.path.basename(KEGG_URL)
+    # the big tar.gz file contains many individual data files
+    print(f"Decompressing {filename}")
+    subprocess.check_call(f"tar zxf {filename} --skip-old-files", shell=True)
+    foldername = 'kegg_pathways'
+    # aggregate all pathways
+    kegg_xmls = sorted([os.path.join(foldername, f) for f in os.listdir(foldername) if f.startswith('path') and f.endswith('.xml')])
+    gene_in_paths = collections.defaultdict(list)
+    all_pathway_infonodes = []
+    for fname in kegg_xmls:
+        parser = KEGG_XMLParser(fname)
+        parser.parse()
+        _, info_nodes, _ = parser.get_mongo_nodes()
+        pathway = info_nodes[0]
+        # aggregate all pathways for each gene
+        for gene in pathway['info']['genes']:
+            gene_in_paths[gene].append(pathway['name'])
+        all_pathway_infonodes.append(pathway)
+    update_insert_many(InfoNodes, all_pathway_infonodes)
+    # prepare genome_nodes for patching
+    existing_gene_name_id = dict()
+    for gnode in GenomeNodes.find({'type': {'$in': ENSEMBL_GENE_SUBTYPES}}, projection=['_id', 'name']):
+        existing_gene_name_id[gnode['name']] = gnode['_id']
+    print(f"Pulling existing genes finished, total {len(existing_gene_name_id)} genes")
+    genome_nodes = []
+    for gene_name, path_names in gene_in_paths.items():
+        if gene_name in existing_gene_name_id:
+            genome_nodes.append({
+                '_id': existing_gene_name_id[gene_name],
+                'source': DATA_SOURCE_KEGG,
+                'info': {
+                    'kegg_pathways': path_names,
+                }
+            })
+    update_skip_insert(GenomeNodes, genome_nodes)
+
+
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
-    for idx in ['source', 'type', 'name', 'info.targets', 'info.variant_tags']:
+    for idx in ['source', 'type', 'name', 'info.targets', 'info.variant_tags', 'info.kegg_pathways']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
     print("Creating compound index for 'info.biosample' and 'type'")
