@@ -81,10 +81,12 @@ def update_skip_insert(dbCollection, nodes):
             if isinstance(value, list):
                 if len(value) == 1:
                     update['$addToSet'][update_key] = value[0]
-                else:
+                elif len(value) > 1:
                     update['$addToSet'][update_key] = {'$each': value}
             else:
                 update['$set'][update_key] = value
+        if not update['$set']:
+            update.pop('$set')
         try:
             dbCollection.update_one(filt, update, upsert=True)
         except Exception as bwe:
