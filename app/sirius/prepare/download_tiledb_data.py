@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, shutil, subprocess
-from google.cloud import storage
+from sirius.helpers import storage_buckets
 
 def download_fasta_tiledb():
     dest = os.environ['TILEDB_ROOT']
@@ -9,8 +9,7 @@ def download_fasta_tiledb():
     if not os.path.isdir(dest):
         os.makedirs(dest)
         os.chdir(dest)
-        storage_client = storage.Client()
-        bucket = storage_client.get_bucket('siriusdata')
+        bucket = storage_buckets['siriusdata']
         blob = bucket.get_blob(filename)
         print(f"Connected to google cloud. File {filename} found.")
         blob.download_to_filename(filename)

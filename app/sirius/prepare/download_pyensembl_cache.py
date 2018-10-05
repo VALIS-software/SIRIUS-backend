@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
 import os, shutil, subprocess
-from google.cloud import storage
+from sirius.helpers import storage_buckets
 
 def download_pyensembl_cache():
     cachedir = os.environ['PYENSEMBL_CACHE_DIR']
     dest = os.path.join(cachedir, 'pyensembl')
     if not os.path.exists(dest):
         os.chdir(cachedir)
-        storage_client = storage.Client()
-        bucket = storage_client.get_bucket('siriusdata')
+        bucket = storage_buckets['siriusdata']
         filename = 'pyensembl.tar.gz'
         blob = bucket.get_blob(filename)
         print(f"Connected to google cloud. File {filename} found.")
