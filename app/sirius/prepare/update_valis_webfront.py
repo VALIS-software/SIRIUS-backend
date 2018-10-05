@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import os, shutil
-from google.cloud import storage
 from zipfile import ZipFile
+from sirius.helpers import storage_buckets
 
 def update_valis_webfront():
     # Update /static/dist with the latest dist.zip file on our Google Cloud
     # We assume that the environment variable GOOGLE_APPLICATION_CREDENTIALS is set, or we are running in a cloud compute engine or kubernete engine
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket('valis-front-dev')
+    bucket = storage_buckets['valis-front-dev']
     blob = bucket.get_blob('dist/dist.zip')
     print("Connected to google cloud. File dist/dist.zip found.")
     # download the archieve to tmp_path
@@ -40,4 +39,3 @@ def update_valis_webfront():
 
 if __name__ == "__main__":
     update_valis_webfront()
-
