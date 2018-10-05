@@ -502,9 +502,12 @@ def parse_upload_KEGG():
 def build_mongo_index():
     print("\n\n#4. Building index in data base")
     print("GenomeNodes")
-    for idx in ['source', 'type', 'name', 'info.targets', 'info.variant_tags', 'info.kegg_pathways']:
+    for idx in ['source', 'type', 'name']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
+    for idx in ['info.targets', 'info.variant_tags', 'info.kegg_pathways']:
+        print("Creating sparse index %s" % idx)
+        GenomeNodes.create_index(idx, sparse=True)
     print("Creating compound index for 'info.biosample' and 'type'")
     GenomeNodes.create_index([('info.biosample', 1), ('type', 1)])
     # this compound index is created for the all variants track
