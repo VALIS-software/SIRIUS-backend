@@ -581,6 +581,7 @@ def user_file_api():
 #**************************************
 #*       /export_query API            *
 #**************************************
+from sirius.helpers import storage_buckets
 
 @app.route('/export_query', methods=['POST'])
 @requires_auth
@@ -595,9 +596,6 @@ def export_query():
         return abort(404, 'query field not found in jsondata')
     if not upload_url:
         return abort(404, 'uploadUrl field not found in jsondata')
-    # check if the url is safe
-    if not upload_url.startswith('gs://') or any(c in upload_url for c in ' ;&><(){}|`!@#?$%^*'):
-        return abort(404, f'uploadUrl {upload_url} not valid')
     # export as bed
     if file_format == 'bed':
         if query['type'] != QUERY_TYPE_GENOME:
@@ -605,7 +603,9 @@ def export_query():
         qt = QueryTree(query)
         bed = qt.head.convert_results_to_Bed()
         try:
-            subprocess.run(f'gsutil cp {bed.fn} {upload_url}', shell=True, check=True)
+            bucket = storage_buckets['canis']
+            blob = bucket.blob(upload_url)
+            blob.upload_from_filename(bed.fn)
         except Exception as e:
             return abort(404, f'Export failed with error:\n{e}')
     else:
