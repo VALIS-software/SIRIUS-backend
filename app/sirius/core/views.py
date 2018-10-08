@@ -256,20 +256,27 @@ def get_query_distinct_values(query, index):
 #*         /details            *
 #*******************************
 from sirius.core.detail_relations import node_relations, edge_relations
-
+from sirius.mongo import userdb
 @app.route("/details/<string:data_id>")
 @requires_auth
 def get_details(data_id):
-    if not data_id: return
-    data = get_data_with_id(data_id)
-    if not data:
-        return abort(404, f'data with _id {data_id} not found')
-    if data_id[0] == 'G' or data_id[0] == 'I':
-        relations = node_relations(data_id)
-    elif data_id[0] == 'E':
-        relations = edge_relations(data)
+    if not data_id: return abort(404, 'data_id missing')
+    relations = []
+    if 'userFileID' in request.args:
+        userFileID = request.args['userFileID']
+        data = userdb.get_collection(userFileID).find_one({'_id': data_id})
+        if not data:
+            return abort(404, f'data with _id {data_id} not found')
     else:
-        print(f"Invalid data_id {data_id}, ID should start with G, I or E")
+        data = get_data_with_id(data_id)
+        if not data:
+            return abort(404, f'data with _id {data_id} not found')
+        if data_id[0] == 'G' or data_id[0] == 'I':
+            relations = node_relations(data_id)
+        elif data_id[0] == 'E':
+            relations = edge_relations(data)
+        else:
+            print(f"Invalid data_id {data_id}, ID should start with G, I or E")
     result = {'details': data, 'relations': relations}
     return json.dumps(result)
 
