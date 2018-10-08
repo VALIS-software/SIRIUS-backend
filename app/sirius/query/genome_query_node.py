@@ -188,7 +188,11 @@ class GenomeQueryNode(object):
                 if len(result_ids) == 0:
                     continue
                 for target in ar['targets']:
-                    result_ids -= target.findid()
+                    bed = self.load_ids_to_bed(result_ids)
+                    target_bed = target.convert_results_to_Bed()
+                    intersect_bed = bed.intersect(target_bed)
+                    intersect_bed_ids = intersect_bed.gids()
+                    result_ids -= intersect_bed_ids
                     if len(result_ids) == 0:
                         continue
         return result_ids
