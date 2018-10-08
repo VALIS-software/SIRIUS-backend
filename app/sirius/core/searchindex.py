@@ -8,7 +8,7 @@ import fuzzyset
 import numpy as np
 
 from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types, \
-    loaded_patient_tumor_sites, loaded_info_targets
+    loaded_patient_tumor_sites, loaded_info_targets, loaded_pathway_names
 
 
 nltk.download('stopwords')
@@ -97,6 +97,7 @@ loaded_SearchIndex = {
     'CELL_TYPE': SearchIndex(loaded_cell_types),
     'TUMOR_SITE': SearchIndex(loaded_patient_tumor_sites),
     'TARGET': SearchIndex(loaded_info_targets),
+    'PATHWAY': SearchIndex(loaded_pathway_names),
 }
 
 def get_suggestions(term, search_text, max_results=15):
