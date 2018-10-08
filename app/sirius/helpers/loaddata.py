@@ -106,5 +106,5 @@ loaded_info_targets = sorted(InfoNodes.distinct('info.targets'))
 print(f'Loaded {len(loaded_info_targets)} info.targets')
 
 # store all loaded info.pathway
-loaded_pathway_names = sorted(GenomeNodes.distinct('info.pathway'))
-print(f'Loaded {len(loaded_pathway_names)} info.pathway')
+loaded_pathway_names = sorted(InfoNodes.distinct('name',  {'type': 'pathway'}))
+print(f'Loaded {len(loaded_pathway_names)} pathway')
