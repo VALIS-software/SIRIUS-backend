@@ -2,30 +2,22 @@ import os
 import json
 import tempfile
 import hashlib
+import uuid
 
 from sirius.core.auth0 import get_user_profile
 from sirius.mongo import userdb, UserInfo
 from sirius.mongo.upload import update_insert_many
-from sirius.parsers.txt_parser import TxtParser_23andme
+from sirius.parsers import TxtParser_23andme, VCFParser
 
 FILE_TYPE_PARSER = {
-    '23andme': TxtParser_23andme
+    '23andme': TxtParser_23andme,
+    'vcf': VCFParser,
 }
 
 def get_user_id():
     user_profile = json.loads(get_user_profile())
     uid = 'user_' + user_profile['name']
     return uid
-
-def get_file_hash(filename):
-    hasher = hashlib.md5()
-    BLOCKSIZE = 65536
-    with open(filename, 'rb') as afile:
-        buf = afile.read(BLOCKSIZE)
-        while len(buf) > 0:
-            hasher.update(buf)
-            buf = afile.read(BLOCKSIZE)
-    return hasher.hexdigest()
 
 def upload_user_file(file_type, file_obj):
     """ Upload a file to the user's specific database """
@@ -35,27 +27,25 @@ def upload_user_file(file_type, file_obj):
         return f"Error: file type {file_type} not recognized"
     # save file_obj as a temporary file
     orig_filename = file_obj.filename
-    tmp_filename = tempfile.mkstemp(prefix='ufile_')[1]
+    ext_split = orig_filename.split(os.extsep, maxsplit=1)
+    suffix = ext_split[1] if len(ext_split) == 2 else None
+    tmp_filename = tempfile.mkstemp(suffix=suffix, prefix='ufile_')[1]
     file_obj.save(tmp_filename)
     # create a MongoDB collection in userdb to store genome_nodes from file
-    file_hashstr = get_file_hash(tmp_filename)
-    collection_name = 'Gfile_' + file_hashstr
-    existing_collection_names = userdb.list_collection_names()
-    # we only parse and upload new files that is not in the database
-    if collection_name not in existing_collection_names:
-        collection = userdb.create_collection(collection_name)
-        parser = FILE_TYPE_PARSER[file_type](tmp_filename, verbose=True)
-        finished = False
-        while not finished:
-            finished = parser.parse_chunk()
-            genome_nodes, _, _ = parser.get_mongo_nodes()
-            update_insert_many(collection, genome_nodes, update=False)
-    else:
-        collection = userdb.get_collection(collection_name)
+    random_id = str(uuid.uuid4())
+    file_id = 'Gfile_' + random_id
+    collection = userdb.create_collection(file_id)
+    parser = FILE_TYPE_PARSER[file_type](tmp_filename, verbose=True)
+    finished = False
+    while not finished:
+        finished = parser.parse_chunk()
+        # use the orig filename as source
+        parser.metadata['source'] = orig_filename
+        genome_nodes, _, _ = parser.get_mongo_nodes()
+        update_insert_many(collection, genome_nodes, update=False)
     # clean up the tmp file
     os.unlink(tmp_filename)
     # save file metadata in UserInfo
-    file_id = collection_name
     file_num_docs = collection.estimated_document_count()
     file_info = {
         'fileName': orig_filename,
@@ -85,14 +75,14 @@ def get_user_files_info():
         ret = []
     return ret
 
-def delete_user_file(fileID):
+def delete_user_file(file_id):
     uid = get_user_id()
     user_doc = UserInfo.find_one({'_id': uid})
-    # delete one file_info obj with matching fileID from the user_doc
+    # delete one file_info obj with matching file_id from the user_doc
     file_info_list = user_doc['files']
     doc_idx = None
     for i, file_info in enumerate(file_info_list):
-        if file_info['fileID'] == fileID:
+        if file_info['fileID'] == file_id:
             doc_idx = i
             break
     else:
@@ -105,4 +95,6 @@ def delete_user_file(fileID):
         }
     }
     UserInfo.update_one({'_id': uid}, update_doc)
+    # delete the file collection from userdb
+    userdb.drop_collection(file_id)
     return 'success'

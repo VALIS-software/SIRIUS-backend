@@ -3,7 +3,7 @@
 from sirius.parsers import GFFParser_ENSEMBL
 from sirius.parsers import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
 from sirius.parsers import EQTLParser_GTEx
-from sirius.parsers import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
+from sirius.parsers import VCFParser, VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers import BEDParser_ENCODE
 from sirius.parsers import FASTAParser
 from sirius.parsers import OBOParser_EFO
@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
     parser.add_argument('datatype', choices=['ensembl', 'gwas', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac',
-                                             'gtex', 'bcrxml', 'maf', 'cnv', 'hgnc'], help='What data are we parsing?')
+                                             'gtex', 'bcrxml', 'maf', 'cnv', 'hgnc', 'vcf'], help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
@@ -25,7 +25,9 @@ def main():
     ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'clinvar': VCFParser_ClinVar,
                    'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
                    'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'gtex': EQTLParser_GTEx,
-                   'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser, 'hgnc': TSVParser_HGNC}
+                   'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser, 'hgnc': TSVParser_HGNC,
+                   'vcf': VCFParser
+                   }
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 
