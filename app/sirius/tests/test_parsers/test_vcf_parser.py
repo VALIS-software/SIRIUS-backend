@@ -33,9 +33,11 @@ class VCFParserTest(TimedTestCase):
     def test_mongo_nodes(self):
         """ Test VCFParser.get_mongo_nodes() """
         parser = VCFParser(self.testfile)
-        with self.assertRaises(NotImplementedError):
-            parser.get_mongo_nodes()
-
+        parser.parse()
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        n_gnode = 19
+        filename = os.path.basename(self.testfile)
+        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {filename} should give {n_gnode} GenomeNodes')
 
 class VCFParser_ClinVarTest(TimedTestCase):
     def setUp(self):

@@ -241,7 +241,7 @@ class VCFParser(Parser):
                 else:
                     # title line
                     self.labels = line[1:].split()
-                    assert self.labels == ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
+                    assert self.labels[:8] == ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
             elif line:
                 d = self.parse_one_line_data(line)
                 self.variants.append(d)
@@ -305,6 +305,18 @@ class VCFParser(Parser):
                 vtype = self.metadata['INFO'][k]['Type']
                 assert vtype.lower() == 'flag', f'{line}\nWarning! No "=" found in the key {k}, but its Type is not Flag'
                 dinfo['flags'].append(k)
+        # if there is a FORMAT column and additional columns, we parse the samples
+        if len(self.labels) > 8:
+            assert self.labels[8] == 'FORMAT'
+            format_keys = d['FORMAT'].split(':')
+            for k in format_keys:
+                dinfo['sample_' + k] = []
+            sample_ids = self.labels[9:]
+            dinfo['sample_ids'] = sample_ids
+            for sample_id in sample_ids:
+                sample_values = d[sample_id].split(':')
+                for k, v in zip(format_keys, sample_values):
+                    dinfo['sample_' + k].append(v)
         d['INFO'] = dinfo
         return d
 
@@ -377,6 +389,42 @@ class VCFParser(Parser):
             ref = last_match + ref
             alt = last_match + alt
         return shift, ref, alt
+
+    def get_mongo_nodes(self):
+        """ General method to convert the vcf into GenomeNodes """
+        genome_nodes, info_nodes, edges = [], [], []
+        data_source = self.metadata.get('source', self.filename)
+        for d in self.variants:
+            contig = d['CHROM'].lower()
+            if not contig.startswith('chr'):
+                contig = 'chr' + d['CHROM']
+            pos = d['POS']
+            v_ref = d['REF']
+            v_alt = d['ALT']
+            variant_key_string = '_'.join([contig, pos, v_ref, v_alt])
+            gid = 'Gv_' + self.hash(variant_key_string)
+            pos = int(pos)
+            name = d['ID'] if d['ID'] != '.' else 'Unlabeled Variant'
+            gnode = {
+                '_id': gid,
+                'contig':contig,
+                'start': pos,
+                'end': pos,
+                'length': 1,
+                'source': data_source,
+                'name': name,
+                'type': 'variant',
+                'info': d['INFO'],
+            }
+            gnode['info'].update({
+                "variant_ref": v_ref,
+                'variant_alt': v_alt,
+                'filter': d['FILTER'],
+                'qual': d['QUAL'],
+            })
+            genome_nodes.append(gnode)
+        return genome_nodes, info_nodes, edges
+
 
 class VCFParser_ClinVar(VCFParser):
     """
@@ -597,7 +645,7 @@ class VCFParser_ClinVar(VCFParser):
                 variant_type = "SNP"
                 name = 'RS' + rs
             else:
-                variant_type = 'variant' #d['INFO']['CLNVC'].lower()
+                variant_type = 'variant'
                 pos = str(d['POS'])
                 v_ref, v_alt = d['REF'], d['ALT']
                 variant_key_string = '_'.join([contig, pos, v_ref, v_alt])
