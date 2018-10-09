@@ -65,15 +65,13 @@ class QueryTree(object):
         result = []
         for orig_ar in arithmetics:
             ar = dict()
-            assert orig_ar['operator'] in {'intersect', 'window', 'union'}
+            assert orig_ar['operator'] in {'intersect', 'window', 'union', 'diff'}
             ar['operator'] = orig_ar['operator']
             ar['targets'] = [self.build_recur(query) for query in orig_ar.get('target_queries', [])]
             # operator-specific settings and checks
+            assert len(ar['targets']) > 0
             if ar['operator'] == 'window':
-                assert len(ar['targets']) > 0
                 ar['windowSize'] = orig_ar.get('windowSize', 1000)
-            elif ar['operator'] in ('intersect', 'union'):
-                assert len(ar['targets']) > 0
             result.append(ar)
         return result
 

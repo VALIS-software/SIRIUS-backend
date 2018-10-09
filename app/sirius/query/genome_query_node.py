@@ -5,31 +5,6 @@ from sirius.analysis.bed import Bed
 from sirius.mongo import GenomeNodes
 from sirius.mongo.utils import doc_generator
 
-
-# def find_gid(mongo_filter, limit=100000):
-#     """ Cached funtion to find the GenomeNodes and return their IDs """
-#     mongo_filter = HashableDict(mongo_filter)
-#     # if we previously have executed the filter, check previous limit
-#     max_limit = find_gid.max_limit.get(mongo_filter, -10000)
-#     if limit == max_limit:
-#         result_ids = find_gid.cached_ids[mongo_filter]
-#     elif limit < max_limit:
-#         cached_ids = find_gid.cached_ids[mongo_filter]
-#         result_ids = {d for i, d in enumerate(cached_ids) if i < limit}
-#     else:
-#         result_ids = set(d['_id'] for d in GenomeNodes.find(mongo_filter, {'_id':1}, limit=limit))
-#         find_gid.cached_ids[mongo_filter] = result_ids
-#         find_gid.max_limit[mongo_filter] = limit
-#     # limit the size of the cache to save memory
-#     if len(find_gid.cached_ids) > 10000:
-#         # we pop the earliest key
-#         key = next(iter(find_gid.cached_ids.keys()))
-#         find_gid.cached_ids.pop(key)
-#         find_gid.max_limit.pop(key)
-#     return result_ids.copy()
-
-# find_gid.cached_ids, find_gid.max_limit = dict(), dict()
-
 def intersect_id_filter_set(id_filter, id_set):
     """ Intersect the '_id' field of a mongo filter with a set of ids """
     assert isinstance(id_set, set)
@@ -195,21 +170,12 @@ class GenomeQueryNode(object):
             elif operator == 'window':
                 if len(result_ids) == 0:
                     continue
-                #t0 = time.time()
                 bed = self.load_ids_to_bed(result_ids)
-                #t1 = time.time()
-                #print(f'Convert self to Bed took {t1-t0:.3f} s')
                 window_size = ar['windowSize']
                 for target in ar['targets']:
                     target_bed = target.convert_results_to_Bed()
-                    #t2 = time.time()
-                    #print(f"Convert target to Bed took {t2-t1:.3f} s")
                     bed = bed.window(target_bed, window=window_size)
-                    #t3 = time.time()
-                    #print(f"bed.window took {t3-t2:.3f} s")
                 result_ids = bed.gids()
-                #t4 = time.time()
-                #print(f"Load id back for Bed {len(result_ids)} took {t4-t3:.3f} s")
             elif operator == 'intersect':
                 if len(result_ids) == 0:
                     continue
@@ -218,6 +184,17 @@ class GenomeQueryNode(object):
                     target_bed = target.convert_results_to_Bed()
                     bed = bed.intersect(target_bed)
                 result_ids = bed.gids()
+            elif operator == 'diff':
+                if len(result_ids) == 0:
+                    continue
+                for target in ar['targets']:
+                    bed = self.load_ids_to_bed(result_ids)
+                    target_bed = target.convert_results_to_Bed()
+                    intersect_bed = bed.intersect(target_bed)
+                    intersect_bed_ids = intersect_bed.gids()
+                    result_ids -= intersect_bed_ids
+                    if len(result_ids) == 0:
+                        continue
         return result_ids
 
     def convert_results_to_Bed(self):
