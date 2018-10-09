@@ -86,7 +86,7 @@ def download_search_files(start=0, end=5):
             json.dump(metadata, outfile, indent=2)
         os.chdir('..')
 
-def parse_upload_files(start=0, end=5):
+def parse_upload_files(start=0, end=5, liftover=True):
     sorted_response_graph = request_search()
     n_total = len(sorted_response_graph)
     print(f"\n\n@@@ Search results have {n_total} datasets, parsing and uploading {start} to {end}.")
@@ -104,7 +104,7 @@ def parse_upload_files(start=0, end=5):
         with open('metadata.json') as jsonfile:
             metadata = json.load(jsonfile)
         print("metadata.json loaded")
-        parse_upload_bed(metadata)
+        parse_upload_bed(metadata, liftover=liftover)
         os.chdir('..')
     # we insert one InfoNode for dataSource
     insert_encode_dataSource()
@@ -135,12 +135,12 @@ def download_gz(fileurl):
         print(f"File {filename} already exists, skip downloading")
     return filename
 
-def parse_upload_bed(metadata):
+def parse_upload_bed(metadata, liftover=True):
     filename = metadata['filename']
     parser = BEDParser_ENCODE(filename)
     parser.parse()
     parser.metadata.update(metadata)
-    genome_nodes, info_nodes, edges = parser.get_mongo_nodes(liftover=True)
+    genome_nodes, info_nodes, edges = parser.get_mongo_nodes(liftover=liftover)
     print(f'parsing {filename} results in {len(genome_nodes)} GenomeNodes, {len(info_nodes)} InfoNodes, {len(edges)} Edges')
     print("Uploading to MongoDB")
     update_insert_many(GenomeNodes, genome_nodes, update=False)
