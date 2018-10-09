@@ -120,19 +120,53 @@ class BEDParser(Parser):
 
         """
         self.filehandle.seek(0)
+        assert self.parse_chunk(size=-1) == True, 'self.parse_chunk() did not finish parsing the entire file.'
+
+    def parse_chunk(self, size=100000):
+        """
+        Parse the file line by line and stop when accumulated {size} number of features data.
+        """
         bed_labels = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'itemRgb', 'blockCount', 'blockSizes', 'blockStarts']
+        self.intervals = []
         chr_name_id = dict(('chr'+s, i) for s,i in CHROMO_IDXS.items())
-        intervals = []
         for line in self.filehandle:
             ls = line.strip().split('\t') # remove '\n'
             if ls[0] in chr_name_id:
-                intervals.append(dict([*zip(bed_labels, ls)]))
-                if self.verbose and len(intervals) % 100000 == 0:
-                    print("%d data parsed" % len(intervals), end='\r')
-        if self.verbose:
-            print("Parsing BED data finished.")
-        self.data['intervals'] = intervals
+                self.intervals.append(dict([*zip(bed_labels, ls)]))
+                if len(self.intervals) == size:
+                    if self.verbose:
+                        print(f"Parsing file {self.filename} finished for chunk of size {size}" )
+                    break
+        else:
+            if self.verbose:
+                print(f"Parsing the entire file {self.filename} finished.")
+            return True
+        return False
 
+    def get_mongo_nodes(self):
+        """ general bed file parsing into genomenodes """
+        genome_nodes, info_nodes, edges = [], [], []
+        data_source = self.metadata.get('source', self.filename)
+        for d in self.data['intervals']:
+            start = int(d['start']) + 1
+            end = int(d['end'])
+            gnode = {
+                'source': data_source,
+                'type': 'interval',
+                'name': d.get('name', 'Unlabeled'),
+                'contig': d['chrom'],
+                'start': start,
+                'end': end,
+                'length': end - start + 1,
+                'info': {
+                }
+            }
+            for k in ['score', 'strand', 'thickStart', 'thickEnd', 'itemRgb', 'blockCount', 'blockSizes', 'blockStarts']:
+                if k in d:
+                    gnode['info'][k] = d[k]
+            gnode['_id'] = 'G' + '_' + self.hash(str(gnode))
+            genome_nodes.append(gnode)
+        return genome_nodes, info_nodes, edges
 
 class BEDParser_ENCODE(BEDParser):
     def get_mongo_nodes(self, liftover=False):

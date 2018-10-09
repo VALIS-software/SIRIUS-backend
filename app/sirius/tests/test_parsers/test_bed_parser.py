@@ -32,8 +32,11 @@ class BEDParserTest(TimedTestCase):
     def test_mongo_nodes(self):
         """ Test BEDParser.get_mongo_nodes() """
         parser = BEDParser(self.testfile)
-        with self.assertRaises(NotImplementedError):
-            parser.get_mongo_nodes()
+        parser.parse()
+        genome_nodes, info_nodes, edges = parser.get_mongo_nodes()
+        n_gnode = 16
+        self.assertEqual(len(genome_nodes), n_gnode, f'Parsing {parser.filename} should give {n_gnode} GenomeNodes')
+
 
 
 class BEDParser_ENCODETest(TimedTestCase):
