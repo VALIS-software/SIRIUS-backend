@@ -7,11 +7,12 @@ import uuid
 from sirius.core.auth0 import get_user_profile
 from sirius.mongo import userdb, UserInfo
 from sirius.mongo.upload import update_insert_many
-from sirius.parsers import TxtParser_23andme, VCFParser
+from sirius.parsers import TxtParser_23andme, VCFParser, BEDParser
 
 FILE_TYPE_PARSER = {
     '23andme': TxtParser_23andme,
     'vcf': VCFParser,
+    'bed': BEDParser,
 }
 
 def get_user_id():
