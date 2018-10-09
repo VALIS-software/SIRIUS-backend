@@ -32,6 +32,7 @@ GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
+ENCODE_URL = 'gs://sirius_data_source/ENCODE_GRCh38/'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
@@ -48,15 +49,22 @@ def mkchdir(dir):
         os.mkdir(dir)
     os.chdir(dir)
 
-def download_not_exist(url, filename=None, command=None):
-    if filename == None:
-        filename = os.path.basename(url)
-    if command == None:
-        command = 'wget'
-    if not os.path.isfile(filename):
-        subprocess.check_call(f'{command} {url}', shell=True)
+def download_not_exist(url, command=None, filename=None):
+    if url.startswith('gs://'):
+        basename = os.path.basename(url)
+        if os.path.exists(basename):
+            print(f'{basename} exists, skipping download')
+            return
+        if command == None:
+            command = 'gsutil -m cp -r'
+        if filename == None:
+            filename = '.'
     else:
-        print(f"File {filename} exists, skipped download")
+        if command == None:
+            command = 'wget -N'
+        if filename == None:
+            filename = ''
+    subprocess.run(f'{command} {url} {filename}', shell=True, check=True)
 
 def download_genome_data():
     " Download Genome Data on to disk "
@@ -89,13 +97,12 @@ def download_genome_data():
     os.chdir('..')
     # ENCODE
     print("Downloading ENCODE data files into ENCODE folder")
-    mkchdir("ENCODE")
-    from sirius.tools import automate_encode_upload
-    if FULL_DATABASE:
-        automate_encode_upload.download_search_files(0, 1070)
-    else:
-        automate_encode_upload.download_search_files()
-    os.chdir('..')
+    #mkchdir("ENCODE")
+    #from sirius.tools import automate_encode_upload
+    #automate_encode_upload.download_search_files()
+    # QYD: We use a prepared liftOver set of encode bed files
+    download_not_exist(ENCODE_URL)
+    os.rename('ENCODE_GRCh38', 'ENCODE')
     #dbSNP
     print("Downloading dbSNP dataset in dbSNP folder")
     mkchdir('dbSNP')
@@ -181,9 +188,9 @@ def parse_upload_all_datasets(source_start=1):
         os.chdir('ENCODE')
         from sirius.tools import automate_encode_upload
         if FULL_DATABASE:
-            automate_encode_upload.parse_upload_files(0, 1070)
+            automate_encode_upload.parse_upload_files(0, 1070, liftover=False)
         else:
-            automate_encode_upload.parse_upload_files()
+            automate_encode_upload.parse_upload_files(liftover=False)
         os.chdir('..')
     if source_start <= 6:
         print("\n*** 3.6 dbSNP ***")
