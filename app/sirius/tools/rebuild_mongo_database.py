@@ -29,10 +29,10 @@ FULL_DATABASE = False
 
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
-GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
+GWAS_URL = 'gs://sirius_data_source/GWAS/gwas.tsv'
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
-ENCODE_URL = 'gs://sirius_data_source/ENCODE_GRCh38/'
+ENCODE_URL = 'gs://sirius_data_source/ENCODE/'
 DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/common_all_20180418.vcf.gz'
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
@@ -51,7 +51,7 @@ def mkchdir(dir):
 
 def download_not_exist(url, command=None, filename=None):
     if url.startswith('gs://'):
-        basename = os.path.basename(url)
+        basename = os.path.basename(url) if url[-1] != '/' else os.path.basename(url[:-1])
         if os.path.exists(basename):
             print(f'{basename} exists, skipping download')
             return
@@ -88,7 +88,7 @@ def download_genome_data():
     # GWAS
     print("Downloading GWAS data in gwas folder")
     mkchdir('gwas')
-    download_not_exist(GWAS_URL, filename='gwas.tsv', command='curl -o gwas.tsv')
+    download_not_exist(GWAS_URL)
     os.chdir('..')
     # ClinVar
     print("Downloading ClinVar data into ClinVar folder")
@@ -102,7 +102,6 @@ def download_genome_data():
     #automate_encode_upload.download_search_files()
     # QYD: We use a prepared liftOver set of encode bed files
     download_not_exist(ENCODE_URL)
-    os.rename('ENCODE_GRCh38', 'ENCODE')
     #dbSNP
     print("Downloading dbSNP dataset in dbSNP folder")
     mkchdir('dbSNP')
