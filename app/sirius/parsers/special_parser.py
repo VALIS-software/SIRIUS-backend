@@ -39,7 +39,7 @@ class Parser_NatureCasualVariants(Parser):
         info_nodes.append(info_node)
         known_traits = set()
         parsed_snp_ids = set()
-        known_biosamples = set()
+        # known_biosamples = set()
         for d in self.entries:
             trait_name = d['Disease'].replace('_', ' ').lower()
             trait_id = 'Itrait' + self.hash(trait_name)
@@ -94,17 +94,17 @@ class Parser_NatureCasualVariants(Parser):
                 'info': {
                     'description': f'causal of {trait_name} from SNP {rsid}',
                     'PICS_probability': float(d['PICS_probability']),
-                    'biosample': [],
+                    # 'biosample': [],
                 },
             }
             edge['_id'] = 'E' + self.hash(str(edge))
-            # collect info.biosample
-            for sample in self.headers[11:]:
-                if d[sample] == '1':
-                    biosample = sample.replace('_', ' ')
-                    edge['info']['biosample'].append(biosample)
-                    known_biosamples.add(biosample)
+            # # collect info.biosample
+            # for sample in self.headers[11:]:
+            #     if d[sample] == '1':
+            #         biosample = sample.replace('_', ' ')
+            #         edge['info']['biosample'].append(biosample)
+            #         known_biosamples.add(biosample)
             edges.append(edge)
-        # save all biosamples in dataSource info node
-        info_nodes[0]['info']['biosample'] = sorted(known_biosamples)
+        # # save all biosamples in dataSource info node
+        # info_nodes[0]['info']['biosample'] = sorted(known_biosamples)
         return genome_nodes, info_nodes, edges
