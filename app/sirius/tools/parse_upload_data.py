@@ -8,26 +8,26 @@ from sirius.parsers import BEDParser_ENCODE
 from sirius.parsers import FASTAParser
 from sirius.parsers import OBOParser_EFO
 from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
+from sirius.parsers import Parser_NatureCasualVariants
 from sirius.mongo.upload import update_insert_many, update_skip_insert
+
+ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'clinvar': VCFParser_ClinVar,
+                'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
+                'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'gtex': EQTLParser_GTEx,
+                'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser, 'hgnc': TSVParser_HGNC,
+                'vcf': VCFParser, 'csv': Parser_NatureCasualVariants,
+}
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument('datatype', choices=['ensembl', 'gwas', 'clinvar', 'dbsnp', 'encode', 'fasta', 'efo', 'encode_bigwig', 'exac',
-                                             'gtex', 'bcrxml', 'maf', 'cnv', 'hgnc', 'vcf'], help='What data are we parsing?')
+    parser.add_argument('datatype', choices=ParserClass.keys(), help='What data are we parsing?')
     parser.add_argument("--url", help='sourceurl of data')
     parser.add_argument("--save", action='store_true', help='Save parsed file to disk')
     parser.add_argument("--upload", action='store_true', help='Upload to MongoDB')
     parser.add_argument("--skip_insert", action='store_true', help='Only update existing docs in MongoDB')
     args = parser.parse_args()
-
-    ParserClass = {'ensembl': GFFParser_ENSEMBL, 'gwas': TSVParser_GWAS, 'clinvar': VCFParser_ClinVar,
-                   'dbsnp': VCFParser_dbSNP, 'encode': BEDParser_ENCODE, 'fasta': FASTAParser, 'efo': OBOParser_EFO,
-                   'encode_bigwig': TSVParser_ENCODEbigwig, 'exac': VCFParser_ExAC, 'gtex': EQTLParser_GTEx,
-                   'bcrxml': TCGA_XMLParser, 'maf': TCGA_MAFParser, 'cnv': TCGA_CNVParser, 'hgnc': TSVParser_HGNC,
-                   'vcf': VCFParser
-                   }
 
     parser = ParserClass[args.datatype](args.filename, verbose=True)
 
@@ -38,7 +38,6 @@ def main():
 
     # set some metadata for demonstration, they should be downloaded from ENCODE website
     if args.datatype == 'encode':
-        parser.metadata['assembly'] = 'hg19'
         parser.metadata['biosample'] = '#biosample#'
         parser.metadata['accession'] = '#accession#'
         parser.metadata['description'] = '#description#'

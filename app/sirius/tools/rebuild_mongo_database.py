@@ -19,6 +19,7 @@ from sirius.parsers import FASTAParser
 from sirius.parsers import OBOParser_EFO
 from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
 from sirius.parsers import KEGG_XMLParser
+from sirius.parsers import Parser_NatureCasualVariants
 
 from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX, \
     DATA_SOURCE_KEGG, ENSEMBL_GENE_SUBTYPES
@@ -40,6 +41,7 @@ TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
 EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
 HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
 KEGG_URL = 'https://storage.googleapis.com/sirius_data_source/KEGG/kegg_pathways.tar.gz'
+NATURE_CASUAL_VARIANTS_URL = 'gs://sirius_data_source/Nature-Causal-Variants/nature13835-s1.csv'
 
 if FULL_DATABASE:
     DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/All_20180418.vcf.gz'
@@ -137,6 +139,11 @@ def download_genome_data():
     mkchdir("KEGG")
     download_not_exist(KEGG_URL)
     os.chdir('..')
+    # Nature-Causal-Variants
+    print("Downloading Nature-Causal-Variants data file in Nature-Causal-Variants folder")
+    mkchdir("Nature-Causal-Variants")
+    download_not_exist(NATURE_CASUAL_VARIANTS_URL)
+    os.chdir('..')
     # Finish
     print("All downloads finished")
     os.chdir('..')
@@ -232,6 +239,12 @@ def parse_upload_all_datasets(source_start=1):
         print("\n*** 3.13 KEGG ***")
         os.chdir('KEGG')
         parse_upload_KEGG()
+        os.chdir('..')
+    if source_start <= 14:
+        print("\n*** 3.14 Nature-Causal-Variants ***")
+        os.chdir('Nature-Causal-Variants')
+        parser = Parser_NatureCasualVariants('nature13835-s1.csv', verbose=True)
+        parse_upload_data(parser)
         os.chdir('..')
     # Finish
     print("All parsing and uploading finished!")
@@ -526,16 +539,12 @@ def build_mongo_index():
     print("Creating text index 'name'")
     InfoNodes.create_index([('name', 'text')], default_language='english')
     print("Edges")
-    for idx in ['from_id', 'to_id', 'type', 'info.p-value']:
+    for idx in ['from_id', 'to_id', 'type', 'source']:
         print("Creating index %s" % idx)
         Edges.create_index(idx)
-    # this compound index is going to improve the GTEx query performance
-    # Example filter:
-    # {'source': 'GTEx',
-    #  'info.biosample': 'adipose visceral omentum',
-    #  'info.p-value': {'$lt': 0.01}}
-    print("Creating compound index for 'source', and 'info.biosample'")
-    Edges.create_index([('source',1), ('info.biosample',1)])
+    for idx in ['info.p-value', 'info.biosample', 'info.PICS_probability']:
+        print("Creating sparse index %s" % idx)
+        Edges.create_index(idx, sparse=True)
 
 def patch_additional_info():
     # print("\n\n#5. Patching additional information")
@@ -572,6 +581,8 @@ In Step 3, datasets are parsed and uploaded, in the following order:
 10. GTEx
 11. EFO
 12. HGNC
+13. Kegg
+14. Nature-Causal-Variants
 '''
 
 def main():

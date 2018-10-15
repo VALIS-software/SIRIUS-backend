@@ -24,6 +24,9 @@ ENV STATIC_PATH /app/sirius/valis-dist/static
 ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
 
+# Reset uWSGI cheaper
+ENV UWSGI_CHEAPER 0
+
 # pybedtools use the default tempfile.tempdir
 ENV SIRIUS_TEMP_DIR /cache/tmp
 

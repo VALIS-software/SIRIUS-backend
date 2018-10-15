@@ -11,3 +11,4 @@ from sirius.parsers.tsv_parser import TSVParser, TSVParser_ENCODEbigwig, TSVPars
 from sirius.parsers.txt_parser import TxtParser, TxtParser_23andme
 from sirius.parsers.vcf_parser import VCFParser, VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
 from sirius.parsers.kegg_parser import KEGG_XMLParser
+from sirius.parsers.special_parser import Parser_NatureCasualVariants
