@@ -62,11 +62,11 @@ def get_query_basic_results(query):
 
 @threadsafe_lru(maxsize=1024)
 def get_query_gwas_results(query):
-    """ Cached function for getting gwas query results 
+    """ Cached function for getting gwas query results
     The GWAS query are different from regular query in these ways:
-    1.  Each of the returning SNPs will have a property info.p-value, which is aggregated as "the lowest p-value among all resulting Edges (associations)". 
+    1.  Each of the returning SNPs will have a property info.p-value, which is aggregated as "the lowest p-value among all resulting Edges (associations)".
         Note that for the same SNP this property could be different based on which trait it is searched to be associated to.
-    2.  The returning SNPs will be sorted by the info.p-value from lowest to highest. 
+    2.  The returning SNPs will be sorted by the info.p-value from lowest to highest.
         The SNPs that do not have any p-value from associations, they will have info.p-value = None
     3.  The limit is ignored for the resulting SNPs.
     """
@@ -75,7 +75,7 @@ def get_query_gwas_results(query):
     qt = QueryTree(query)
     # here we manually execute the to_edges in the query tree
     genome_query_node = qt.head
-    assert len(genome_query_node.arithmetics) == 0, "No arithmetics supported for GWAS SNP query"
+    # assert len(genome_query_node.arithmetics) == 0, "No arithmetics supported for GWAS SNP query"
     query_edges = genome_query_node.edges
     assert len(query_edges) == 1, "GWAS SNP query should have exactly one edge"
     assert genome_query_node.edge_rule == 0, "The edge rule of GWAP SNP query should be 0 (and)"
