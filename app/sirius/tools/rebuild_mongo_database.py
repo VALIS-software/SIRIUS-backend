@@ -524,7 +524,7 @@ def build_mongo_index():
     for idx in ['source', 'type', 'name']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
-    for idx in ['info.targets', 'info.variant_tags', 'info.kegg_pathways']:
+    for idx in ['info.targets', 'info.variant_tags', 'info.patient_barcodes', 'info.kegg_pathways']:
         print("Creating sparse index %s" % idx)
         GenomeNodes.create_index(idx, sparse=True)
     print("Creating compound index for 'info.biosample' and 'type'")
