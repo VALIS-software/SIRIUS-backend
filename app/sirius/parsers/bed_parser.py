@@ -1,4 +1,5 @@
-from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_ENCODE, ENCODE_COLOR_TYPES, KNOWN_CONTIGS
+from sirius.helpers.constants import CHROMO_IDXS, ENCODE_COLOR_TYPES, KNOWN_CONTIGS
+from sirius.helpers.constants import DATA_SOURCE_ENCODE, DATA_SOURCE_ROADMAP_EPIGENOMICS
 from sirius.parsers.parser import Parser
 from sirius.parsers.liftover import lo
 
@@ -331,4 +332,29 @@ class BEDParser_ENCODE(BEDParser):
         info_nodes.append(info_node)
         if self.verbose:
             print("Parsing BED into mongo nodes finished.")
+        return genome_nodes, info_nodes, edges
+
+class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
+    def get_mongo_nodes(self):
+        """ giggle roadmap bed file parsing into genomenodes
+        ref: https://egg2.wustl.edu/roadmap/web_portal/imputed.html
+        """
+        genome_nodes, info_nodes, edges = [], [], []
+        for d in self.data['intervals']:
+            start = int(d['start']) + 1
+            end = int(d['end'])
+            gnode = {
+                'source': DATA_SOURCE_ROADMAP_EPIGENOMICS,
+                'type': 'interval',
+                'name': d['name'],
+                'contig': d['chrom'],
+                'start': start,
+                'end': end,
+                'length': end - start + 1,
+                'info': {
+                    'filename': self.filename
+                }
+            }
+            gnode['_id'] = 'G' + '_' + self.hash(str(gnode))
+            genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges
