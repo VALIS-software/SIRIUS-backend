@@ -560,7 +560,7 @@ def build_mongo_index():
     for idx in ['source', 'type', 'name']:
         print("Creating index %s" % idx)
         GenomeNodes.create_index(idx)
-    for idx in ['info.targets', 'info.variant_tags', 'info.patient_barcodes', 'info.kegg_pathways']:
+    for idx in ['info.targets', 'info.variant_tags', 'info.patient_barcodes', 'info.kegg_pathways', 'info.filenames']:
         print("Creating sparse index %s" % idx)
         GenomeNodes.create_index(idx, sparse=True)
     print("Creating compound index for 'info.biosample' and 'type'")
@@ -569,9 +569,12 @@ def build_mongo_index():
     print("Creating compound index for 'contig', and 'start', 'type'")
     GenomeNodes.create_index([('contig', 1), ('start', 1), ('type', 1)])
     print("InfoNodes")
-    for idx in ['source', 'type', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags']:
+    for idx in ['source', 'type']:
         print("Creating index %s" % idx)
         InfoNodes.create_index(idx)
+    for idx in ['info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags']:
+        print("Creating sparse index %s" % idx)
+        InfoNodes.create_index(idx, sparse=True)
     print("Creating text index 'name'")
     InfoNodes.create_index([('name', 'text')], default_language='english')
     print("Edges")
