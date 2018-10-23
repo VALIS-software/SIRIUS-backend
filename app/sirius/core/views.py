@@ -5,6 +5,7 @@
 #==================================#
 
 from flask import abort, request, send_from_directory
+import os
 import json
 import time
 import threading
@@ -618,3 +619,21 @@ def export_query():
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
     return json.dumps("Success")
+
+
+#**************************************
+#*       /canis_api API               *
+#**************************************
+@app.route('/canis_api', methods=['GET'])
+@requires_auth
+def canis_ip_port():
+    """ Useful api to provide CANIS backend ip and port to frontend """
+    if os.environ.get('VALIS_DEV_MODE', None):
+        canis_host = os.environ.get('CANIS_DEV_SERVICE_HOST', None)
+        canis_port = os.environ.get('CANIS_DEV_SERVICE_PORT', None)
+    else:
+        canis_host = os.environ.get('CANIS_PROD_SERVICE_HOST', None)
+        canis_port = os.environ.get('CANIS_PROD_SERVICE_PORT', None)
+    if canis_host == None or canis_port == None:
+        return abort(404, 'CANIS service not found')
+    return f'http://{canis_host}:{canis_port}'
