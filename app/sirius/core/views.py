@@ -628,12 +628,16 @@ def export_query():
 @requires_auth
 def canis_ip_port():
     """ Useful api to provide CANIS backend ip and port to frontend """
-    if os.environ.get('VALIS_DEV_MODE', None):
-        canis_host = os.environ.get('CANIS_DEV_SERVICE_HOST', None)
-        canis_port = os.environ.get('CANIS_DEV_SERVICE_PORT', None)
-    else:
-        canis_host = os.environ.get('CANIS_PROD_SERVICE_HOST', None)
-        canis_port = os.environ.get('CANIS_PROD_SERVICE_PORT', None)
-    if canis_host == None or canis_port == None:
-        return abort(404, 'CANIS service not found')
+    # if os.environ.get('VALIS_DEV_MODE', None):
+    #     canis_host = os.environ.get('CANIS_DEV_SERVICE_HOST', None)
+    #     canis_port = os.environ.get('CANIS_DEV_SERVICE_PORT', None)
+    # else:
+    #     canis_host = os.environ.get('CANIS_PROD_SERVICE_HOST', None)
+    #     canis_port = os.environ.get('CANIS_PROD_SERVICE_PORT', None)
+    # if canis_host == None or canis_port == None:
+    #     return abort(404, 'CANIS service not found')
+    # QYD: The internal IP address will not be accessible by the frontend, so
+    # we return a hard-coded public IP for now
+    canis_host = '35.185.236.30'
+    canis_port = '80'
     return f'http://{canis_host}:{canis_port}'
