@@ -420,4 +420,5 @@ class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
             if namestr.endswith(typename):
                 gtype = typename
                 biosample = namestr[-len(typename)+1:]
+                break
         return gtype, biosample

@@ -15,6 +15,9 @@ if 'KUBERNETES_SERVICE_HOST' in os.environ:
 elif 'MONGO_PORT' in os.environ:
     # This is used when we have container linkage like --link some-mongo:mongo when debugging inside docker containers
     server_address = 'mongo'
+elif 'MONGO_HOST' in os.environ:
+    # For specifying mongo host manually
+    server_address = os.environ['MONGO_HOST']
 else:
     # use kubectl port-forward mongo-0 27017:27017 to forward port if dev locally
     server_address = 'localhost'
