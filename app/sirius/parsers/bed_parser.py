@@ -221,7 +221,7 @@ class BEDParser_ENCODE(BEDParser):
         >>> print(genome_nodes[0])
         {
             "source": "ENCODE",
-            "type": "DNase-only",
+            "type": "   ,
             "name": "EH37E1055273",
             "contig": "chr1",
             "start": 10244,
@@ -335,17 +335,53 @@ class BEDParser_ENCODE(BEDParser):
         return genome_nodes, info_nodes, edges
 
 class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
+    """
+    Parser for Roadmap Epigenomics data
+    Reference from https://github.com/ryanlayer/giggle/blob/master/examples/rme/states.txt
+    1_TssA	Active_TSS
+    2_TssAFlnk	Flanking_Active_TSS
+    3_TxFlnk	Transcr_at_gene_5_and_3
+    4_Tx	Strong_transcription
+    5_TxWk	Weak_transcription
+    6_EnhG	Genic_enhancers
+    7_Enh	Enhancers
+    8_ZNF/Rpts	ZNF_genes_and_repeats
+    9_Het	Heterochromatin
+    10_TssBiv	Bivalent_Poised_TSS
+    11_BivFlnk	Flanking_Bivalent_TSS_Enh
+    12_EnhBiv	Bivalent_Enhancer
+    13_ReprPC	Repressed_PolyComb
+    14_ReprPCWk	Weak_Repressed_PolyComb
+    15_Quies	Quiescent_Low
+    """
+    roadmap_types = {
+        'Active_TSS': 'TssA',
+        'Flanking_Active_TSS': 'TssAFlnk',
+        'Transcr_at_gene_5_and_3': 'TxFlnk',
+        'Strong_transcription': 'Tx',
+        'Weak_transcription': 'TxWk',
+        'Genic_enhancers': 'EnhG',
+        'Enhancers': 'Enh',
+        'ZNF_genes_and_repeats': 'ZNF/Rpts',
+        'Heterochromatin': 'Het',
+        'Bivalent_Poised_TSS': 'TssBiv',
+        'Flanking_Bivalent_TSS_Enh': 'BivFlnk',
+        'Repressed_PolyComb': 'ReprPC',
+        'Weak_Repressed_PolyComb': 'ReprPCWk',
+        'Quiescent_Low': 'Quies'
+    }
     def get_mongo_nodes(self):
         """ giggle roadmap bed file parsing into genomenodes
         ref: https://egg2.wustl.edu/roadmap/web_portal/imputed.html
         """
         genome_nodes, info_nodes, edges = [], [], []
+        gtype, biosample = self.parse_file_name()
         for d in self.data['intervals']:
             start = int(d['start']) + 1
             end = int(d['end'])
             gnode = {
                 'source': DATA_SOURCE_ROADMAP_EPIGENOMICS,
-                'type': 'interval',
+                'type': gtype,
                 'name': d['name'],
                 'contig': d['chrom'],
                 'start': start,
@@ -355,6 +391,21 @@ class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
                     'filename': self.filename
                 }
             }
+            if biosample is not None:
+                gnode['info']['biosample'] = biosample
             gnode['_id'] = 'G' + '_' + self.hash(str(gnode))
             genome_nodes.append(gnode)
         return genome_nodes, info_nodes, edges
+
+    def parse_file_name(self):
+        """
+        Parse the file name of the roadmap bedgz file into specific fields
+        """
+        namestr = self.filename.split('.')[0]
+        gtype = 'interval'
+        biosample = None
+        for typename in self.roadmap_types.keys():
+            if namestr.endswith(typename):
+                gtype = typename
+                biosample = namestr[-len(typename)+1:]
+        return gtype, biosample

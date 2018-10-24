@@ -439,15 +439,17 @@ def parse_upload_ROADMAP_EPIGENOMICS():
         parser = BEDParser_ROADMAP_EPIGENOMICS(fname)
         parser.parse()
         genome_nodes, _, _ = parser.get_mongo_nodes()
-        update_insert_many(GenomeNodes, genome_nodes, update=False)
+        update_insert_many(GenomeNodes, genome_nodes)
     # Add one info node for dataSource
+    all_types = sorted(BEDParser_ROADMAP_EPIGENOMICS.roadmap_types.keys())
     update_insert_many(InfoNodes, [{
         '_id': 'I' + DATA_SOURCE_ROADMAP_EPIGENOMICS,
         "type": "dataSource",
         'name':DATA_SOURCE_ROADMAP_EPIGENOMICS,
         "source": DATA_SOURCE_ROADMAP_EPIGENOMICS,
         'info': {
-            'filenames': bedgz_files
+            'filenames': bedgz_files,
+            'types': all_types,
         }
     }])
     # finish
