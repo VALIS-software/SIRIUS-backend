@@ -395,6 +395,18 @@ class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
                 gnode['info']['biosample'] = biosample
             gnode['_id'] = 'G' + '_' + self.hash(str(gnode))
             genome_nodes.append(gnode)
+        # store the type and info.biosample in a InfoNode of type "ROADMAP_ANNOTATION"
+        info_nodes.append({
+            '_id': f'I_roadmap_{gtype}_{biosample}',
+            'name': self.filename,
+            'type': 'ROADMAP_ANNOTATION',
+            'source': DATA_SOURCE_ROADMAP_EPIGENOMICS,
+            'info': {
+                'filename': self.filename,
+                'types': gtype,
+                'biosample': biosample,
+            }
+        })
         return genome_nodes, info_nodes, edges
 
     def parse_file_name(self):
