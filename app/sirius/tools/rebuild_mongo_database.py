@@ -434,14 +434,18 @@ def parse_upload_ROADMAP_EPIGENOMICS():
     os.chdir('roadmap_sort')
     bedgz_files = sorted([f for f in os.listdir('.') if f.endswith('.bed.gz')])
     print(f"Parsing {len(bedgz_files)} .bed.gz files")
+    # aggregate distinct types and biosamples
+    distinct_types, distinct_biosamples = set(), set()
     for i, fname in enumerate(bedgz_files):
         print(f"{i:3d} {fname[:20]:20s} ", end='', flush=True)
         parser = BEDParser_ROADMAP_EPIGENOMICS(fname)
         parser.parse()
         genome_nodes, _, _ = parser.get_mongo_nodes()
+        for gnode in genome_nodes:
+            distinct_types.add(gnode['type'])
+            distinct_biosamples.add(gnode['info'].get('biosample', None))
         update_insert_many(GenomeNodes, genome_nodes)
     # Add one info node for dataSource
-    all_types = sorted(BEDParser_ROADMAP_EPIGENOMICS.roadmap_types.keys())
     update_insert_many(InfoNodes, [{
         '_id': 'I' + DATA_SOURCE_ROADMAP_EPIGENOMICS,
         "type": "dataSource",
@@ -449,7 +453,8 @@ def parse_upload_ROADMAP_EPIGENOMICS():
         "source": DATA_SOURCE_ROADMAP_EPIGENOMICS,
         'info': {
             'filenames': bedgz_files,
-            'types': all_types,
+            'biosample': sorted(distinct_biosamples),
+            'types': sorted(distinct_types),
         }
     }])
     # finish
