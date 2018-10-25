@@ -630,17 +630,14 @@ class TCGA_MAFParser(Parser):
         # INFO as row keys
         ret += '##INFO=<ID=GENEID,Number=1,Type=String,Description="Entrez_Gene_Id">\n'
         ret += '##INFO=<ID=GENE,Number=1,Type=String,Description="Hugo_Symbol">\n'
-        # FORMAT as entry keys
-        ret += '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="combined depth across samples, e.g. DP=154"\n'
-        # We use the first Tumor_Sample_Barcode since all should be same in this file
-        sample_id = self.mutations[0]['Tumor_Sample_Barcode']
-        ret += f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{sample_id}'
-        #ret += f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tTumorSample'
+        ret += '##INFO=<ID=PB,Number=1,Type=String,Description="TCGA patient barcode">\n'
+        # Title row for the column labels
+        ret += f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO'
         return ret
 
     def vcf_generator(self):
         """ Generate vcf string from self.mutations
-        CHROM   POS   ID   REF   ALT   QUAL   FILTER   INFO   FORMAT   SAMPLE
+        CHROM   POS   ID   REF   ALT   QUAL   FILTER   INFO
         """
         for d in self.mutations:
             contig = d['Chromosome']
@@ -673,10 +670,10 @@ class TCGA_MAFParser(Parser):
                 gid = self.hash(variant_key_string)
             qual = '.'
             filt = d['FILTER']
-            info = f"GENEID={d['Entrez_Gene_Id']};GENE={d['Hugo_Symbol']}"
-            fmt = 'DP'
-            sample = d['t_depth']
-            yield '\t'.join((chrom, pos, gid, ref, alt, qual, filt, info, fmt, sample))
+            # The first twelve characters of tumor barcode are patient barcode
+            patient_barcode = d['Tumor_Sample_Barcode'][:12]
+            info = f"GENEID={d['Entrez_Gene_Id']};GENE={d['Hugo_Symbol']};PB={patient_barcode}"
+            yield '\t'.join((chrom, pos, gid, ref, alt, qual, filt, info))
 
 
 

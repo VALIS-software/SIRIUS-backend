@@ -9,7 +9,7 @@ hl.init(default_reference='GRCh38')
 
 ds = hl.import_vcf('/cache/hail_data_tmp/tcga_variants.vcf')
 
-new = ds.annotate_cols(patient_barcode = ds.s[:12])
+new = ds.rename({'s': 'patient_barcode'})
 
 table = (hl.import_table('/cache/hail_data_tmp/patient_annotations.txt', impute=True)).key_by('patient_barcode')
 

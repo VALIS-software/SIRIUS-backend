@@ -86,39 +86,48 @@ def write_hail_TCGA_VCF(hail_folder, download_folder):
     maf_files.sort()
     print(f"Parsing {len(maf_files)} maf files")
     # merge all maf files into a big VCF file
-    n_sample = len(maf_files)
     vcf_row_headers = []
     vcf_data_mat = []
     vcf_id_index = dict()
-    sample_ids = []
-    for i_sample, f in enumerate(maf_files):
+    patient_bc_idx = dict()
+    for i_file, f in enumerate(maf_files):
         parser = TCGA_MAFParser(f)
         parser.parse()
-        sample_ids.append(parser.mutations[0]['Tumor_Sample_Barcode'])
         n_new, n_exist = 0, 0
         for vcf_str in parser.vcf_generator():
-            (chrom, pos, gid, ref, alt, qual, filt, info, fmt, sample) = vcf_str.split('\t')
+            (chrom, pos, gid, ref, alt, qual, filt, info) = vcf_str.split('\t')
+            # extract the last PATIENT_BARCODE from INFO field
+            info, pb_field = info.rsplit(';', 1)
+            # pb_field should be PB=TCGA-XX-XXXX
+            patient_barcode = pb_field[3:]
+            # if this patient_barcode is new, store the index of this patient (as the column index)
+            patient_bc_idx.setdefault(patient_barcode, len(patient_bc_idx))
+            patient_idx = patient_bc_idx[patient_barcode]
             if gid not in vcf_id_index:
                 vcf_id_index[gid] = len(vcf_data_mat)
                 # insert a new row
-                row_header = [chrom, pos, gid, ref, alt, qual, filt, info, fmt]
+                row_header = [chrom, pos, gid, ref, alt, qual, filt, info]
                 vcf_row_headers.append('\t'.join(row_header))
-                row_data = [(i_sample, sample)]
+                row_data = [patient_idx]
                 vcf_data_mat.append(row_data)
                 n_new += 1
             else:
-                # update the data
-                vcf_data_mat[vcf_id_index[gid]].append((i_sample, sample))
+                # update the data of an existing row
+                vcf_data_mat[vcf_id_index[gid]].append(patient_idx)
                 n_exist += 1
-        print(f"{i_sample:3d}| new {n_new:10d} | exist {n_exist:10d} | total {n_new+n_exist:10d}")
-    print(f'parsing finished, total {len(vcf_data_mat)} variants and {n_sample} samples')
-    # make the header
+        print(f"{i_file:3d}| new {n_new:10d} | exist {n_exist:10d} | total {n_new+n_exist:10d}")
+    n_patients = len(patient_bc_idx)
+    print(f'parsing finished, total {len(vcf_data_mat)} variants and {n_patients} patients')
+    # make the header for the big VCF file
     header_lines = parser.vcf_header().split('\n')
     label_line = header_lines[-1]
-    # remove the last sample id, add all ids
-    labels = label_line.split('\t')[:-1] + sample_ids
-    header_lines = header_lines[:-1] + ['\t'.join(labels)]
-    header = '\n'.join(header_lines) + '\n'
+    header_lines = header_lines[:-1]
+    # add a "FORMAT" key as header line
+    header_lines.append('##FORMAT=<ID=EXIST,Number=1,Type=Integer,Description="Indicate if this variant exist in this sample, 1 for True, 0 for False"\n')
+    # add all patient_ids as samples into the label_line
+    labels = label_line.split('\t') + ['FORMAT'] + list(patient_bc_idx.keys())
+    label_line = '\t'.join(labels)
+    header = '\n'.join(header_lines) + label_line + '\n'
     # write all variants data into file
     os.chdir(current_dir)
     filename = "tcga_variants.vcf"
@@ -126,11 +135,10 @@ def write_hail_TCGA_VCF(hail_folder, download_folder):
     with open(fullpath, "w") as afile:
         afile.write(header)
         for rowh, row_data in zip(vcf_row_headers, vcf_data_mat):
-            #afile.write(rowh + '\t' + '\t'.join(data) + '\n')
-            sample_data_list = ['.'] * n_sample
-            for i_sample, sample_data in row_data:
-                sample_data_list[i_sample] = sample_data
-            afile.write(rowh + '\t' + '\t'.join(sample_data_list) + '\n')
+            patient_data_list = ['.'] * n_patients
+            for patient_idx in row_data:
+                patient_data_list[patient_idx] = '1'
+            afile.write(rowh + '\tEXIST\t' + '\t'.join(patient_data_list) + '\n')
     print(f"Writing {fullpath} finished.")
 
 
