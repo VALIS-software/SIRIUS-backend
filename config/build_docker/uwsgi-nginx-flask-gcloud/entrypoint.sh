@@ -15,6 +15,7 @@ USE_LISTEN_PORT=${LISTEN_PORT:-80}
 # Generate Nginx config first part using the environment variables
 echo "server {
     listen ${USE_LISTEN_PORT};
+    uwsgi_read_timeout 3600;
     root /;
     location / {
         try_files \$uri @app;

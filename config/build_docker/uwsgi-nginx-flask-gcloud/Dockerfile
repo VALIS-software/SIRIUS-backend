@@ -27,17 +27,17 @@ RUN git clone https://github.com/ryanlayer/giggle.git
 RUN cd giggle && make
 ENV PATH /opt/giggle/bin:$PATH
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
-
-# Install fuzzyset using a separate command
-RUN pip install git+https://github.com/axiak/fuzzyset.git#egg=fuzzyset
-
 # Set the working directory
 WORKDIR /app
 
 # Copy the current directory contents into the container
 COPY . /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Install fuzzyset using a separate command
+RUN pip install git+https://github.com/axiak/fuzzyset.git#egg=fuzzyset
 
 # We use our own entrypoint that will generate Nginx additional configs
 COPY entrypoint.sh /entrypoint.sh
