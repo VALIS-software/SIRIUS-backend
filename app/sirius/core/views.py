@@ -616,6 +616,20 @@ def export_query():
             blob.upload_from_filename(bed.fn)
         except Exception as e:
             return abort(404, f'Export failed with error:\n{e}')
+    elif file_format == 'bed.gz':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as bed file')
+        qt = QueryTree(query)
+        bed = qt.head.convert_results_to_Bed()
+        # compress bed file into bed.gz using bgzip
+        bedgzfn = bed.fn + '.gz'
+        subprocess.run(f'/opt/giggle/lib/htslib/bgzip {bed.fn}', shell=True, check=True)
+        try:
+            bucket = storage_buckets['canis']
+            blob = bucket.blob(upload_url)
+            blob.upload_from_filename(bedgzfn)
+        except Exception as e:
+            return abort(404, f'Export failed with error:\n{e}')
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
     return json.dumps("Success")

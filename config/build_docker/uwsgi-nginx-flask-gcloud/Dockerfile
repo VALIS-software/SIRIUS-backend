@@ -17,28 +17,27 @@ ENV PATH /opt/google-cloud-sdk/bin:$PATH
 RUN apt-get install bedtools
 
 # install tiledb
-RUN apt-get install -y sudo cmake
-RUN wget -P tiledb https://github.com/TileDB-Inc/TileDB/archive/1.3.0.tar.gz \
-    && tar xzf tiledb/1.3.0.tar.gz -C tiledb \
-    && rm tiledb/1.3.0.tar.gz \
-    && cd tiledb/TileDB-1.3.0 \
-    && mkdir build && cd build \
-    && ../bootstrap --prefix=/usr/local \
-    && make \
-    && make install-tiledb
-ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
+RUN apt-get install -y -qq cmake
+# tiledb is now installed with `pip install tiledb` natively
 
-# Set the working directory
-WORKDIR /app
-
-# Copy the current directory contents into the container
-COPY . /app
+# install giggle (also provide tools like bgzip and tabix)
+WORKDIR /opt
+RUN apt-get install -y gcc make autoconf zlib1g-dev libbz2-dev libcurl4-openssl-dev ruby curl libfreetype6-dev
+RUN git clone https://github.com/ryanlayer/giggle.git
+RUN cd giggle && make
+ENV PATH /opt/giggle/bin:$PATH
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Install fuzzyset using a separate command
 RUN pip install git+https://github.com/axiak/fuzzyset.git#egg=fuzzyset
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the current directory contents into the container
+COPY . /app
 
 # We use our own entrypoint that will generate Nginx additional configs
 COPY entrypoint.sh /entrypoint.sh
