@@ -44,3 +44,6 @@ class QueryEdge(object):
         if self.verbose == True:
             print(mongo_filter)
         return set(d[from_id_key] for d in self.mongo_collection.find(mongo_filter, {from_id_key:1}, limit=self.limit))
+
+    def export(self, filename, ftype):
+        raise NotImplementedError("Exporting query Edge is not implemented yet")

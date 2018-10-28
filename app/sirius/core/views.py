@@ -11,6 +11,7 @@ import time
 import threading
 import random
 import subprocess
+import tempfile
 from sirius.main import app
 from sirius.core.utilities import get_data_with_id, HashableDict, threadsafe_lru
 from sirius.query.query_tree import QueryTree
@@ -609,7 +610,8 @@ def export_query():
         if query['type'] != QUERY_TYPE_GENOME:
             return abort(404, 'only genome query can export as bed file')
         qt = QueryTree(query)
-        bed = qt.head.convert_results_to_Bed()
+        filename = tempfile.mkstemp(suffix='.bed', prefix='export_')[1]
+        bed = qt.export(filename, ftype='bed')
         try:
             bucket = storage_buckets['canis']
             blob = bucket.blob(upload_url)
@@ -630,6 +632,8 @@ def export_query():
             blob.upload_from_filename(bedgzfn)
         except Exception as e:
             return abort(404, f'Export failed with error:\n{e}')
+        # remove local file after uploading
+        os.unlink(bedgzfn)
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
     return json.dumps("Success")

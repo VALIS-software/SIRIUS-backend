@@ -1,5 +1,6 @@
 import time
 import copy
+import subprocess
 from sirius.core.utilities import HashableDict
 from sirius.analysis.bed import Bed
 from sirius.mongo import GenomeNodes
@@ -208,3 +209,26 @@ class GenomeQueryNode(object):
         projection=['_id', 'contig', 'start', 'end', 'info.score', 'info.strand']
         gen = doc_generator(self.mongo_collection, result_ids, projection=projection)
         return Bed(gen)
+
+    def export(self, filename, ftype):
+        if ftype == 'bed':
+            self.export_bed(filename)
+        elif ftype == 'bed.gz':
+            self.export_bed_gz(filename)
+        else:
+            raise NotImplementedError(f"Exporting GenomeQuery as {ftype} not implemented yet")
+
+    def export_bed(self, filename):
+        """ Export results to a bed file with the original interval name """
+        with open(filename, 'w') as outfile:
+            projection=['contig', 'start', 'end', 'name']
+            for d in self.find(projection=projection):
+                bedstr = '\t'.join((d['contig'], str(d['start']-1), str(d['end']), d['name'])) + '\n'
+                outfile.write(bedstr)
+
+    def export_bed_gz(self, filename):
+        """ Export results to a bed file with the original interval name """
+        assert filename.endswith('.bed.gz'), 'filename should end with .bed.gz'
+        bedfilename = filename[:-3]
+        self.export_bed(bedfilename)
+        subprocess.run(f'/opt/giggle/lib/htslib/bgzip {bedfilename}', shell=True, check=True)

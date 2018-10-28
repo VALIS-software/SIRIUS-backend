@@ -100,3 +100,6 @@ class InfoQueryNode(object):
         if self.verbose == True:
             print(mongo_filter)
         return set(d['_id'] for d in self.mongo_collection.find(mongo_filter, {'_id':1}, limit=self.limit))
+
+    def export(self, filename, ftype):
+        raise NotImplementedError("Exporting InfoQuery is not implemented yet.")
