@@ -1,6 +1,7 @@
 CHROMO_NAMES = [ str(i) for i in list(range(1,23)) ] + ['X','Y','MT']
 CHROMO_IDXS = dict([(name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
 KNOWN_CONTIGS = set('chr'+s for s in CHROMO_NAMES)
+CONTIG_IDXS = dict([('chr'+name,i) for i,name in enumerate(CHROMO_NAMES, 1)])
 
 QUERY_TYPE_GENOME = 'GenomeNode'
 QUERY_TYPE_INFO = 'InfoNode'

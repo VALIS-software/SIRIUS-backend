@@ -5,6 +5,7 @@ from sirius.core.utilities import HashableDict
 from sirius.analysis.bed import Bed
 from sirius.mongo import GenomeNodes
 from sirius.mongo.utils import doc_generator
+from sirius.helpers.constants import CONTIG_IDXS
 
 def intersect_id_filter_set(id_filter, id_set):
     """ Intersect the '_id' field of a mongo filter with a set of ids """
@@ -228,7 +229,7 @@ class GenomeQueryNode(object):
                     outfile.write(bedstr)
             else:
                 bed_intervals = [(d['contig'], str(d['start']-1), str(d['end']), d['name']) for d in self.find(projection=projection)]
-                for interval in sorted(bed_intervals):
+                for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS[t[0]], t[1])):
                     bedstr = '\t'.join(interval) + '\n'
                     outfile.write(bedstr)
 
