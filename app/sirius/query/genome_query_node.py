@@ -228,9 +228,9 @@ class GenomeQueryNode(object):
                     bedstr = '\t'.join((d['contig'], str(d['start']-1), str(d['end']), d['name'])) + '\n'
                     outfile.write(bedstr)
             else:
-                bed_intervals = [(d['contig'], str(d['start']-1), str(d['end']), d['name']) for d in self.find(projection=projection)]
+                bed_intervals = [(d['contig'], d['start']-1, d['end'], d['name']) for d in self.find(projection=projection)]
                 for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS[t[0]], t[1])):
-                    bedstr = '\t'.join(interval) + '\n'
+                    bedstr = '\t'.join(map(str, interval)) + '\n'
                     outfile.write(bedstr)
 
     def export_bed_gz(self, filename, sort=False):
