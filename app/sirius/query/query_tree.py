@@ -81,7 +81,7 @@ class QueryTree(object):
     def distinct(self, key):
         return self.head.distinct(key)
 
-    def export(self, filename, ftype):
+    def export(self, filename, ftype, sort=False):
         """ Export query results to a file with specified type """
         assert hasattr(self, 'head'), 'Query is not built, self.head is not set'
-        return self.head.export(filename, ftype)
+        return self.head.export(filename, ftype, sort=sort)

@@ -600,40 +600,40 @@ def export_query():
     jsondata = request.get_json()
     query = jsondata.get('query', None)
     file_format = jsondata.get('fileFormat', 'bed')
-    upload_url = jsondata.get('uploadUrl',None)
+    upload_url = jsondata.get('uploadUrl', None)
+    sort = jsondata.get('sort', False)
     if not query:
         return abort(404, 'query field not found in jsondata')
     if not upload_url:
         return abort(404, 'uploadUrl field not found in jsondata')
-    # export as bed
+    # export
     if file_format == 'bed':
         if query['type'] != QUERY_TYPE_GENOME:
             return abort(404, 'only genome query can export as bed file')
         qt = QueryTree(query)
         filename = tempfile.mkstemp(suffix='.bed', prefix='export_')[1]
-        bed = qt.export(filename, ftype='bed')
+        qt.export(filename, ftype='bed', sort=sort)
         try:
             bucket = storage_buckets['canis']
             blob = bucket.blob(upload_url)
-            blob.upload_from_filename(bed.fn)
+            blob.upload_from_filename(filename)
         except Exception as e:
-            return abort(404, f'Export failed with error:\n{e}')
+            return abort(404, f'Upload failed with error:\n{e}')
+        os.unlink(filename)
     elif file_format == 'bed.gz':
         if query['type'] != QUERY_TYPE_GENOME:
             return abort(404, 'only genome query can export as bed file')
         qt = QueryTree(query)
-        bed = qt.head.convert_results_to_Bed()
-        # compress bed file into bed.gz using bgzip
-        bedgzfn = bed.fn + '.gz'
-        subprocess.run(f'/opt/giggle/lib/htslib/bgzip {bed.fn}', shell=True, check=True)
+        filename = tempfile.mkstemp(suffix='.bed', prefix='export_')[1] + '.gz'
+        qt.export(filename, ftype='bed.gz', sort=sort)
         try:
             bucket = storage_buckets['canis']
             blob = bucket.blob(upload_url)
-            blob.upload_from_filename(bedgzfn)
+            blob.upload_from_filename(filename)
         except Exception as e:
-            return abort(404, f'Export failed with error:\n{e}')
+            return abort(404, f'Upload failed with error:\n{e}')
         # remove local file after uploading
-        os.unlink(bedgzfn)
+        os.unlink(filename)
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
     return json.dumps("Success")

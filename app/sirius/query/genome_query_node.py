@@ -210,25 +210,31 @@ class GenomeQueryNode(object):
         gen = doc_generator(self.mongo_collection, result_ids, projection=projection)
         return Bed(gen)
 
-    def export(self, filename, ftype):
+    def export(self, filename, ftype, sort=False):
         if ftype == 'bed':
-            self.export_bed(filename)
+            self.export_bed(filename, sort=sort)
         elif ftype == 'bed.gz':
-            self.export_bed_gz(filename)
+            self.export_bed_gz(filename, sort=sort)
         else:
             raise NotImplementedError(f"Exporting GenomeQuery as {ftype} not implemented yet")
 
-    def export_bed(self, filename):
+    def export_bed(self, filename, sort=False):
         """ Export results to a bed file with the original interval name """
         with open(filename, 'w') as outfile:
             projection=['contig', 'start', 'end', 'name']
-            for d in self.find(projection=projection):
-                bedstr = '\t'.join((d['contig'], str(d['start']-1), str(d['end']), d['name'])) + '\n'
-                outfile.write(bedstr)
+            if not sort:
+                for d in self.find(projection=projection):
+                    bedstr = '\t'.join((d['contig'], str(d['start']-1), str(d['end']), d['name'])) + '\n'
+                    outfile.write(bedstr)
+            else:
+                bed_intervals = [(d['contig'], str(d['start']-1), str(d['end']), d['name']) for d in self.find(projection=projection)]
+                for interval in sorted(bed_intervals):
+                    bedstr = '\t'.join(interval) + '\n'
+                    outfile.write(bedstr)
 
-    def export_bed_gz(self, filename):
+    def export_bed_gz(self, filename, sort=False):
         """ Export results to a bed file with the original interval name """
         assert filename.endswith('.bed.gz'), 'filename should end with .bed.gz'
         bedfilename = filename[:-3]
-        self.export_bed(bedfilename)
+        self.export_bed(bedfilename, sort=sort)
         subprocess.run(f'/opt/giggle/lib/htslib/bgzip {bedfilename}', shell=True, check=True)
