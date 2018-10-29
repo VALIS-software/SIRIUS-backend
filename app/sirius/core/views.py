@@ -4,7 +4,7 @@
 #  Here sits all the api endpoints #
 #==================================#
 
-from flask import abort, request, send_from_directory
+from flask import abort, request, send_from_directory, send_file
 import os
 import json
 import time
@@ -35,7 +35,7 @@ def index():
 
 @app.route('/<path:path>')
 @requires_auth
-def send_file(path):
+def send_static_file(path):
     return app.send_static_file(path)
 
 
@@ -594,7 +594,7 @@ from sirius.helpers import storage_buckets
 
 @app.route('/export_query', methods=['POST'])
 @requires_auth
-def export_query():
+def export_query_endpoint():
     """ run a query then export the result """
     # get input and check valid
     jsondata = request.get_json()
@@ -637,6 +637,44 @@ def export_query():
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
     return json.dumps("Success")
+
+#**************************************
+#*       /download_query API            *
+#**************************************
+from sirius.helpers import storage_buckets
+
+@app.route('/download_query', methods=['POST'])
+@requires_auth
+def download_query_endpoint():
+    """ run a query then export the result """
+    # get input and check valid
+    jsondata = request.get_json()
+    query = jsondata.get('query', None)
+    file_format = jsondata.get('fileFormat', 'bed')
+    sort = jsondata.get('sort', False)
+    if not query:
+        return abort(404, 'query field not found in jsondata')
+    # export
+    if file_format == 'bed':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as bed file')
+        qt = QueryTree(query)
+        filename = tempfile.mkstemp(suffix='.bed', prefix='export_')[1]
+        qt.export(filename, ftype=file_format, sort=sort)
+        response = send_file(filename, mimetype='plain/text')
+        os.unlink(filename)
+    elif file_format == 'bed.gz':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as bed file')
+        qt = QueryTree(query)
+        filename = tempfile.mkstemp(suffix='.bed', prefix='export_')[1] + '.gz'
+        qt.export(filename, ftype=file_format, sort=sort)
+        response = send_file(filename, mimetype='application')
+        # remove local file after sending back
+        os.unlink(filename)
+    else:
+        return abort(404, f'Downloading with fileFormat {file_format} is not implemented yet')
+    return response
 
 
 #**************************************
