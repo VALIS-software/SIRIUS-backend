@@ -655,7 +655,12 @@ def canis_ip_port():
     # if canis_host == None or canis_port == None:
     #     return abort(404, 'CANIS service not found')
     # QYD: The internal IP address will not be accessible by the frontend, so
-    # we return a hard-coded public IP for now
-    canis_host = '35.185.236.30'
-    canis_port = '80'
-    return f'http://{canis_host}:{canis_port}'
+    # we return a hard-coded public IP for the dev server
+    if os.environ.get('VALIS_DEV_MODE', None):
+        canis_host = '35.185.236.30'
+        canis_port = '80'
+        ret = f'http://{canis_host}:{canis_port}'
+    else:
+        # on the production server, we return None to disable the api
+        ret = None
+    return json.dumps(ret)
