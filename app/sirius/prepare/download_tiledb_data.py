@@ -23,7 +23,11 @@ def download_fasta_tiledb():
         if local_file_mtime > blob.updated:
             skip_download = True
             print(f"Found local file {filename} newer than cloud blob, skip downloading")
+        else:
+            print(f"Found local file {filename} older than cloud blob, cleaning files fasta_*")
+            subprocess.check_call("rm -r fasta_*", shell=True)
     if not skip_download:
+        print(f"Downloading {filename} from cloud storage bucket")
         blob.download_to_filename(filename)
         print("File download finished. Extracting")
         subprocess.check_call(f"tar zxf {filename}", shell=True)
