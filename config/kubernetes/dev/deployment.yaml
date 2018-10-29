@@ -26,6 +26,16 @@ spec:
           requests:
             cpu: "3"
             memory: "20Gi"
+        readinessProbe:
+          httpGet:
+            path: /index
+            port: 5000
+            httpHeaders:
+            - name: X-Custom-Header
+              value: Awesome
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          timeoutSeconds: 5
       volumes:
       - name: "local-ssd"
         hostPath:
