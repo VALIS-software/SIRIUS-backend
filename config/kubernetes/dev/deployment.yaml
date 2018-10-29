@@ -28,7 +28,7 @@ spec:
             memory: "20Gi"
         readinessProbe:
           httpGet:
-            path: /index
+            path: /healthcheck
             port: 5000
             httpHeaders:
             - name: X-Custom-Header

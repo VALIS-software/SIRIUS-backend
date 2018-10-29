@@ -38,6 +38,13 @@ def index():
 def send_static_file(path):
     return app.send_static_file(path)
 
+#**************************
+#*      /healthcheck      *
+#**************************
+
+@app.route("/healthcheck")
+def healthcheck_api():
+    return json.dumps("SIRIUS is running")
 
 
 #**************************
