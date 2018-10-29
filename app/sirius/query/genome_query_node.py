@@ -229,7 +229,7 @@ class GenomeQueryNode(object):
                     outfile.write(bedstr)
             else:
                 bed_intervals = [(d['contig'], d['start']-1, d['end'], d['name']) for d in self.find(projection=projection)]
-                for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS[t[0]], t[1])):
+                for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS[t[0]], t[1], t[2])):
                     bedstr = '\t'.join(map(str, interval)) + '\n'
                     outfile.write(bedstr)
 
