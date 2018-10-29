@@ -1,25 +1,33 @@
 #!/usr/bin/env python
 
-import os, shutil, subprocess
+import os
+import shutil
+import subprocess
+from datetime import datetime, timezone
 from sirius.helpers import storage_buckets
 
 def download_fasta_tiledb():
     dest = os.environ['TILEDB_ROOT']
-    filename = 'sirius_fasta_data.tar.gz'
     if not os.path.isdir(dest):
         os.makedirs(dest)
-        os.chdir(dest)
-        bucket = storage_buckets['siriusdata']
-        blob = bucket.get_blob(filename)
-        print(f"Connected to google cloud. File {filename} found.")
+    os.chdir(dest)
+    filename = 'sirius_fasta_data.tar.gz'
+    bucket = storage_buckets['siriusdata']
+    blob = bucket.get_blob(filename)
+    print(f"Connected to google cloud. File {filename} found.")
+    # check if local download exists
+    skip_download = False
+    if os.path.exists(filename):
+        # compare updated time of blob on cloud and local
+        local_file_mtime = datetime.fromtimestamp(os.path.getmtime(filename), tz=timezone.utc)
+        if local_file_mtime > blob.updated:
+            skip_download = True
+            print(f"Found local file {filename} newer than cloud blob, skip downloading")
+    if not skip_download:
         blob.download_to_filename(filename)
         print("File download finished. Extracting")
         subprocess.check_call(f"tar zxf {filename}", shell=True)
-        # delete the tar file
-        os.unlink(filename)
-        print(f"File {filename} deleted")
-    else:
-        print(f"{dest} already exists, skipped downloading")
+        print("File extraction finished")
 
 if __name__ == "__main__":
      download_fasta_tiledb()
