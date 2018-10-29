@@ -17,6 +17,7 @@ spec:
       containers:
       - name: sirius-prod
         image: us.gcr.io/valis-194104/sirius:prod
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         volumeMounts:
