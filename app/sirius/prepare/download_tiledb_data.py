@@ -35,7 +35,7 @@ def download_fasta_tiledb():
 
     # use rsync command to download and sync tiledb folder
     print(f"Running rsync to download tiledb folder")
-    subprocess.run(f"gsutil -m rsync -r {dest} gsutil://siriusdata/tiledb > rsync.log", shell=True, check=True)
+    subprocess.run(f"gsutil -m rsync -r {dest} gs://siriusdata/tiledb > rsync.log", shell=True, check=True)
 
 if __name__ == "__main__":
      download_fasta_tiledb()
