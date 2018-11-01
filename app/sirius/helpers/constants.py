@@ -25,6 +25,7 @@ DATA_SOURCE_23ANDME = '23andMe'
 DATA_SOURCE_KEGG = 'KEGG'
 DATA_SOURCE_NATURE_CAUSAL_VARIANTS = "Nature-Causal-Variants"
 DATA_SOURCE_ROADMAP_EPIGENOMICS = 'Roadmap Epigenomics'
+DATA_SOURCE_ImmuneAtlas = 'ImmuneAtlas'
 
 TRACK_TYPE_SEQUENCE = 'track_type_sequence'
 TRACK_TYPE_FUNCTIONAL = 'track_type_functional'

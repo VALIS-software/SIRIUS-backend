@@ -14,7 +14,7 @@ from sirius.parsers import GFFParser_ENSEMBL
 from sirius.parsers import TSVParser_GWAS, TSVParser_ENCODEbigwig, TSVParser_HGNC
 from sirius.parsers import EQTLParser_GTEx
 from sirius.parsers import VCFParser_ClinVar, VCFParser_dbSNP, VCFParser_ExAC
-from sirius.parsers import BEDParser_ENCODE, BEDParser_ROADMAP_EPIGENOMICS
+from sirius.parsers import BEDParser_ENCODE, BEDParser_ROADMAP_EPIGENOMICS, BEDParser_ImmuneAtlas
 from sirius.parsers import FASTAParser
 from sirius.parsers import OBOParser_EFO
 from sirius.parsers import TCGA_XMLParser, TCGA_MAFParser, TCGA_CNVParser
@@ -22,7 +22,7 @@ from sirius.parsers import KEGG_XMLParser
 from sirius.parsers import Parser_NatureCasualVariants
 
 from sirius.helpers.constants import DATA_SOURCE_TCGA, DATA_SOURCE_GWAS, DATA_SOURCE_GTEX, \
-    DATA_SOURCE_KEGG, DATA_SOURCE_ROADMAP_EPIGENOMICS, ENSEMBL_GENE_SUBTYPES
+    DATA_SOURCE_KEGG, DATA_SOURCE_ROADMAP_EPIGENOMICS, ENSEMBL_GENE_SUBTYPES, DATA_SOURCE_ImmuneAtlas
 from sirius.helpers.tiledb import tilehelper
 
 # By default we will build a small version of the database for dev only
@@ -43,6 +43,7 @@ HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete
 KEGG_URL = 'https://storage.googleapis.com/sirius_data_source/KEGG/kegg_pathways.tar.gz'
 NATURE_CASUAL_VARIANTS_URL = 'gs://sirius_data_source/Nature-Causal-Variants/nature13835-s1.csv'
 ROADMAP_EPIGENOMICS_URL = 'https://s3.amazonaws.com/layerlab/giggle/roadmap/roadmap_sort.tar.gz'
+IMMUNE_ATLAS_URL = 'gs://sirius_data_source/ImmuneAtlasBed/'
 
 if FULL_DATABASE:
     DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/All_20180418.vcf.gz'
@@ -150,6 +151,10 @@ def download_genome_data():
     mkchdir("KEGG")
     download_not_exist(KEGG_URL)
     os.chdir('..')
+    # ImmuneAtlas
+    print("Downloading ImmuneAtlas data in ImmuneAtlasBed folder")
+    # we directly download the folder from cloud bucket
+    download_not_exist(IMMUNE_ATLAS_URL)
     # Finish
     print("All downloads finished")
     os.chdir('..')
@@ -230,30 +235,35 @@ def parse_upload_all_datasets(source_start=1):
         os.chdir('roadmap_epigenomics')
         parse_upload_ROADMAP_EPIGENOMICS()
         os.chdir('..')
+    if source_start <= 11:
+        print("\n*** 3.11 ImmuneAtlas ***")
+        os.chdir('ImmuneAtlasBed')
+        parse_upload_ImmuneAtlas()
+        os.chdir('..')
     ## The following dataset should be parsed in the end
     ## Because they "Patch" the existing data
-    if source_start <= 11:
-        print("\n*** 3.11 GWAS ***")
+    if source_start <= 12:
+        print("\n*** 3.12 GWAS ***")
         os.chdir('gwas')
         parse_upload_GWAS()
         os.chdir('..')
-    if source_start <= 12:
-        print("\n*** 3.12 GTEx ***")
+    if source_start <= 13:
+        print("\n*** 3.13 GTEx ***")
         os.chdir('GTEx')
         parse_upload_GTEx_files()
         os.chdir('..')
-    if source_start <= 13:
-        print("\n*** 3.13 EFO ***")
+    if source_start <= 14:
+        print("\n*** 3.14 EFO ***")
         os.chdir('EFO')
         parse_upload_EFO()
         os.chdir('..')
-    if source_start <= 14:
-        print("\n*** 3.14 HGNC ***")
+    if source_start <= 15:
+        print("\n*** 3.15 HGNC ***")
         os.chdir('HGNC')
         parse_upload_HGNC()
         os.chdir('..')
-    if source_start <= 15:
-        print("\n*** 3.15 KEGG ***")
+    if source_start <= 16:
+        print("\n*** 3.16 KEGG ***")
         os.chdir('KEGG')
         parse_upload_KEGG()
         os.chdir('..')
@@ -454,6 +464,29 @@ def parse_upload_ROADMAP_EPIGENOMICS():
     # finish
     os.chdir('..')
 
+def parse_upload_ImmuneAtlas():
+    bedgz_files = sorted([f for f in os.listdir('.') if f.endswith('.bed.gz')])
+    print(f"Parsing {len(bedgz_files)} .bed.gz files")
+    distinct_biosamples = set()
+    for i, fname in enumerate(bedgz_files):
+        print(f"{i:3d} {fname[:20]:20s} ", end='', flush=True)
+        parser = BEDParser_ImmuneAtlas(fname)
+        parser.parse()
+        genome_nodes, _, _ = parser.get_mongo_nodes()
+        update_insert_many(GenomeNodes, genome_nodes)
+        # aggregate all biosamples
+        distinct_biosamples.add(genome_nodes[0]['info']['biosample'])
+    # Add one info node for dataSource
+    update_insert_many(InfoNodes, [{
+        '_id': 'I' + DATA_SOURCE_ImmuneAtlas,
+        "type": "dataSource",
+        'name':DATA_SOURCE_ImmuneAtlas,
+        "source": DATA_SOURCE_ImmuneAtlas,
+        'info': {
+            'biosample': list(distinct_biosamples),
+        }
+    }])
+
 def parse_upload_GWAS():
     filename = 'gwas.tsv'
     parser = TSVParser_GWAS(filename, verbose=True)
@@ -623,11 +656,12 @@ In Step 3, datasets are parsed and uploaded, in the following order:
 8. TCGA
 9. Nature-Causal-Variants
 10. Roadmap Epigenomics
-11. GWAS
-12. GTEx
-13. EFO
-14. HGNC
-15. Kegg
+11. ImmuneAtlas
+12. GWAS
+13. GTEx
+14. EFO
+15. HGNC
+16. Kegg
 '''
 
 def main():
