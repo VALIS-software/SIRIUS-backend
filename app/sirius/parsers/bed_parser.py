@@ -1,5 +1,5 @@
 from sirius.helpers.constants import CHROMO_IDXS, ENCODE_COLOR_TYPES, KNOWN_CONTIGS
-from sirius.helpers.constants import DATA_SOURCE_ENCODE, DATA_SOURCE_ROADMAP_EPIGENOMICS
+from sirius.helpers.constants import DATA_SOURCE_ENCODE, DATA_SOURCE_ROADMAP_EPIGENOMICS, DATA_SOURCE_ImmuneAtlas
 from sirius.parsers.parser import Parser
 from sirius.parsers.liftover import lo
 
@@ -422,3 +422,34 @@ class BEDParser_ROADMAP_EPIGENOMICS(BEDParser):
                 biosample = namestr[:-len(typename)-1].replace('_', ' ')
                 break
         return gtype, biosample
+
+class BEDParser_ImmuneAtlas(BEDParser):
+    """
+    Parser for ImmuneAtlas dataset
+    """
+    def get_mongo_nodes(self):
+        """
+        Parse the intervals in ImmuneAtlas bed files into GenomeNodes
+        """
+        genome_nodes, info_nodes, edges = [], [], []
+        # we use the file name as biosample
+        biosample = self.filename.split('.', 1)[0]
+        for d in self.data['intervals']:
+            start = int(d['start']) + 1
+            end = int(d['end'])
+            gnode = {
+                'source': DATA_SOURCE_ImmuneAtlas,
+                'type': 'interval',
+                'name': '',
+                'contig': d['chrom'],
+                'start': start,
+                'end': end,
+                'length': end - start + 1,
+                'info': {
+                    'biosample': biosample,
+                    'count': int(d['name']),
+                }
+            }
+            gnode['_id'] = 'G' + '_' + self.hash(str(gnode))
+            genome_nodes.append(gnode)
+        return genome_nodes, info_nodes, edges
