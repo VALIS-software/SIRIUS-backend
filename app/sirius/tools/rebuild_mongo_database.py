@@ -473,9 +473,9 @@ def parse_upload_ImmuneAtlas():
         parser = BEDParser_ImmuneAtlas(fname)
         parser.parse()
         genome_nodes, _, _ = parser.get_mongo_nodes()
-        update_insert_many(GenomeNodes, genome_nodes)
         # aggregate all biosamples
         distinct_biosamples.add(genome_nodes[0]['info']['biosample'])
+        update_insert_many(GenomeNodes, genome_nodes)
     # Add one info node for dataSource
     update_insert_many(InfoNodes, [{
         '_id': 'I' + DATA_SOURCE_ImmuneAtlas,
@@ -483,7 +483,7 @@ def parse_upload_ImmuneAtlas():
         'name':DATA_SOURCE_ImmuneAtlas,
         "source": DATA_SOURCE_ImmuneAtlas,
         'info': {
-            'biosample': list(distinct_biosamples),
+            'biosample': sorted(distinct_biosamples),
         }
     }])
 
