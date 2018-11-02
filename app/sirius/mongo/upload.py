@@ -1,5 +1,8 @@
+import copy
+
 def update_insert_many(dbCollection, nodes, update=True):
     if not nodes: return
+    nodes = copy.deepcopy(nodes)
     print(f"Uploading {dbCollection.name:12s}", end='', flush=True)
     prefix = dbCollection.name[0]
     all_ids = []
