@@ -4,10 +4,12 @@ from sirius.core.utilities import HashableDict, threadsafe_lru
 from sirius.query.query_tree import QueryTree
 from sirius.helpers.loaddata import loaded_genome_contigs
 
-def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
+def get_intervals_in_range(contig, start_bp, end_bp, query, fields=None, verbose=True):
+    # default fields to empty list
+    if fields is None: fields = []
     # lode cached data
     t0 = time.time()
-    query_genome_data, query_start_bps = get_interval_query_results(HashableDict(query))
+    query_genome_data, query_start_bps = get_interval_query_results(HashableDict(query), tuple(sorted(fields)))
     contig_genome_data = query_genome_data[contig]
     contig_start_bps = query_start_bps[contig]
     total_query_count = len(contig_genome_data)
@@ -26,23 +28,27 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
     # form return format
     result = []
     for d in genome_data_in_range:
-        result.append({
+        ret_d = {
             'id': d['_id'],
             'start': d['start'],
             'length': d['length'],
             'type': d['type'],
-            'name': d['name']
-        })
+            'name': d['name'],
+        }
+        if 'info' in d:
+            ret_d['info'] = d['info']
+        result.append(ret_d)
     return result
 
 @threadsafe_lru(maxsize=8192)
-def get_interval_query_results(query):
+def get_interval_query_results(query, fields):
     print(f'-----thread running {query}')
     qt = QueryTree(query)
     # we split the results into contigs
     genome_data = {contig: [] for contig in loaded_genome_contigs}
     # put the results in to cache
-    for gnode in qt.find(projection=['_id', 'contig', 'start', 'length', 'type', 'name']):
+    projection = ['_id', 'contig', 'start', 'length', 'type', 'name'] + list(fields)
+    for gnode in qt.find(projection=projection):
         contig = gnode.pop('contig')
         genome_data[contig].append(gnode)
     # sort the results based on the start

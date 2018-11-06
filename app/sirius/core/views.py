@@ -495,6 +495,9 @@ from sirius.core.interval_track import get_intervals_in_range
 def get_interval_track_data(contig, start_bp, end_bp):
     t0 = time.time()
     query = request.get_json()
+    fields = request.args.get('fields', None)
+    if fields:
+        fields = fields.split(',')
     if not query:
         return abort(404, 'no query specified')
     if contig not in loaded_contig_info_dict:
@@ -503,7 +506,8 @@ def get_interval_track_data(contig, start_bp, end_bp):
         'contig': contig,
         'start_bp': start_bp,
         'end_bp': end_bp,
-        'data': []
+        'fields': fields,
+        'data': [],
     })
     total_length = loaded_contig_info_dict[contig]['length']
     # check start_bp and end_bp
@@ -513,12 +517,13 @@ def get_interval_track_data(contig, start_bp, end_bp):
     start_bp = max(start_bp, 1)
     end_bp = min(end_bp, total_length)
     t1 = time.time()
-    result_data = get_intervals_in_range(contig, start_bp, end_bp, query)
+    result_data = get_intervals_in_range(contig, start_bp, end_bp, query, fields=fields)
     result = {
         'contig': contig,
         'start_bp': start_bp,
         'end_bp': end_bp,
-        'data': result_data
+        'fields': fields,
+        'data': result_data,
     }
     t2 = time.time()
     print(f'{len(result_data)} interval_data, {query}, parse {t1-t0:.2f} s | load {t2-t1:.2f} s')
