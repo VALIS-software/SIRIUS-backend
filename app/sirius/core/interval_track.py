@@ -27,8 +27,9 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True, fields
     result = []
     for d in genome_data_in_range:
         curr_fields = {}
-        for field in fields:
-            curr_fields[field] = d[field] if field in d else None
+        if fields:
+            for field in fields:
+                curr_fields[field] = d[field] if field in d else None
         result.append({
             'id': d['_id'],
             'start': d['start'],
