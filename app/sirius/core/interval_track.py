@@ -4,7 +4,7 @@ from sirius.core.utilities import HashableDict, threadsafe_lru
 from sirius.query.query_tree import QueryTree
 from sirius.helpers.loaddata import loaded_genome_contigs
 
-def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
+def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True, fields=None):
     # lode cached data
     t0 = time.time()
     query_genome_data, query_start_bps = get_interval_query_results(HashableDict(query))
@@ -26,12 +26,16 @@ def get_intervals_in_range(contig, start_bp, end_bp, query, verbose=True):
     # form return format
     result = []
     for d in genome_data_in_range:
+        curr_fields = {}
+        for field in fields:
+            curr_fields[field] = d[field] if field in d else None
         result.append({
             'id': d['_id'],
             'start': d['start'],
             'length': d['length'],
             'type': d['type'],
-            'name': d['name']
+            'name': d['name'],
+            'info' : curr_fields
         })
     return result
 
