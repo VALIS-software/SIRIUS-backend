@@ -216,6 +216,10 @@ class GenomeQueryNode(object):
             self.export_bed(filename, sort=sort)
         elif ftype == 'bed.gz':
             self.export_bed_gz(filename, sort=sort)
+        elif ftype == 'vcf':
+            self.export_vcf(filename, sort=sort)
+        elif ftype == 'vcf.gz':
+            self.export_vcf_gz(filename, sort=sort)
         else:
             raise NotImplementedError(f"Exporting GenomeQuery as {ftype} not implemented yet")
 
@@ -239,3 +243,43 @@ class GenomeQueryNode(object):
         bedfilename = filename[:-3]
         self.export_bed(bedfilename, sort=sort)
         subprocess.run(f'/opt/giggle/lib/htslib/bgzip {bedfilename}', shell=True, check=True)
+
+    def export_vcf(self, filename, sort=False):
+        """ Export results to a vcf file """
+        with open(filename, 'w') as outfile:
+            # write vcf header
+            outfile.write("##fileformat=VCFv4.2\n##source=SIRIUS\n##assembly=GRCh38\n")
+            outfile.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+            # write vcf data
+            projection=['contig', 'start', '_id', 'info.variant_ref', 'info.variant_alt', 'info.filter', 'info.qual']
+            if not sort:
+                for d in self.find(projection=projection):
+                    vcf_id = d['_id'][5:] # Gsnp_rs10 -> rs10
+                    vcf_ref = d['info'].get('variant_ref', '.')
+                    vcf_alt = d['info'].get('variant_alt', '.')
+                    vcf_filter = d['info'].get('filter', '.')
+                    vcf_qual = d['info'].get('qual', '.')
+                    vcf_info = '.'
+                    vcf_str = '\t'.join((d['contig'][3:], str(d['start']), d['_id'][5:], vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info)) + '\n'
+                    outfile.write(vcf_str)
+            else:
+                vcf_entries = []
+                for d in self.find(projection=projection):
+                    vcf_id = d['_id'][5:] # Gsnp_rs10 -> rs10
+                    vcf_ref = d['info'].get('variant_ref', '.')
+                    vcf_alt = d['info'].get('variant_alt', '.')
+                    vcf_filter = d['info'].get('filter', '.')
+                    vcf_qual = d['info'].get('qual', '.')
+                    vcf_info = '.'
+                    vcf_entries.append((d['contig'][3:], d['start'], d['_id'][5:], vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info))
+                vcf_entries.sort(key = lambda t: (CONTIG_IDXS['chr' + t[0]], t[1]))
+                for t in vcf_entries:
+                    vcf_str = '\t'.join(map(str, t)) + '\n'
+                    outfile.write(vcf_str)
+
+    def export_vcf_gz(self, filename, sort=False):
+        """ Export results to a vcf.gz file """
+        assert filename.endswith('.vcf.gz'), 'filename should end with .vcf.gz'
+        vcffilename = filename[:-3]
+        self.export_vcf(vcffilename, sort=sort)
+        subprocess.run(f'/opt/giggle/lib/htslib/bgzip {vcffilename}', shell=True, check=True)

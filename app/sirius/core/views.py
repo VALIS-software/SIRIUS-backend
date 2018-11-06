@@ -614,6 +614,7 @@ def export_query_endpoint():
     if not upload_url:
         return abort(404, 'uploadUrl field not found in jsondata')
     # export
+    print(f'@@ Export query request:\n@@ uploadUrl: {upload_url}\n@@ fileFormat: {file_format}\n@@ query: {query}\n')
     if file_format == 'bed':
         if query['type'] != QUERY_TYPE_GENOME:
             return abort(404, 'only genome query can export as bed file')
@@ -640,6 +641,32 @@ def export_query_endpoint():
         except Exception as e:
             return abort(404, f'Upload failed with error:\n{e}')
         # remove local file after uploading
+        os.unlink(filename)
+    elif file_format == 'vcf':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as vcf file')
+        qt = QueryTree(query)
+        filename = tempfile.mkstemp(suffix='.vcf', prefix='export_')[1]
+        qt.export(filename, ftype='vcf', sort=sort)
+        try:
+            bucket = storage_buckets['canis']
+            blob = bucket.blob(upload_url)
+            blob.upload_from_filename(filename)
+        except Exception as e:
+            return abort(404, f'Upload failed with error:\n{e}')
+        os.unlink(filename)
+    elif file_format == 'vcf.gz':
+        if query['type'] != QUERY_TYPE_GENOME:
+            return abort(404, 'only genome query can export as vcf file')
+        qt = QueryTree(query)
+        filename = tempfile.mkstemp(suffix='.vcf', prefix='export_')[1] + '.gz'
+        qt.export(filename, ftype='vcf.gz', sort=sort)
+        try:
+            bucket = storage_buckets['canis']
+            blob = bucket.blob(upload_url)
+            blob.upload_from_filename(filename)
+        except Exception as e:
+            return abort(404, f'Upload failed with error:\n{e}')
         os.unlink(filename)
     else:
         return abort(404, f'fileFormat {file_format} not implemented')
