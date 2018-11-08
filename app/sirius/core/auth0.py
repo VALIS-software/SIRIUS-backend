@@ -46,7 +46,9 @@ def login():
 
 def requires_auth(f):
     # skip auth if in dev mode
-    if os.environ.get('VALIS_DEV_MODE', None): return f
+    # if os.environ.get('VALIS_DEV_MODE', None): return f
+    # Update by QYD: we disable auth also for the production server for demo purpose
+    return f
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'profile' not in session:
@@ -58,7 +60,9 @@ def requires_auth(f):
 @app.route('/user_profile')
 @requires_auth
 def get_user_profile():
-    return json.dumps(session.get('profile', {'name':'dev'}))
+    # default username 'dev' for dev server and 'demo' for production server
+    username = 'dev' if os.environ.get('VALIS_DEV_MODE', None) else 'demo'
+    return json.dumps(session.get('profile', {'name': username}))
 
 @app.route('/logout')
 def logout():
