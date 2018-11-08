@@ -1,4 +1,6 @@
-import os, copy
+import os
+import copy
+import re
 from sirius.parsers.parser import Parser
 from sirius.helpers.constants import DATA_SOURCE_GWAS, DATA_SOURCE_ENCODEbigwig, DATA_SOURCE_HGNC
 
@@ -340,27 +342,31 @@ class TSVParser_ENCODEbigwig(TSVParser):
         info_node = {"_id": 'I'+DATA_SOURCE_ENCODEbigwig, "type": "dataSource", "name": DATA_SOURCE_ENCODEbigwig, "source": DATA_SOURCE_ENCODEbigwig}
         info_node['info'] = self.metadata.copy()
         info_nodes.append(info_node)
-        # parse each
+        # compile a re pattern for normalizing field names
+        pattern = re.compile('[^-a-zA-Z0-9_]+')
+        # parse each doc
         for d in copy.deepcopy(self.studies):
             accession = d.pop("File accession")
             assay = d.pop("Assay")
             biosample = d["Biosample term name"]
             outtype = d["Output type"]
             fileurl = d.pop("File download URL")
-            info_node = {
-                '_id': 'Ieb' + accession,
-                'name': accession,
-                'type': 'bigwig',
-                'source': DATA_SOURCE_ENCODEbigwig,
-                'info': d
-            }
-            info_node['info'].update({
+            # convert the rest of the keys into info field with normalized name
+            extra_info = {pattern.sub('_', k.lower()): v for k,v in d.items()}
+            extra_info.update({
                 'accession': accession,
                 'assay': assay,
                 'biosample': biosample,
                 'outtype': outtype,
                 'fileurl': fileurl
             })
+            info_node = {
+                '_id': 'Ieb' + accession,
+                'name': accession,
+                'type': 'bigwig',
+                'source': DATA_SOURCE_ENCODEbigwig,
+                'info': extra_info
+            }
             info_nodes.append(info_node)
         return genome_nodes, info_nodes, edges
 
