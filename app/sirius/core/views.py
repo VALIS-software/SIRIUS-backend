@@ -240,13 +240,15 @@ def distinct_values(index):
     if not query:
         return abort(404, 'no query posted')
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
-    allowed_query_indices = {
-        QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets', 'info.variant_tags', 'info.source', 'info.patient_barcodes'},
-        QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags', 'info.filenames'},
-        QUERY_TYPE_EDGE: {'type', 'source', 'info.biosample'}
-    }
-    if index not in allowed_query_indices[query['type']]:
-        return abort(404, f"Query of {index} is not allowed for {query['type']}")
+    # allowed_query_indices = {
+    #     QUERY_TYPE_GENOME: {'type', 'contig', 'source', 'info.biosample', 'info.targets', 'info.variant_tags', 'info.source', 'info.patient_barcodes'},
+    #     QUERY_TYPE_INFO: {'type', 'source', 'name', 'info.biosample', 'info.targets', 'info.types', 'info.assay', 'info.outtype', 'info.variant_tags', 'info.filenames'},
+    #     QUERY_TYPE_EDGE: {'type', 'source', 'info.biosample'}
+    # }
+    # if index not in allowed_query_indices[query['type']]:
+    #     return abort(404, f"Query of {index} is not allowed for {query['type']}")
+    # Update by QYD : After discussion with Salik, we decided to remove the whitelist above, and replace that by a max time limit.
+    # The time limit is implemented in QueryTree
     query = HashableDict(query)
     result = get_query_distinct_values(query, index)
     print("/distinct_values/%s for query %s returns %d results. " % (index, query, len(result)), get_query_distinct_values.cache_info())

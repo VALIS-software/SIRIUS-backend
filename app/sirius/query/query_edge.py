@@ -26,7 +26,7 @@ class QueryEdge(object):
         return self.mongo_collection.find(mongo_filter, limit=self.limit, projection=projection, no_cursor_timeout=True)
 
     def distinct(self, key):
-        return self.find().distinct(key)
+        return self.find().distinct(key, maxTimeMS=15000)
 
     def find_from_id(self):
         """

@@ -138,7 +138,7 @@ class GenomeQueryNode(object):
         Find all distinct values for a key
         """
         if not self.edges and not self.arithmetics:
-            result = self.mongo_collection.distinct(key, self.filter)
+            result = self.mongo_collection.distinct(key, self.filter, maxTimeMS=15000)
         else:
             result_ids = list(self.findid())
             batch_size = 100000
