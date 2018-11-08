@@ -3,7 +3,7 @@
 import os
 import shutil
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sirius.helpers import storage_buckets
 
 def download_fasta_tiledb():
@@ -20,9 +20,9 @@ def download_fasta_tiledb():
     if os.path.exists(filename):
         # compare updated time of remote and local versions of file
         local_file_mtime = datetime.fromtimestamp(os.path.getmtime(filename), tz=timezone.utc)
-        if local_file_mtime > blob.updated:
+        if blob.updated - local_file_mtime < timedelta(seconds=10):
             skip_download = True
-            print(f"Found local file {filename} newer than cloud blob, skip downloading")
+            print(f"Found local file {filename} up-to-date, skip downloading")
         else:
             print(f"Found local file {filename} older than cloud blob, cleaning files fasta_*")
             subprocess.check_call("rm -r fasta_*", shell=True)
