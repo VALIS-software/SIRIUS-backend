@@ -7,8 +7,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import fuzzyset
 import numpy as np
 
-from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, loaded_cell_types, \
-    loaded_patient_tumor_sites, loaded_info_targets, loaded_pathway_names
+from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, \
+    loaded_patient_tumor_sites, loaded_info_targets, loaded_pathway_names,
+from sirius.helpers.loaddata import loaded_cell_types, loaded_cell_types_promoter, loaded_cell_types_enhancer
 
 
 nltk.download('stopwords')
@@ -94,10 +95,12 @@ class SearchIndex:
 loaded_SearchIndex = {
     'GENE': SearchIndex(loaded_gene_names),
     'TRAIT': SearchIndex(loaded_trait_names),
-    'CELL_TYPE': SearchIndex(loaded_cell_types),
     'TUMOR_SITE': SearchIndex(loaded_patient_tumor_sites),
     'TARGET': SearchIndex(loaded_info_targets),
     'PATHWAY': SearchIndex(loaded_pathway_names),
+    'CELL_TYPE': SearchIndex(loaded_cell_types),
+    'CELL_TYPE_PROMOTER': SearchIndex(loaded_cell_types_promoter),
+    'CELL_TYPE_ENHANCER': SearchIndex(loaded_cell_types_enhancer),
 }
 
 def get_suggestions(term, search_text, max_results=15):
