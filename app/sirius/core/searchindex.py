@@ -8,7 +8,7 @@ import fuzzyset
 import numpy as np
 
 from sirius.helpers.loaddata import loaded_gene_names, loaded_trait_names, \
-    loaded_patient_tumor_sites, loaded_info_targets, loaded_pathway_names,
+    loaded_patient_tumor_sites, loaded_info_targets, loaded_pathway_names
 from sirius.helpers.loaddata import loaded_cell_types, loaded_cell_types_promoter, loaded_cell_types_enhancer
 
 

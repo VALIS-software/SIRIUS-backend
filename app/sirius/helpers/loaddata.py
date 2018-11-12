@@ -111,4 +111,6 @@ print(f'Loaded {len(loaded_pathway_names)} pathway')
 
 # type specific cell types for encode tokenbox
 loaded_cell_types_promoter = sorted(InfoNodes.distinct('info.biosample', {'type': 'ENCODE_accession', 'info.types': 'Promoter-like'}))
+print(f'Loaded {len(loaded_cell_types_promoter)} cell types for promoters')
 loaded_cell_types_enhancer = sorted(InfoNodes.distinct('info.biosample', {'type': 'ENCODE_accession', 'info.types': 'Enhancer-like'}))
+print(f'Loaded {len(loaded_cell_types_enhancer)} cell types for enhancers')
