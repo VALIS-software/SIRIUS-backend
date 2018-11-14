@@ -409,7 +409,7 @@ def query_gwas():
     t1 = time.time()
     print(f"{len(results)} results from GWAS query {query} cache_info: {get_query_gwas_results.cache_info()} {t1-t0:.1f} s")
     result_end = result_start + len(results)
-    reached_end = (len(results_cache) == result_end + 1)
+    reached_end = (result_end >= len(results_cache))
     return_dict = {
         "result_start": result_start,
         "result_end": result_end,
