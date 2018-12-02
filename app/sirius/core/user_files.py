@@ -4,7 +4,6 @@ import tempfile
 import hashlib
 import uuid
 
-from sirius.core.auth0 import get_user_profile
 from sirius.mongo import userdb, UserInfo
 from sirius.mongo.upload import update_insert_many
 from sirius.parsers import TxtParser_23andme, VCFParser, BEDParser
@@ -16,6 +15,7 @@ FILE_TYPE_PARSER = {
 }
 
 def get_user_id():
+    from sirius.core.auth0 import get_user_profile
     user_profile = json.loads(get_user_profile())
     uid = 'user_' + user_profile['name']
     return uid
@@ -32,11 +32,20 @@ def upload_user_file(file_type, file_obj):
     suffix = ext_split[1] if len(ext_split) == 2 else None
     tmp_filename = tempfile.mkstemp(suffix=suffix, prefix='ufile_')[1]
     file_obj.save(tmp_filename)
-    # create a MongoDB collection in userdb to store genome_nodes from file
-    random_id = str(uuid.uuid4())
-    file_id = 'Gfile_' + random_id
-    collection = userdb.create_collection(file_id)
+    # pick corresponding parser
     parser = FILE_TYPE_PARSER[file_type](tmp_filename, verbose=True)
+    # parse and upload to userdb
+    create_collection_user_file(parser, uid, orig_filename, file_type)
+    # clean up the tmp file
+    os.unlink(tmp_filename)
+    print(f" @@@ User Operation | {uid} uploaded file {orig_filename}")
+    return 'success'
+
+def create_collection_user_file(parser, uid, orig_filename, file_type):
+    # create a MongoDB collection in userdb to store genome_nodes from file
+    file_id = 'Gfile_' + str(uuid.uuid4())
+    collection = userdb.create_collection(file_id)
+    # parse the file in chunks
     finished = False
     while not finished:
         finished = parser.parse_chunk()
@@ -44,8 +53,6 @@ def upload_user_file(file_type, file_obj):
         parser.metadata['source'] = orig_filename
         genome_nodes, _, _ = parser.get_mongo_nodes()
         update_insert_many(collection, genome_nodes, update=False)
-    # clean up the tmp file
-    os.unlink(tmp_filename)
     # save file metadata in UserInfo
     file_num_docs = collection.estimated_document_count()
     file_info = {
@@ -63,8 +70,7 @@ def upload_user_file(file_type, file_obj):
         }
     }
     UserInfo.update_one({'_id': uid}, update_doc, upsert=True)
-    print(f" @@@ User Operation | {uid} uploaded file {orig_filename}")
-    return 'success'
+    return collection
 
 def get_user_files_info():
     """ Get the list of files the user uploaded """
