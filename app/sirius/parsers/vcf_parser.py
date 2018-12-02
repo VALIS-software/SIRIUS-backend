@@ -1,6 +1,8 @@
+import re
+import copy
+
 from sirius.parsers.parser import Parser
 from sirius.helpers.constants import CHROMO_IDXS, DATA_SOURCE_CLINVAR, DATA_SOURCE_DBSNP, DATA_SOURCE_ExAC
-import re
 
 def str_to_type(s):
     """ Utility function to convert a type name to the actual type """
@@ -1311,12 +1313,13 @@ class VCFParser_VEP(VCFParser):
         # create genome_nodes for each variant
         all_variant_tags = set()
         for d in self.variants:
+            d = copy.deepcopy(d)
             variant_tags = set()
             variant_affected_genes = set()
             variant_affected_feature_types = set()
             variant_affected_bio_types = set()
             rs_number = None
-            for csq in d['INFO']['CSQs']:
+            for csq in d['INFO'].pop('CSQs', []):
                 variant_tags.update(csq['Consequence'].split('&'))
                 variant_affected_genes.add(csq['SYMBOL'])
                 variant_affected_feature_types.add(csq['Feature_type'])
@@ -1348,6 +1351,7 @@ class VCFParser_VEP(VCFParser):
                 'source': data_source,
                 'name': name,
                 'info': {
+                    **d['INFO'],
                     'variant_ref': d["REF"],
                     'variant_alt': d['ALT'],
                     'filter': d['FILTER'],
