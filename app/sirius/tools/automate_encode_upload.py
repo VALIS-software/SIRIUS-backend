@@ -155,7 +155,11 @@ def insert_encode_dataSource():
         update_insert_many(InfoNodes, [{'_id': 'I'+ds, 'type': 'dataSource', 'name': ds, 'source': ds, 'info':{'searchURL': SEARCHURL}}])
 
 def auto_parse_upload(start=0, end=5):
-    download_search_files(start=start, end=end)
+    #download_search_files(start=start, end=end)
+    # QYD: We used liftover to prepare a list of ENCODE bed files in GRCh38 assembly
+    from sirius.tools.rebuild_mongo_database import download_not_exist, ENCODE_URL
+    download_not_exist(ENCODE_URL)
+    os.chdir("ENCODE")
     parse_upload_files(start=start, end=end)
 
 def main():
