@@ -233,7 +233,7 @@ class GenomeQueryNode(object):
                     outfile.write(bedstr)
             else:
                 bed_intervals = [(d['contig'], d['start']-1, d['end'], d['name']) for d in self.find(projection=projection)]
-                for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS[t[0]], t[1], t[2])):
+                for interval in sorted(bed_intervals, key=lambda t: (CONTIG_IDXS.get('chr' + t[0], 100), t[1], t[2])):
                     bedstr = '\t'.join(map(str, interval)) + '\n'
                     outfile.write(bedstr)
 
@@ -260,7 +260,7 @@ class GenomeQueryNode(object):
                     vcf_filter = d['info'].get('filter', '.')
                     vcf_qual = d['info'].get('qual', '.')
                     vcf_info = '.'
-                    vcf_str = '\t'.join((d['contig'][3:], str(d['start']), d['_id'][5:], vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info)) + '\n'
+                    vcf_str = '\t'.join((d['contig'][3:], str(d['start']), vcf_id, vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info)) + '\n'
                     outfile.write(vcf_str)
             else:
                 vcf_entries = []
@@ -271,8 +271,8 @@ class GenomeQueryNode(object):
                     vcf_filter = d['info'].get('filter', '.')
                     vcf_qual = d['info'].get('qual', '.')
                     vcf_info = '.'
-                    vcf_entries.append((d['contig'][3:], d['start'], d['_id'][5:], vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info))
-                vcf_entries.sort(key = lambda t: (CONTIG_IDXS['chr' + t[0]], t[1]))
+                    vcf_entries.append((d['contig'][3:], d['start'], vcf_id, vcf_ref, vcf_alt, vcf_filter, vcf_qual, vcf_info))
+                vcf_entries.sort(key = lambda t: (CONTIG_IDXS.get('chr' + t[0], 100), t[1]))
                 for t in vcf_entries:
                     vcf_str = '\t'.join(map(str, t)) + '\n'
                     outfile.write(vcf_str)
