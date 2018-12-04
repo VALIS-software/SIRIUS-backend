@@ -160,7 +160,7 @@ def auto_parse_upload(start=0, end=5):
     from sirius.tools.rebuild_mongo_database import download_not_exist, ENCODE_URL
     download_not_exist(ENCODE_URL)
     os.chdir("ENCODE")
-    parse_upload_files(start=start, end=end)
+    parse_upload_files(start=start, end=end, liftover=False)
 
 def main():
     import argparse
