@@ -161,73 +161,6 @@ def datatrack_get_data(track_id, contig, start_bp, end_bp):
         return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
 
 
-
-# This part is still mock
-#**************************
-#*        /graphs         *
-#**************************
-
-@app.route("/graphs")
-@requires_auth
-def graphs():
-    return json.dumps(["ld_score"])
-
-@app.route("/graphs/<string:graph_id>/<string:annotation_id1>/<string:annotation_id2>/<int:start_bp>/<int:end_bp>")
-@requires_auth
-def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
-    start_bp = int(start_bp)
-    end_bp = int(end_bp)
-
-    sampling_rate = 1
-    if request.args.get('sampling_rate'):
-        sampling_rate = int(float(request.args.get('sampling_rate')))
-
-    base_pair_offset = 0
-    if request.args.get('base_pair_offset'):
-        base_pair_offset = int(float(request.args.get('base_pair_offset')))
-
-    if graph_id != "ld_score":
-        abort(500, "Unknown graph : %s", graph_id)
-
-    if annotation_id1 != "cross-track-test-1" or annotation_id2 != "cross-track-test-2":
-        abort(500, "no graph available")
-
-    # send edge scores
-    set1 = []
-    set2 = []
-    if sampling_rate < 1000000:
-        count = 0
-        for i in range(0, 100000000, 500000):
-            if i >= start_bp and i <= end_bp:
-                annotation_name = "X%d" % count
-                random.seed(annotation_name)
-                set1.append(random.randint(0,1000000000))
-            count += 1
-        count = 0
-        for i in range(0, 100000000, 500000):
-            if i >= start_bp + base_pair_offset and i <= end_bp + base_pair_offset:
-                annotation_name = "Y%d" % count
-                random.seed(annotation_name)
-                set2.append(random.randint(0,1000000000))
-            count += 1
-
-    edges = []
-    for e1 in set1:
-        for e2 in set2:
-            random.seed("%d|%d" % (e1,e2))
-            edges.append([e1, e2, random.random()])
-    return json.dumps({
-        "startBp" : start_bp,
-        "endBp" : end_bp,
-        "samplingRate": sampling_rate,
-        "graphId": graph_id,
-        "annotationIds": [annotation_id1, annotation_id2],
-        "values": edges
-    })
-
-
-
-
 #**************************
 #*     /distince_values   *
 #**************************
@@ -237,6 +170,7 @@ def graph(graph_id, annotation_id1, annotation_id2, start_bp, end_bp):
 def distinct_values(index):
     """ Return all possible values for a certain index for certain query """
     query = request.get_json()
+    print(f"***INFO: received /distinct_values/{index} with {query}")
     if not query:
         return abort(404, 'no query posted')
     # We restrict the choices here to prevent crashing the server with sth like index = '_id'
@@ -327,6 +261,7 @@ def query_full():
     result_start = request.args.get('result_start', default=None)
     result_end = request.args.get('result_end', default=None)
     query = request.get_json()
+    print(f"***INFO: received /query/full with {query}")
     if not query:
         return abort(404, 'no query posted')
     result_start = int(result_start) if result_start != None else 0
@@ -361,6 +296,7 @@ def query_basic():
     result_start = request.args.get('result_start', default=None)
     result_end = request.args.get('result_end', default=None)
     query = request.get_json()
+    print(f"***INFO: received /query/basic with {query}")
     if not query:
         return abort(404, 'no query posted')
     result_start = int(result_start) if result_start != None else 0
@@ -395,6 +331,7 @@ def query_gwas():
     result_start = request.args.get('result_start', default=None)
     result_end = request.args.get('result_end', default=None)
     query = request.get_json()
+    print(f"***INFO: received /query/gwas with {query}")
     if not query:
         return abort(404, 'no query posted')
     result_start = int(result_start) if result_start != None else 0
@@ -612,6 +549,7 @@ def export_query_endpoint():
     """ run a query then export the result """
     # get input and check valid
     jsondata = request.get_json()
+    print(f"***INFO: received /export_query with {jsondata}")
     query = jsondata.get('query', None)
     file_format = jsondata.get('fileFormat', 'bed')
     upload_url = jsondata.get('uploadUrl', None)
@@ -690,6 +628,7 @@ def download_query_endpoint():
     """ run a query then export the result """
     # get input and check valid
     jsondata = request.get_json()
+    print(f"***INFO: received /download_query with {jsondata}")
     query = jsondata.get('query', None)
     file_format = jsondata.get('fileFormat', 'bed')
     sort = jsondata.get('sort', False)
