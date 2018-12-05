@@ -32,8 +32,8 @@ spec:
             path: /healthcheck
             port: 5000
             httpHeaders:
-            - name: X-Custom-Header
-              value: Awesome
+            - name: Authorization
+              value: Basic ZGV2OktVZHRZNkFTWFRmcmt6M1Q=
           initialDelaySeconds: 5
           periodSeconds: 20
           timeoutSeconds: 5
