@@ -23,6 +23,11 @@ ENV INDEX_PATH /app/sirius/valis-dist
 ENV STATIC_PATH /app/sirius/valis-dist/static
 ENV STATIC_URL /static
 ENV LISTEN_PORT 5000
+# DEV MODE to skip auth for api
+ENV VALIS_DEV_MODE 1
+# ENABLE AUTH for index page
+ENV NGINX_USE_AUTH 1
+COPY ./config/.htpasswd /etc/nginx/.htpasswd
 
 # Reset uWSGI cheaper
 ENV UWSGI_CHEAPER 0
@@ -36,6 +41,3 @@ ENV TILEDB_ROOT /cache/tiledb
 # Run app.py when the container launches
 WORKDIR /app/sirius
 CMD ["/start.sh"]
-
-# DEV MODE to skip auth
-ENV VALIS_DEV_MODE 1
