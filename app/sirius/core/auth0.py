@@ -1,73 +1,127 @@
+# auth0.py
+# reference: https://auth0.com/docs/quickstart/backend/python/01-authorization
+import json
+from six.moves.urllib.request import urlopen
 from functools import wraps
-import os, json
-from flask import Flask, jsonify, redirect, session, url_for
-from six.moves.urllib.parse import urlencode
-from authlib.flask.client import OAuth
+import requests
+from flask import request, jsonify, _request_ctx_stack
+from flask_cors import cross_origin
+from jose import jwt
 
 from sirius.main import app
+from sirius.core.utilities import threadsafe_ttl_cache
 
-app.secret_key = 'qydsecretkey'
+AUTH0_DOMAIN = "valis-dev.auth0.com"
+API_AUDIENCE = 'https://api.valis.bio/'
+ALGORITHMS = ["RS256"]
 
-oauth = OAuth(app)
 
-auth0 = oauth.register(
-    'auth0',
-    client_id='UHugP5v627feBCWA6h4bLP3g__VCNGyL',
-    client_secret='CzVyAa9Kk3Tt-ogjxYeHwYqbKAub1Rk5OISryB4krOBh4AXXr4r9GY136CqILyTk',
-    api_base_url='https://valis-dev.auth0.com',
-    access_token_url='https://valis-dev.auth0.com/oauth/token',
-    authorize_url='https://valis-dev.auth0.com/authorize',
-    client_kwargs={
-        'scope': 'openid profile',
-    },
-)
+# Error handler
+class AuthError(Exception):
+    def __init__(self, error, status_code):
+        self.error = error
+        self.status_code = status_code
 
-@app.route('/callback')
-def callback_handling():
-    try:
-        # Handles response from token endpoint
-        auth0.authorize_access_token()
-        resp = auth0.get('userinfo')
-        userinfo = resp.json()
-        # Store the user information in flask session.
-        session['jwt_payload'] = userinfo
-        session['profile'] = {
-            'user_id': userinfo['sub'],
-            'name': userinfo['name'],
-            'picture': userinfo['picture']
-        }
-    except:
-        print(f"Warning: /callback url failed.")
-    return redirect('/')
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
 
-@app.route('/login')
-def login():
-    return auth0.authorize_redirect(redirect_uri=url_for('callback_handling', _external=True), audience='https://valis-dev.auth0.com/userinfo')
+def get_token_auth_header():
+    """Obtains the Access Token from the Authorization Header
+    """
+    auth = request.headers.get("Authorization", None)
+    if not auth:
+        raise AuthError({"code": "authorization_header_missing",
+                        "description":
+                            "Authorization header is expected"}, 401)
+    parts = auth.split()
+    if parts[0].lower() != "bearer":
+        raise AuthError({"code": "invalid_header",
+                        "description":
+                            "Authorization header must start with"
+                            " Bearer"}, 401)
+    elif len(parts) == 1:
+        raise AuthError({"code": "invalid_header",
+                        "description": "Token not found"}, 401)
+    elif len(parts) > 2:
+        raise AuthError({"code": "invalid_header",
+                        "description":
+                            "Authorization header must be"
+                            " Bearer token"}, 401)
+    token = parts[1]
+    return token
 
 def requires_auth(f):
-    # skip auth if in dev mode
-    # if os.environ.get('VALIS_DEV_MODE', None): return f
-    # Update by QYD: we disable auth also for the production server for demo purpose
-    return f
+    """Determines if the Access Token is valid
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
-        if 'profile' not in session:
-            # Redirect to Login page here
-            return redirect('/login')
+        token = get_token_auth_header()
+        print(auth_token_payload.cache_info())
+        payload = auth_token_payload(token)
+        _request_ctx_stack.top.current_user = payload
         return f(*args, **kwargs)
     return decorated
 
-@app.route('/user_profile')
-@requires_auth
-def get_user_profile():
-    # default username 'dev' for dev server and 'demo' for production server
-    username = 'dev' if os.environ.get('VALIS_DEV_MODE', None) else 'demo'
-    return json.dumps(session.get('profile', {'name': username}))
+# Note: here we use a time-to-live cache, and the timeout value 86400 is consistent with the token expiration
+@threadsafe_ttl_cache(maxsize=10000, ttl=86400)
+def auth_token_payload(token):
+    """ cached function to reduce number of calls to the auth0 server """
+    jsonurl = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
+    jwks = json.loads(jsonurl.read())
+    unverified_header = jwt.get_unverified_header(token)
+    rsa_key = {}
+    for key in jwks["keys"]:
+        if key["kid"] == unverified_header["kid"]:
+            rsa_key = {
+                "kty": key["kty"],
+                "kid": key["kid"],
+                "use": key["use"],
+                "n": key["n"],
+                "e": key["e"]
+            }
+    if rsa_key:
+        try:
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer="https://"+AUTH0_DOMAIN+"/"
+            )
+        except jwt.ExpiredSignatureError:
+            raise AuthError({"code": "token_expired",
+                            "description": "token is expired"}, 401)
+        except jwt.JWTClaimsError:
+            raise AuthError({"code": "invalid_claims",
+                            "description":
+                                "incorrect claims,"
+                                "please check the audience and issuer"}, 401)
+        except Exception:
+            raise AuthError({"code": "invalid_header",
+                            "description":
+                                "Unable to parse authentication"
+                                " token."}, 401)
+        # for users from python client, we need to use the access token to get the user profile
+        if "name" not in payload:
+            payload = request_user_profile(payload, token)
+        _request_ctx_stack.top.current_user = payload
+    else:
+        raise AuthError({"code": "invalid_header",
+            "description": "Unable to find appropriate key"}, 401)
+    return payload
 
-@app.route('/logout')
-def logout():
-    # Clear session stored data
-    session.clear()
-    # Redirect user to logout endpoint
-    params = {'returnTo': url_for('login', _external=True), 'client_id': 'UHugP5v627feBCWA6h4bLP3g__VCNGyL'}
-    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
+def request_user_profile(payload, token):
+    """ Request user profile from auth0 server when token do not have profile """
+    if 'https://valis-dev.auth0.com/userinfo' not in payload['aud']:
+        raise AuthError({"code": "no_user_profile", "description": f"Token do not"
+            " contain user profile and token audience is not able to get profile"}, 401)
+    headers = {'content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+    response = requests.get('https://valis-dev.auth0.com/userinfo', headers=headers)
+    payload.update(response.json())
+    return payload
+
+def get_user_profile():
+    return _request_ctx_stack.top.current_user

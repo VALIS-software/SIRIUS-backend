@@ -5,7 +5,8 @@
 import json
 import threading
 from collections import defaultdict
-from functools import lru_cache, _make_key
+import cachetools.keys
+import cachetools.func
 
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
 
@@ -51,14 +52,26 @@ class HashableDict(dict):
 
 def threadsafe_lru(*lru_args, **lru_kwargs):
     def real_threadsafe_func(func):
-        func = lru_cache(*lru_args, **lru_kwargs)(func)
+        func = cachetools.func.lru_cache(*lru_args, **lru_kwargs)(func)
         lock_dict = defaultdict(threading.Lock)
-        def _thread_lru(*args, **kwargs):
-            key = _make_key(args, kwargs, typed=False)  
+        def _thread_safe_func(*args, **kwargs):
+            key = cachetools.keys.hashkey(*args, **kwargs)
             with lock_dict[key]:
                 return func(*args, **kwargs)
-        _thread_lru.cache_info = func.cache_info
-        _thread_lru.cache_clear = func.cache_clear
-        return _thread_lru
+        _thread_safe_func.cache_info = func.cache_info
+        _thread_safe_func.cache_clear = func.cache_clear
+        return _thread_safe_func
     return real_threadsafe_func
 
+def threadsafe_ttl_cache(*ttl_args, **ttl_kwargs):
+    def real_threadsafe_func(func):
+        func = cachetools.func.ttl_cache(*ttl_args, **ttl_kwargs)(func)
+        lock_dict = defaultdict(threading.Lock)
+        def _thread_safe_func(*args, **kwargs):
+            key = cachetools.keys.hashkey(*args, **kwargs)
+            with lock_dict[key]:
+                return func(*args, **kwargs)
+        _thread_safe_func.cache_info = func.cache_info
+        _thread_safe_func.cache_clear = func.cache_clear
+        return _thread_safe_func
+    return real_threadsafe_func
