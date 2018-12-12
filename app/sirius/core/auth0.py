@@ -1,5 +1,6 @@
 # auth0.py
 # reference: https://auth0.com/docs/quickstart/backend/python/01-authorization
+import os
 import json
 from six.moves.urllib.request import urlopen
 from functools import wraps
@@ -104,7 +105,16 @@ def auth_token_payload(token):
                             "description":
                                 "Unable to parse authentication"
                                 " token."}, 401)
-        # for users from python client, we need to use the access token to get the user profile
+        # If we're on a dev server, only developers are given access
+        # A rule is created on auth0.com to add this custom field
+        # ref: https://auth0.com/docs/api-auth/tutorials/adoption/scope-custom-claims#custom-claims
+        if os.environ.get('VALIS_DEV_MODE'):
+            if payload.get('https://valis.bio/role') != 'developer':
+                raise AuthError({
+                    'code': 'insufficient_permission',
+                    'discription': 'Dev server is only accessible to developers',
+                }, 401)
+        # use the access token to get the user profile
         if "name" not in payload:
             payload = request_user_profile(payload, token)
         _request_ctx_stack.top.current_user = payload
