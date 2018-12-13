@@ -21,7 +21,7 @@ from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL,
 from sirius.core.annotationtrack import get_annotation_query
 
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.core.auth0 import requires_auth, get_user_profile
+from sirius.core.auth0 import requires_auth
 
 #**************************
 #*     static urls        *
@@ -29,12 +29,10 @@ from sirius.core.auth0 import requires_auth, get_user_profile
 # These urls will be served by Nginx if possible
 @app.route('/')
 @app.route('/index')
-@requires_auth
 def index():
     return send_from_directory("valis-dist", "index.html")
 
 @app.route('/<path:path>')
-@requires_auth
 def send_static_file(path):
     return app.send_static_file(path)
 

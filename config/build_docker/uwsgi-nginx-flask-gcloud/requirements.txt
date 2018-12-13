@@ -11,5 +11,7 @@ pyBigWig
 biopython
 nltk
 sklearn
-authlib
 pyliftover
+python-jose-cryptodome
+python-dotenv
+six

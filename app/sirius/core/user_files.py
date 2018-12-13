@@ -16,7 +16,7 @@ FILE_TYPE_PARSER = {
 
 def get_user_id():
     from sirius.core.auth0 import get_user_profile
-    user_profile = json.loads(get_user_profile())
+    user_profile = get_user_profile()
     uid = 'user_' + user_profile['name']
     return uid
 
