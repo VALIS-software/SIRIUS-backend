@@ -12,7 +12,7 @@ import threading
 import random
 import subprocess
 import tempfile
-from sirius.main import app
+from sirius import app
 from sirius.core.utilities import get_data_with_id, HashableDict, threadsafe_lru
 from sirius.query.query_tree import QueryTree
 from sirius.helpers.loaddata import loaded_contig_info, loaded_contig_info_dict, loaded_track_types_info, loaded_data_track_info_dict, loaded_data_tracks
