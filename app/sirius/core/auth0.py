@@ -9,7 +9,7 @@ from flask import request, jsonify, _request_ctx_stack
 from flask_cors import cross_origin
 from jose import jwt
 
-from sirius.main import app
+from sirius import app
 from sirius.core.utilities import threadsafe_ttl_cache
 
 AUTH0_DOMAIN = "valis-dev.auth0.com"
