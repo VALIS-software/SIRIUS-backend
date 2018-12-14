@@ -4,6 +4,7 @@ import tempfile
 import hashlib
 import uuid
 
+from sirius.core.auth0 import get_user_name
 from sirius.mongo import userdb, UserInfo
 from sirius.mongo.upload import update_insert_many
 from sirius.parsers import TxtParser_23andme, VCFParser, BEDParser
@@ -15,9 +16,7 @@ FILE_TYPE_PARSER = {
 }
 
 def get_user_id():
-    from sirius.core.auth0 import get_user_profile
-    user_profile = get_user_profile()
-    uid = 'user_' + user_profile['name']
+    uid = 'user_' + get_user_name()
     return uid
 
 def upload_user_file(file_type, file_obj):

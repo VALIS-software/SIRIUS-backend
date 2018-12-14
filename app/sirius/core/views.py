@@ -19,9 +19,8 @@ from sirius.helpers.loaddata import loaded_contig_info, loaded_contig_info_dict,
 from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL, TRACK_TYPE_3D, TRACK_TYPE_NETWORK, TRACK_TYPE_BOOLEAN, \
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
-
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.core.auth0 import requires_auth
+from sirius.core.auth0 import requires_auth, requires_auth_user
 
 #**************************
 #*     static urls        *
@@ -512,7 +511,7 @@ def get_variant_track_data(contig, start_bp, end_bp):
 from sirius.core.user_files import upload_user_file, get_user_files_info, delete_user_file
 
 @app.route('/user_files', methods=['POST','GET','DELETE'])
-@requires_auth
+@requires_auth_user
 def user_file_api():
     # upload file with POST method
     if request.method == 'POST':

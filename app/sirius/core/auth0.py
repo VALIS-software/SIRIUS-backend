@@ -60,15 +60,27 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        print(auth_token_payload.cache_info())
-        payload = auth_token_payload(token)
+        payload = auth_token_payload(token, require_user=False)
+        print('*** auth_token_payload', auth_token_payload.cache_info())
+        _request_ctx_stack.top.current_user = payload
+        return f(*args, **kwargs)
+    return decorated
+
+def requires_auth_user(f):
+    """Determines if the Access Token is valid
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_auth_header()
+        payload = auth_token_payload(token, require_user=True)
+        print('*** auth_token_payload', auth_token_payload.cache_info())
         _request_ctx_stack.top.current_user = payload
         return f(*args, **kwargs)
     return decorated
 
 # Note: here we use a time-to-live cache, and the timeout value 86400 is consistent with the token expiration
 @threadsafe_ttl_cache(maxsize=10000, ttl=86400)
-def auth_token_payload(token):
+def auth_token_payload(token, require_user=False):
     """ cached function to reduce number of calls to the auth0 server """
     jsonurl = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
     jwks = json.loads(jsonurl.read())
@@ -108,15 +120,26 @@ def auth_token_payload(token):
         # If we're on a dev server, only developers are given access
         # A rule is created on auth0.com to add this custom field
         # ref: https://auth0.com/docs/api-auth/tutorials/adoption/scope-custom-claims#custom-claims
-        if os.environ.get('VALIS_DEV_MODE'):
-            if payload.get('https://valis.bio/role') != 'developer':
+        print(payload)
+        if payload['gty'] == 'client-credentials':
+            # check if it's a machine-machine token
+            if require_user:
                 raise AuthError({
-                    'code': 'insufficient_permission',
-                    'discription': 'Dev server is only accessible to developers',
+                    "code": "invalid_user",
+                    "description": "Machine-machine token not allowed for this endpoint"
                 }, 401)
-        # use the access token to get the user profile
-        if "name" not in payload:
-            payload = request_user_profile(payload, token)
+        else:
+            # if it's a user's token
+            if os.environ.get('VALIS_DEV_MODE'):
+                # enforce role==developer on dev server
+                if payload.get('https://valis.bio/role') != 'developer':
+                    raise AuthError({
+                        'code': 'insufficient_permission',
+                        'discription': 'Dev server is only accessible to developers',
+                    }, 401)
+            # use the access token to get the user profile
+            if require_user and "name" not in payload:
+                payload = request_user_profile(payload, token)
         _request_ctx_stack.top.current_user = payload
     else:
         raise AuthError({"code": "invalid_header",
@@ -135,3 +158,9 @@ def request_user_profile(payload, token):
 
 def get_user_profile():
     return _request_ctx_stack.top.current_user
+
+def get_user_name():
+    return get_user_profile()['name']
+
+def get_user_role():
+    return get_user_profile()['https://valis.bio/role']
