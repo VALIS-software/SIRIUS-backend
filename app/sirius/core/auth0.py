@@ -67,7 +67,7 @@ def requires_auth(f):
     return decorated
 
 def requires_auth_user(f):
-    """Determines if the Access Token is valid
+    """Determines if the Access Token is valid and from a real user
     """
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -120,8 +120,7 @@ def auth_token_payload(token, require_user=False):
         # If we're on a dev server, only developers are given access
         # A rule is created on auth0.com to add this custom field
         # ref: https://auth0.com/docs/api-auth/tutorials/adoption/scope-custom-claims#custom-claims
-        print(payload)
-        if payload['gty'] == 'client-credentials':
+        if payload.get('gty') == 'client-credentials':
             # check if it's a machine-machine token
             if require_user:
                 raise AuthError({
