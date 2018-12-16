@@ -1,9 +1,11 @@
 import threading
+from pymongo.errors import CursorNotFound
 
 from sirius.query.query_tree import QueryTree
 from sirius.query.query_edge import QueryEdge
 from sirius.query.genome_query_node import GenomeQueryNode
 from sirius.core.utilities import threadsafe_lru
+
 
 class QueryResultsCache:
     """
@@ -11,9 +13,10 @@ class QueryResultsCache:
     """
     def __init__(self, query, projection=None):
         self.qt = QueryTree(query)
-        self.data_generator = self.qt.find(projection=projection)
+        self.projection = projection
         self.loaded_data = []
         self.load_finished = False
+        self.data_generator = self.qt.find(projection=self.projection)
         self.lock = threading.Lock()
 
     def __getitem__(self, key):
@@ -35,16 +38,23 @@ class QueryResultsCache:
         if index is not None and index < len(self.loaded_data): return
         # iteratively load data into cache
         with self.lock:
-            for data in self.data_generator:
-                # convert "_id" to "id" for frontend
-                data['id'] = data.pop('_id')
-                self.loaded_data.append(data)
-                # here we load one more data than requested, so we know if all data loaded
-                if index is not None and len(self.loaded_data) > index:
-                    break
-            else:
-                # all data loaded
-                self.load_finished = True
+            try:
+                for data in self.data_generator:
+                    # convert "_id" to "id" for frontend
+                    data['id'] = data.pop('_id')
+                    self.loaded_data.append(data)
+                    # here we load one more data than requested, so we know if all data loaded
+                    if index is not None and len(self.loaded_data) > index:
+                        break
+                else:
+                    # all data loaded
+                    self.load_finished = True
+            except CursorNotFound:
+                print(f"*** Cursor not found for query {self.qt}, restart loading")
+                self.loaded_data = []
+                self.load_finished = False
+                self.data_generator = self.qt.find(projection=self.projection)
+                self.load_data_until(index)
 
 
 @threadsafe_lru(maxsize=1024)
