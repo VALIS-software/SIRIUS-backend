@@ -33,7 +33,7 @@ def index():
 
 @app.route('/<path:path>')
 def send_static_file(path):
-    return app.send_static_file(path)
+    return send_from_directory("valis-dist", path)
 
 #**************************
 #*      /healthcheck      *
