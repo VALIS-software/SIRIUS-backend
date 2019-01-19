@@ -12,6 +12,7 @@ class QueryResultsCache:
     Class that implemented dynamic caching for query results
     """
     def __init__(self, query, projection=None):
+        self.query = query
         self.qt = QueryTree(query)
         self.projection = projection
         self.loaded_data = []
@@ -50,7 +51,7 @@ class QueryResultsCache:
                     # all data loaded
                     self.load_finished = True
             except CursorNotFound:
-                print(f"*** Cursor not found for query {self.qt}, restart loading")
+                print(f"*** Cursor not found for query {self.query}, restart loading")
                 self.loaded_data = []
                 self.load_finished = False
                 self.data_generator = self.qt.find(projection=self.projection)
