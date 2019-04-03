@@ -20,7 +20,6 @@ from sirius.helpers.constants import TRACK_TYPE_SEQUENCE, TRACK_TYPE_FUNCTIONAL,
                                      QUERY_TYPE_GENOME, QUERY_TYPE_INFO, QUERY_TYPE_EDGE
 from sirius.core.annotationtrack import get_annotation_query
 from sirius.mongo import GenomeNodes, InfoNodes, Edges
-from sirius.core.auth0 import requires_auth, requires_auth_user
 
 #**************************
 #*     static urls        *
@@ -49,7 +48,6 @@ def healthcheck_api():
 #**************************
 
 @app.route("/contig_info")
-@requires_auth
 def contig_info():
     """
     Endpoint for frontend to pre-fetch the available contigs and their dimensions
@@ -86,7 +84,6 @@ def contig_info():
 #**************************
 
 @app.route("/track_info")
-@requires_auth
 def track_info():
     """
     Endpoint for rendering the selections in DataBrowser side panel.
@@ -101,69 +98,11 @@ def track_info():
     return json.dumps(loaded_track_types_info)
 
 
-
-# This is the new endpoint that will replace /tracks to return real data
 #**************************
-#*       /datatracks      *
-#**************************
-from sirius.core.datatrack import get_sequence_data, get_signal_data, old_api_track_data
-
-@app.route("/datatracks")
-@requires_auth
-def datatracks():
-    """
-    Endpoint for getting all available data tracks
-
-    Returns
-    -------
-    loaded_data_tracks: list (json)
-        The list of available track types.
-        In the list, each track_info is a dictionary with keys: 'id', 'name'
-
-    """
-    return json.dumps([{'id': t['id'], 'name': t['name']} for t in loaded_data_tracks])
-
-@app.route("/datatracks/<string:track_id>")
-@requires_auth
-def datatrack_info_by_id(track_id):
-    """
-    Endpoint for getting all available data tracks
-
-    Returns
-    -------
-    track_info_dict: dictionary (json)
-        The InfoNode that contains the metadata for track_id.
-
-    """
-    info = loaded_data_track_info_dict.get(track_id, None)
-    if info == None:
-        return abort(404, f'track {track_id} not found')
-    track_info = {
-        'id': info['_id'],
-        'type': info['type']
-    }
-    return json.dumps(track_info)
-
-@app.route("/datatracks/<string:track_id>/<string:contig>/<int:start_bp>/<int:end_bp>")
-@requires_auth
-def datatrack_get_data(track_id, contig, start_bp, end_bp):
-    """Return the data for the given track and base pair range"""
-    if start_bp > end_bp:
-        return abort(404, 'start_bp > end_bp not allowed')
-    sampling_rate = int(request.args.get('sampling_rate', default=1))
-    if track_id == 'sequence':
-        return get_sequence_data(track_id, contig, start_bp, end_bp, sampling_rate)
-    else:
-        aggregations = request.args.get('aggregations', default='none').split(',')
-        return get_signal_data(track_id, contig, start_bp, end_bp, sampling_rate, aggregations)
-
-
-#**************************
-#*     /distince_values   *
+#*     /distinct_values   *
 #**************************
 
 @app.route("/distinct_values/<string:index>", methods=['POST'])
-@requires_auth
 def distinct_values(index):
     """ Return all possible values for a certain index for certain query """
     query = request.get_json()
@@ -200,7 +139,6 @@ def get_query_distinct_values(query, index):
 from sirius.core.detail_relations import node_relations, edge_relations
 from sirius.mongo import userdb
 @app.route("/details/<string:data_id>")
-@requires_auth
 def get_details(data_id):
     if not data_id: return abort(404, 'data_id missing')
     relations = []
@@ -228,7 +166,6 @@ def get_details(data_id):
 from sirius.core.searchindex import get_suggestions
 
 @app.route('/suggestions', methods=['POST'])
-@requires_auth
 def suggestions():
     """ Returns results for a query, with only basic information, useful for search """
     query_json = request.get_json()
@@ -251,7 +188,6 @@ from sirius.core.query_endpoint import get_query_full_results, get_query_basic_r
 
 
 @app.route('/query/full', methods=['POST'])
-@requires_auth
 def query_full():
     """ Returns results for a query, with only basic information, useful for search """
     t0 = time.time()
@@ -286,7 +222,6 @@ def query_full():
     return json.dumps(return_dict)
 
 @app.route('/query/basic', methods=['POST'])
-@requires_auth
 def query_basic():
     """ Returns results for a query, with only basic information, useful for search """
     t0 = time.time()
@@ -321,7 +256,6 @@ def query_basic():
     return json.dumps(return_dict)
 
 @app.route('/query/gwas', methods=['POST'])
-@requires_auth
 def query_gwas():
     """ /query/gwas endpoint is specially created for sorting the GWAS SNPs by p-values """
     t0 = time.time()
@@ -354,80 +288,12 @@ def query_gwas():
     return json.dumps(return_dict)
 
 
-
-#**************************
-#*       /reference       *
-#**************************
-from sirius.core.reference_track import get_reference_gene_data, get_reference_hierarchy_data
-
-@app.route("/reference/<string:contig>/<int:start_bp>/<int:end_bp>", methods=['GET'])
-@requires_auth
-def reference_annotation_track(contig, start_bp, end_bp):
-    include_transcript = bool(request.args.get('include_transcript', default=False))
-    # get data from cache
-    if include_transcript == True:
-        data = get_reference_hierarchy_data(contig)
-    else:
-        data = get_reference_gene_data(contig)
-    # filter the ones out of range
-    result_data = [g for g in data if g['start'] <= end_bp and g['start'] + g['length'] >= start_bp]
-    if len(result_data) > 0:
-        start_bp = min(start_bp, result_data[0]['start'])
-        end_bp = max(end_bp, result_data[-1]['start'] + result_data[-1]['length'] - 1)
-    result = {
-        'contig': contig,
-        'start_bp': start_bp,
-        'end_bp': end_bp,
-        'data': result_data
-    }
-    return json.dumps(result)
-
-
-
-# this is a special endpoint for the "all variants" track
-# it might needs to be optimized later with the help of TileDB
-#*****************************
-#*   /all variant_track_data     *
-#*****************************
-from sirius.core.all_variant_track import get_all_variants_in_range
-
-@app.route('/all_variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['GET'])
-@requires_auth
-def get_all_variant_track_data(contig, start_bp, end_bp):
-    t0 = time.time()
-    if contig not in loaded_contig_info_dict:
-        return abort(404, 'contig not found')
-    empty_return = json.dumps({
-        'contig': contig,
-        'start_bp': start_bp,
-        'end_bp': end_bp,
-        'data': []
-    })
-    total_length = loaded_contig_info_dict[contig]['length']
-    # check start_bp and end_bp
-    if start_bp > total_length or end_bp < 1 or start_bp > end_bp:
-        return empty_return
-    start_bp = max(start_bp, 1)
-    end_bp = min(end_bp, total_length)
-    result_data = get_all_variants_in_range(contig, start_bp, end_bp)
-    result = {
-        'contig': contig,
-        'start_bp': start_bp,
-        'end_bp': end_bp,
-        'data': result_data
-    }
-    t1 = time.time()
-    print(f'{len(result_data)} all_variant_data, {get_all_variants_in_range.cache_info()}; {t1-t0:.2f} s')
-    return json.dumps(result)
-
-
 #******************************
 #*   /interval_track_data     *
 #******************************
 from sirius.core.interval_track import get_intervals_in_range
 
 @app.route('/interval_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
-@requires_auth
 def get_interval_track_data(contig, start_bp, end_bp):
     t0 = time.time()
     query = request.get_json()
@@ -471,7 +337,6 @@ def get_interval_track_data(contig, start_bp, end_bp):
 from sirius.core.variant_track import get_variants_in_range
 
 @app.route('/variant_track_data/<string:contig>/<int:start_bp>/<int:end_bp>', methods=['POST'])
-@requires_auth
 def get_variant_track_data(contig, start_bp, end_bp):
     t0 = time.time()
     query = request.get_json()
@@ -511,7 +376,6 @@ def get_variant_track_data(contig, start_bp, end_bp):
 from sirius.core.user_files import upload_user_file, get_user_files_info, delete_user_file
 
 @app.route('/user_files', methods=['POST','GET','DELETE'])
-@requires_auth_user
 def user_file_api():
     # upload file with POST method
     if request.method == 'POST':
@@ -541,7 +405,6 @@ def user_file_api():
 from sirius.helpers import storage_buckets
 
 @app.route('/export_query', methods=['POST'])
-@requires_auth
 def export_query_endpoint():
     """ run a query then export the result """
     # get input and check valid
@@ -620,7 +483,6 @@ def export_query_endpoint():
 from sirius.helpers import storage_buckets
 
 @app.route('/download_query', methods=['POST'])
-@requires_auth
 def download_query_endpoint():
     """ run a query then export the result """
     # get input and check valid
@@ -653,29 +515,3 @@ def download_query_endpoint():
         return abort(404, f'Downloading with fileFormat {file_format} is not implemented yet')
     return response
 
-
-#**************************************
-#*       /canis_api API               *
-#**************************************
-@app.route('/canis_api', methods=['GET'])
-@requires_auth
-def canis_ip_port():
-    """ Useful api to provide CANIS backend ip and port to frontend """
-    # if os.environ.get('VALIS_DEV_MODE', None):
-    #     canis_host = os.environ.get('CANIS_DEV_SERVICE_HOST', None)
-    #     canis_port = os.environ.get('CANIS_DEV_SERVICE_PORT', None)
-    # else:
-    #     canis_host = os.environ.get('CANIS_PROD_SERVICE_HOST', None)
-    #     canis_port = os.environ.get('CANIS_PROD_SERVICE_PORT', None)
-    # if canis_host == None or canis_port == None:
-    #     return abort(404, 'CANIS service not found')
-    # QYD: The internal IP address will not be accessible by the frontend, so
-    # we return a hard-coded public IP for the dev server
-    if os.environ.get('VALIS_DEV_MODE', None):
-        canis_host = '35.185.236.30'
-        canis_port = '80'
-        ret = f'http://{canis_host}:{canis_port}'
-    else:
-        # on the production server, we return None to disable the api
-        ret = None
-    return json.dumps(ret)

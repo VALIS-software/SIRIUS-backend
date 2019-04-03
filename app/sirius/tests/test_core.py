@@ -22,9 +22,5 @@ class CoreTest(TimedTestCase):
         d = json.loads(result)
         self.assertGreater(d['countInRange'], 8, 'Number of genes in Chr1 1-1M should be greater than 8')
 
-    def test_import_auth(self):
-        """ Test import core.auth0 module """
-        from sirius.core import auth0
-
 if __name__ == "__main__":
     unittest.main()
