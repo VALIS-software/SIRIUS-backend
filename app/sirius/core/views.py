@@ -161,27 +161,6 @@ def get_details(data_id):
     return json.dumps(result)
 
 #**************************
-#*       /suggestions     *
-#**************************
-from sirius.core.searchindex import get_suggestions
-
-@app.route('/suggestions', methods=['POST'])
-def suggestions():
-    """ Returns results for a query, with only basic information, useful for search """
-    query_json = request.get_json()
-    if not query_json or not "term_type" in query_json:
-        return abort(500, 'no term_type')
-    if not query_json or not "search_text" in query_json:
-        return abort(500, 'no search_text')
-    max_results = int(query_json.get('max_results', 100))
-    results = {
-        "results": get_suggestions(query_json["term_type"], query_json["search_text"], max_results)
-    }
-    print(query_json)
-    print(results['results'])
-    return json.dumps(results)
-
-#**************************
 #*       /query           *
 #**************************
 from sirius.core.query_endpoint import get_query_full_results, get_query_basic_results, get_query_gwas_results
