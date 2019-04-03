@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sirius import app
-from sirius.core import views, auth0
+from sirius.core import views
 
 if __name__ == "__main__":
     # Only for debugging while developing
