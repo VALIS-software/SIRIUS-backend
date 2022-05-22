@@ -41,15 +41,17 @@ class QueryEdge(object):
         from_id_key, to_id_key = 'from_id', 'to_id'
         if self.reverse:
             from_id_key, to_id_key = to_id_key, from_id_key
+        result_ids = set()
         if self.nextnode != None:
             target_ids = list(self.nextnode.findid())
             if len(target_ids) == 0: return set()
             batch_size = 100000
-            result_ids = set()
             for i_batch in range(int(len(target_ids) / batch_size)+1):
                 batch_ids = target_ids[i_batch*batch_size:(i_batch+1)*batch_size]
                 mongo_filter[to_id_key] = {"$in": batch_ids}
                 result_ids.update(d[from_id_key] for d in self.mongo_collection.find(mongo_filter, {from_id_key:1}, limit=self.limit))
+        else:
+            result_ids.update(d[from_id_key] for d in self.mongo_collection.find(mongo_filter, {from_id_key:1}, limit=self.limit))
         return result_ids
 
     def export(self, filename, ftype):
