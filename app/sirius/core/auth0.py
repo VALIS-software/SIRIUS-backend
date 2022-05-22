@@ -16,6 +16,7 @@ AUTH0_DOMAIN = "valis-dev.auth0.com"
 API_AUDIENCE = 'https://api.valis.bio/'
 ALGORITHMS = ["RS256"]
 
+AUTH_DISABLED = True
 
 # Error handler
 class AuthError(Exception):
@@ -57,6 +58,8 @@ def get_token_auth_header():
 def requires_auth(f):
     """Determines if the Access Token is valid
     """
+    if AUTH_DISABLED:
+        return f
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
@@ -69,6 +72,8 @@ def requires_auth(f):
 def requires_auth_user(f):
     """Determines if the Access Token is valid and from a real user
     """
+    if AUTH_DISABLED:
+        return f
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
