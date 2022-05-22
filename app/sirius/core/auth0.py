@@ -161,6 +161,11 @@ def request_user_profile(payload, token):
     return payload
 
 def get_user_profile():
+    if AUTH_DISABLED:
+        return {
+            'name': 'admin',
+            'https://valis.bio/role': 'admin',
+        }
     return _request_ctx_stack.top.current_user
 
 def get_user_name():
