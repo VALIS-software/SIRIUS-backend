@@ -30,7 +30,7 @@ FULL_DATABASE = False
 
 GRCH38_URL = 'ftp://ftp.ensembl.org/pub/release-92/gff3/homo_sapiens/Homo_sapiens.GRCh38.92.chr.gff3.gz'
 GRCH38_FASTA_URL = 'ftp://ftp.ensembl.org/pub/release-92/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
-GWAS_URL = 'gs://sirius_data_source/GWAS/gwas.tsv'
+GWAS_URL = 'gs://sirius_data_source/GWAS/gwas.tsv' # https://www.ebi.ac.uk/gwas/api/search/downloads/full
 ENCODE_BIGWIG_URL = 'https://storage.googleapis.com/sirius_data_source/ENCODE_bigwig/ENCODE_bigwig_metadata.tsv'
 CLINVAR_URL = 'ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/archive_2.0/2018/clinvar_20180128.vcf.gz'
 ENCODE_URL = 'gs://sirius_data_source/ENCODE/'
@@ -38,10 +38,10 @@ DBSNP_URL = 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/c
 ExAC_URL = 'https://storage.googleapis.com/gnomad-public/legacy/exacv1_downloads/liftover_grch38/release1/ExAC.r1.sites.liftover.b38.vcf.gz'
 GTEx_URL = 'https://storage.googleapis.com/gtex_analysis_v7/single_tissue_eqtl_data/GTEx_Analysis_v7_eQTL.tar.gz'
 TCGA_URL = 'https://storage.googleapis.com/sirius_data_source/TCGA/tcga.tar.gz'
-EFO_URL = 'https://raw.githubusercontent.com/EBISPOT/efo/master/efo.obo'
-HGNC_URL = 'https://storage.googleapis.com/sirius_data_source/HGNC/hgnc_complete_set.txt'
+EFO_URL = 'https://github.com/EBISPOT/efo/releases/download/v3.42.0/efo.obo'
+HGNC_URL = 'http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt'
 KEGG_URL = 'https://storage.googleapis.com/sirius_data_source/KEGG/kegg_pathways.tar.gz'
-NATURE_CASUAL_VARIANTS_URL = 'gs://sirius_data_source/Nature-Causal-Variants/nature13835-s1.csv'
+NATURE_CASUAL_VARIANTS_URL = 'gs://sirius_data_source/Nature-Causal-Variants/nature13835-s1.csv' # converted from https://static-content.springer.com/esm/art%3A10.1038%2Fnature13835/MediaObjects/41586_2015_BFnature13835_MOESM8_ESM.xls
 ROADMAP_EPIGENOMICS_URL = 'https://s3.amazonaws.com/layerlab/giggle/roadmap/roadmap_sort.tar.gz'
 IMMUNE_ATLAS_URL = 'gs://sirius_data_source/ImmuneAtlasBed/'
 
@@ -54,21 +54,24 @@ def mkchdir(dir):
     os.chdir(dir)
 
 def download_not_exist(url, command=None, filename=None):
-    if url.startswith('gs://'):
-        basename = os.path.basename(url) if url[-1] != '/' else os.path.basename(url[:-1])
-        if os.path.exists(basename):
-            print(f'{basename} exists, skipping download')
-            return
-        if command == None:
-            command = 'gsutil -m cp -r'
-        if filename == None:
-            filename = '.'
-    else:
-        if command == None:
-            command = 'wget -N'
-        if filename == None:
-            filename = ''
-    subprocess.run(f'{command} {url} {filename}', shell=True, check=True)
+    try:
+        if url.startswith('gs://'):
+            basename = os.path.basename(url) if url[-1] != '/' else os.path.basename(url[:-1])
+            if os.path.exists(basename):
+                print(f'{basename} exists, skipping download')
+                return
+            if command == None:
+                command = 'gsutil -m cp -r'
+            if filename == None:
+                filename = '.'
+        else:
+            if command == None:
+                command = 'wget -N'
+            if filename == None:
+                filename = ''
+        subprocess.run(f'{command} {url} {filename}', shell=True, check=True)
+    except:
+        print("Something wrong, skipped")
 
 def download_genome_data():
     " Download Genome Data on to disk "
@@ -180,92 +183,142 @@ def parse_upload_all_datasets(source_start=1):
     if source_start <= 1:
         print("*** 3.1 ENCODE_bigwig ***")
         os.chdir('encode_bigwig')
-        parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
-        parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
+        try:
+            parser = TSVParser_ENCODEbigwig(os.path.basename(ENCODE_BIGWIG_URL), verbose=True)
+            parse_upload_data(parser, {"sourceurl": ENCODE_BIGWIG_URL})
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 2:
         print("\n*** 3.2 GRCh38_fasta ***")
         os.chdir('GRCh38_fasta')
-        parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
-        parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
+        try:
+            parser = FASTAParser(os.path.basename(GRCH38_FASTA_URL), verbose=True)
+            parse_upload_data(parser, {"sourceurl": GRCH38_FASTA_URL})
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 3:
         print("\n*** 3.3 GRCh38_gff ***")
         os.chdir('GRCh38_gff')
-        parse_upload_gff_chunk()
+        try:
+            parse_upload_gff_chunk()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 4:
         print("\n*** 3.4 ClinVar ***")
         os.chdir('ClinVar')
-        parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
-        parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
+        try:
+            parser = VCFParser_ClinVar('clinvar_20180128.vcf.gz', verbose=True)
+            parse_upload_data(parser, {"sourceurl": CLINVAR_URL})
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 5:
         print("\n*** 3.5 ENCODE ***")
-        os.chdir('ENCODE')
-        from sirius.tools import automate_encode_upload
-        if FULL_DATABASE:
-            automate_encode_upload.parse_upload_files(0, 1070, liftover=False)
-        else:
-            automate_encode_upload.parse_upload_files(liftover=False)
-        os.chdir('..')
+        if os.path.isdir('ENCODE'):
+            os.chdir('ENCODE')
+            try:
+                from sirius.tools import automate_encode_upload
+                if FULL_DATABASE:
+                    automate_encode_upload.parse_upload_files(0, 1070, liftover=False)
+                else:
+                    automate_encode_upload.parse_upload_files(liftover=False)
+            except:
+                print("Something wrong, skipped")                
+            os.chdir('..')
     if source_start <= 6:
         print("\n*** 3.6 dbSNP ***")
-        os.chdir('dbSNP')
-        parse_upload_dbSNP_chunk()
+        try:
+            os.chdir('dbSNP')
+            parse_upload_dbSNP_chunk()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 7:
         print("\n*** 3.7 ExAC ***")
         os.chdir('ExAC')
-        parse_upload_ExAC_chunk()
+        try:
+            parse_upload_ExAC_chunk()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 8:
         print("\n*** 3.8 TCGA ***")
         os.chdir('TCGA')
-        parse_upload_TCGA_files()
+        try:
+            parse_upload_TCGA_files()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 9:
         print("\n*** 3.9 Nature-Causal-Variants ***")
         os.chdir('Nature-Causal-Variants')
-        parser = Parser_NatureCasualVariants('nature13835-s1.csv', verbose=True)
-        parse_upload_data(parser)
+        try:
+            parser = Parser_NatureCasualVariants('nature13835-s1.csv', verbose=True)
+            parse_upload_data(parser)
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 10:
         print("\n*** 3.10 Roadmap Epigenomics ***")
         os.chdir('roadmap_epigenomics')
-        parse_upload_ROADMAP_EPIGENOMICS()
+        try:
+            parse_upload_ROADMAP_EPIGENOMICS()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 11:
         print("\n*** 3.11 ImmuneAtlas ***")
-        os.chdir('ImmuneAtlasBed')
-        parse_upload_ImmuneAtlas()
-        os.chdir('..')
+        if os.path.isdir('ImmuneAtlasBed'):
+            os.chdir('ImmuneAtlasBed')
+            try:
+                parse_upload_ImmuneAtlas()
+            except:
+                print("Something wrong, skipped")
+            os.chdir('..')
     ## The following dataset should be parsed in the end
     ## Because they "Patch" the existing data
     if source_start <= 12:
         print("\n*** 3.12 GWAS ***")
         os.chdir('gwas')
-        parse_upload_GWAS()
+        try:
+            parse_upload_GWAS()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 13:
         print("\n*** 3.13 GTEx ***")
         os.chdir('GTEx')
-        parse_upload_GTEx_files()
+        try:
+            parse_upload_GTEx_files()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 14:
         print("\n*** 3.14 EFO ***")
         os.chdir('EFO')
-        parse_upload_EFO()
+        try:
+            parse_upload_EFO()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 15:
         print("\n*** 3.15 HGNC ***")
         os.chdir('HGNC')
-        parse_upload_HGNC()
+        try:
+            parse_upload_HGNC()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     if source_start <= 16:
         print("\n*** 3.16 KEGG ***")
         os.chdir('KEGG')
-        parse_upload_KEGG()
+        try:
+            parse_upload_KEGG()
+        except:
+            print("Something wrong, skipped")
         os.chdir('..')
     # Finish
     print("All parsing and uploading finished!")

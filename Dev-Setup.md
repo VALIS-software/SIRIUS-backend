@@ -141,6 +141,12 @@ If successful, you should be given a bash shell like
 root@09cee5403d0b:/app/sirius#
 ```
 
+Tip: it might be desired to mount volumes into the container, to sync code and preserve data, e.g.
+
+```
+sudo docker run -it -p 5000:5000 --link some-mongo:mongo -v `pwd`/app/sirius:/app/sirius -v /data2/projects/valis/tile_db_cache/:/cache sirius-dev:latest bash
+```
+
 
 ## 5. Download Genetic Data, parse and upload to local MongoDB server
 
@@ -167,8 +173,14 @@ If there is an update to the SIRIUS code. You can build a new Docker image
 sudo docker build -t sirius-dev:latest .
 ```
 
+(Same as above)
 ```
 sudo docker run  -it -p 5000:5000 --link some-mongo:mongo sirius-dev:latest /bin/bash
+```
+
+Tip: it might be desired to mount volumes into the container, to sync code and preserve data, e.g.
+```
+sudo docker run -it -p 5000:5000 --link some-mongo:mongo -v `pwd`/app/sirius:/app/sirius -v /data2/projects/valis/tile_db_cache/:/cache sirius-dev:latest bash
 ```
 
 ```
@@ -187,3 +199,6 @@ npm run dev
 ```
 
 And it should be able to connect to the SIRIUS server.
+
+Note: current version of valis-frontend may need node version 10 to build
+e.g. https://nodejs.org/download/release/v10.24.1/node-v10.24.1-linux-x64.tar.gz
